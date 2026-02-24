@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.edu.springboot.domain.chat.ChatMapper">
+
+    <!-- ── ResultMap ──────────────────────────────────────── -->
+    <resultMap id="roomRM" type="com.edu.springboot.domain.chat.vo.ChatRoomVO">
+        <id     property="roomNo"         column="ROOM_NO"/>
+        <result property="memberNo1"      column="MEMBER_NO_1"/>
+        <result property="memberNo2"      column="MEMBER_NO_2"/>
+        <result property="createdAt"      column="CREATED_AT"/>
+        <result property="targetMemberNo" column="TARGET_MEMBER_NO"/>
+        <result property="targetName"     column="TARGET_NAME"/>
+        <result property="targetRole"     column="TARGET_ROLE"/>
+        <result property="lastMessage"    column="LAST_MESSAGE"/>
+        <result property="lastMessageAt"  column="LAST_MESSAGE_AT"/>
+        <result property="unreadCount"    column="UNREAD_COUNT"/>
+    </resultMap>
+
+    <resultMap id="msgRM" type="com.edu.springboot.domain.chat.vo.ChatMsgVO">
+        <id     property="msgNo"      column="MSG_NO"/>
+        <result property="roomNo"     column="ROOM_NO"/>
+        <result property="senderNo"   column="SENDER_NO"/>
+        <result property="senderName" column="SENDER_NAME"/>
+        <result property="msgType"    column="MSG_TYPE"/>
+        <result property="content"    column="CONTENT"/>
+        <result property="fileUrl"    column="FILE_URL"/>
+        <result property="readYn"     column="READ_YN"/>
+        <result property="sentAt"     column="SENT_AT"/>
+    </resultMap>
+
+    <!-- ── 두 회원 간 채팅방 조회 ─────────────────────────── -->
+    <select id="findRoomByMembers" resultMap="roomRM">
+        SELECT ROOM_NO, MEMBER_NO_1, MEMBER_NO_2, CREATED_AT
+        FROM TB_CHAT_ROOM
+        WHERE (MEMBER_NO_1 = #{no1} AND MEMBER_NO_2 = #{no2})
+           OR (MEMBER_NO_1 = #{no2} AND MEMBER_NO_2 = #{no1})
+    </select>
+
+    <!-- ── 채팅방 생성 ────────────────────────────────────── -->
+    <insert id="insertRoom" parameterType="com.edu.springboot.domain.chat.vo.ChatRoomVO">
+        <selectKey keyProperty="roomNo" resultType="long" order="BEFORE">
+            SELECT SEQ_CHAT_ROOM.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_CHAT_ROOM (ROOM_NO, MEMBER_NO_1, MEMBER_NO_2, CREATED_AT)
+        VALUES (#{roomNo}, #{memberNo1}, #{memberNo2}, SYSDATE)
+    </insert>
+
+    <!-- ── 채팅방 목록 ────────────────────────────────────── -->
+    <select id="selectRoomList" resultMap="roomRM">
+        SELECT
+            r.ROOM_NO,
+            r.MEMBER_NO_1,
+            r.MEMBER_NO_2,
+            r.CREATED_AT,
+            CASE WHEN r.MEMBER_NO_1 = #{memberNo}
+                 THEN r.MEMBER_NO_2  ELSE r.MEMBER_NO_1  END AS TARGET_MEMBER_NO,
+            CASE WHEN r.MEMBER_NO_1 = #{memberNo}
+                 THEN m2.NAME        ELSE m1.NAME         END AS TARGET_NAME,
+            CASE WHEN r.MEMBER_NO_1 = #{memberNo}
+                 THEN m2.ROLE        ELSE m1.ROLE         END AS TARGET_ROLE,
+            lm.CONTENT   AS LAST_MESSAGE,
+            lm.SENT_AT   AS LAST_MESSAGE_AT,
+            NVL(un.CNT, 0) AS UNREAD_COUNT
+        FROM TB_CHAT_ROOM r
+        JOIN TB_MEMBER m1 ON m1.MEMBER_NO = r.MEMBER_NO_1
+        JOIN TB_MEMBER m2 ON m2.MEMBER_NO = r.MEMBER_NO_2
+        /* 마지막 메시지 */
+        LEFT JOIN (
+            SELECT ROOM_NO, CONTENT, SENT_AT,
+                   ROW_NUMBER() OVER (PARTITION BY ROOM_NO ORDER BY SENT_AT DESC) AS RN
+            FROM TB_CHAT_MSG
+        ) lm ON lm.ROOM_NO = r.ROOM_NO AND lm.RN = 1
+        /* 안읽음 수 */
+        LEFT JOIN (
+            SELECT ROOM_NO, COUNT(*) AS CNT
+            FROM TB_CHAT_MSG
+            WHERE SENDER_NO != #{memberNo}
+              AND READ_YN = 'N'
+            GROUP BY ROOM_NO
+        ) un ON un.ROOM_NO = r.ROOM_NO
+        WHERE r.MEMBER_NO_1 = #{memberNo}
+           OR r.MEMBER_NO_2 = #{memberNo}
+        ORDER BY NVL(lm.SENT_AT, r.CREATED_AT) DESC
+    </select>
+
+    <!-- ── 채팅방 단건 ────────────────────────────────────── -->
+    <select id="selectRoomByNo" resultMap="roomRM">
+        SELECT ROOM_NO, MEMBER_NO_1, MEMBER_NO_2, CREATED_AT
+        FROM TB_CHAT_ROOM
+        WHERE ROOM_NO = #{roomNo}
+    </select>
+
+    <!-- ── 메시지 저장 ────────────────────────────────────── -->
+    <insert id="insertMsg" parameterType="com.edu.springboot.domain.chat.vo.ChatMsgVO">
+        <selectKey keyProperty="msgNo" resultType="long" order="BEFORE">
+            SELECT SEQ_CHAT_MSG.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_CHAT_MSG
+            (MSG_NO, ROOM_NO, SENDER_NO, MSG_TYPE, CONTENT, FILE_URL, READ_YN, SENT_AT)
+        VALUES
+            (#{msgNo}, #{roomNo}, #{senderNo}, #{msgType},
+             #{content}, #{fileUrl}, 'N', SYSDATE)
+    </insert>
+
+    <!-- ── 메시지 목록 (페이징) ──────────────────────────── -->
+    <select id="selectMsgList" resultMap="msgRM">
+        SELECT * FROM (
+            SELECT
+                m.MSG_NO, m.ROOM_NO, m.SENDER_NO,
+                mb.NAME AS SENDER_NAME,
+                m.MSG_TYPE, m.CONTENT, m.FILE_URL,
+                m.READ_YN, m.SENT_AT,
+                ROW_NUMBER() OVER (ORDER BY m.SENT_AT ASC) AS RN
+            FROM TB_CHAT_MSG m
+            JOIN TB_MEMBER mb ON mb.MEMBER_NO = m.SENDER_NO
+            WHERE m.ROOM_NO = #{roomNo}
+        )
+        WHERE RN BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- ── 안읽음 수 ──────────────────────────────────────── -->
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_CHAT_MSG
+        WHERE ROOM_NO   = #{roomNo}
+          AND SENDER_NO != #{memberNo}
+          AND READ_YN    = 'N'
+    </select>
+
+    <!-- ── 읽음 처리 ──────────────────────────────────────── -->
+    <update id="markAllRead">
+        UPDATE TB_CHAT_MSG
+           SET READ_YN = 'Y'
+         WHERE ROOM_NO   = #{roomNo}
+           AND SENDER_NO != #{memberNo}
+           AND READ_YN    = 'N'
+    </update>
+
+</mapper>

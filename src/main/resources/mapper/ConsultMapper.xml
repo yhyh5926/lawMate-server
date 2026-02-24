@@ -1,1 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.edu.springboot.domain.consult.ConsultMapper">
+
+    <!-- ── ResultMap ──────────────────────────────────────── -->
+    <resultMap id="consultRM" type="com.edu.springboot.domain.consult.vo.ConsultVO">
+        <id     property="consultNo"   column="CONSULT_NO"/>
+        <result property="memberNo"    column="MEMBER_NO"/>
+        <result property="lawyerNo"    column="LAWYER_NO"/>
+        <result property="consultDate" column="CONSULT_DATE"/>
+        <result property="consultTime" column="CONSULT_TIME"/>
+        <result property="duration"    column="DURATION"/>
+        <result property="memo"        column="MEMO"/>
+        <result property="status"      column="STATUS"/>
+        <result property="paidYn"      column="PAID_YN"/>
+        <result property="reviewedYn"  column="REVIEWED_YN"/>
+        <result property="createdAt"   column="CREATED_AT"/>
+        <result property="updatedAt"   column="UPDATED_AT"/>
+        <!-- JOIN -->
+        <result property="lawyerName"  column="LAWYER_NAME"/>
+        <result property="memberName"  column="MEMBER_NAME"/>
+        <result property="memberPhone" column="MEMBER_PHONE"/>
+        <result property="consultFee"  column="CONSULT_FEE"/>
+    </resultMap>
+
+    <!-- ── 공통 SQL ───────────────────────────────────────── -->
+    <sql id="selectCols">
+        c.CONSULT_NO,
+        c.MEMBER_NO,
+        c.LAWYER_NO,
+        TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD') AS CONSULT_DATE,
+        TO_CHAR(c.CONSULT_TIME, 'HH24:MI')    AS CONSULT_TIME,
+        c.DURATION,
+        c.MEMO,
+        c.STATUS,
+        c.PAID_YN,
+        c.REVIEWED_YN,
+        c.CREATED_AT,
+        c.UPDATED_AT,
+        lm.NAME         AS LAWYER_NAME,
+        m.NAME          AS MEMBER_NAME,
+        m.PHONE         AS MEMBER_PHONE,
+        l.CONSULT_FEE
+    </sql>
+
+    <sql id="joinTables">
+        FROM   TB_CONSULT c
+        JOIN   TB_MEMBER  m  ON m.MEMBER_NO  = c.MEMBER_NO
+        JOIN   TB_LAWYER  l  ON l.LAWYER_NO  = c.LAWYER_NO
+        JOIN   TB_MEMBER  lm ON lm.MEMBER_NO = l.MEMBER_NO
+    </sql>
+
+    <!-- ── 예약 생성 ──────────────────────────────────────── -->
+    <insert id="insertConsult" parameterType="com.edu.springboot.domain.consult.vo.ConsultVO">
+        <selectKey keyProperty="consultNo" resultType="long" order="BEFORE">
+            SELECT SEQ_CONSULT.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_CONSULT
+            (CONSULT_NO, MEMBER_NO, LAWYER_NO,
+             CONSULT_DATE, CONSULT_TIME, DURATION, MEMO,
+             STATUS, PAID_YN, REVIEWED_YN, CREATED_AT, UPDATED_AT)
+        VALUES
+            (#{consultNo}, #{memberNo}, #{lawyerNo},
+             TO_DATE(#{consultDate}, 'YYYY-MM-DD'),
+             TO_DATE(#{consultTime}, 'HH24:MI'),
+             #{duration}, #{memo},
+             'PENDING', 'N', 'N', SYSDATE, SYSDATE)
+    </insert>
+
+    <!-- ── 단건 조회 ──────────────────────────────────────── -->
+    <select id="selectConsultByNo" resultMap="consultRM">
+        SELECT <include refid="selectCols"/>
+        <include refid="joinTables"/>
+        WHERE c.CONSULT_NO = #{consultNo}
+    </select>
+
+    <!-- ── 회원 전체 목록 ─────────────────────────────────── -->
+    <select id="selectConsultListByMember" resultMap="consultRM">
+        SELECT <include refid="selectCols"/>
+        <include refid="joinTables"/>
+        WHERE c.MEMBER_NO = #{memberNo}
+        ORDER BY c.CREATED_AT DESC
+    </select>
+
+    <!-- ── 회원 상태 필터 목록 ───────────────────────────── -->
+    <select id="selectConsultListByMemberAndStatus" resultMap="consultRM">
+        SELECT <include refid="selectCols"/>
+        <include refid="joinTables"/>
+        WHERE c.MEMBER_NO = #{memberNo}
+          AND c.STATUS    = #{status}
+        ORDER BY c.CREATED_AT DESC
+    </select>
+
+    <!-- ── 변호사 예약 목록 ───────────────────────────────── -->
+    <select id="selectConsultListByLawyer" resultMap="consultRM">
+        SELECT <include refid="selectCols"/>
+        <include refid="joinTables"/>
+        WHERE c.LAWYER_NO = #{lawyerNo}
+        ORDER BY c.CONSULT_DATE DESC
+    </select>
+
+    <!-- ── 예약된 시간 목록 ───────────────────────────────── -->
+    <select id="selectBookedTimes" resultType="string">
+        SELECT TO_CHAR(CONSULT_TIME, 'HH24:MI')
+          FROM TB_CONSULT
+         WHERE LAWYER_NO    = #{lawyerNo}
+           AND CONSULT_DATE = TO_DATE(#{consultDate}, 'YYYY-MM-DD')
+           AND STATUS IN ('PENDING', 'CONFIRMED')
+    </select>
+
+    <!-- ── 상태 변경 ──────────────────────────────────────── -->
+    <update id="updateStatus">
+        UPDATE TB_CONSULT
+           SET STATUS     = #{status},
+               UPDATED_AT = SYSDATE
+         WHERE CONSULT_NO = #{consultNo}
+    </update>
+
+    <!-- ── 결제 완료 ──────────────────────────────────────── -->
+    <update id="updatePaidYn">
+        UPDATE TB_CONSULT
+           SET PAID_YN    = 'Y',
+               UPDATED_AT = SYSDATE
+         WHERE CONSULT_NO = #{consultNo}
+    </update>
+
+    <!-- ── 후기 작성 완료 ─────────────────────────────────── -->
+    <update id="updateReviewedYn">
+        UPDATE TB_CONSULT
+           SET REVIEWED_YN = 'Y',
+               UPDATED_AT  = SYSDATE
+         WHERE CONSULT_NO = #{consultNo}
+    </update>
+
+</mapper>

@@ -1,1 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.edu.springboot.domain.payment.PaymentMapper">
+
+    <!-- ── ResultMap ──────────────────────────────────────── -->
+    <resultMap id="paymentRM" type="com.edu.springboot.domain.payment.vo.PaymentVO">
+        <id     property="paymentNo"    column="PAYMENT_NO"/>
+        <result property="consultNo"    column="CONSULT_NO"/>
+        <result property="memberNo"     column="MEMBER_NO"/>
+        <result property="impUid"       column="IMP_UID"/>
+        <result property="merchantUid"  column="MERCHANT_UID"/>
+        <result property="amount"       column="AMOUNT"/>
+        <result property="payMethod"    column="PAY_METHOD"/>
+        <result property="status"       column="STATUS"/>
+        <result property="refundReason" column="REFUND_REASON"/>
+        <result property="createdAt"    column="CREATED_AT"/>
+        <result property="updatedAt"    column="UPDATED_AT"/>
+    </resultMap>
+
+    <!-- ── 주문 생성 ──────────────────────────────────────── -->
+    <insert id="insertPayment" parameterType="com.edu.springboot.domain.payment.vo.PaymentVO">
+        <selectKey keyProperty="paymentNo" resultType="long" order="BEFORE">
+            SELECT SEQ_PAYMENT.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_PAYMENT
+            (PAYMENT_NO, CONSULT_NO, MEMBER_NO, MERCHANT_UID,
+             AMOUNT, STATUS, CREATED_AT, UPDATED_AT)
+        VALUES
+            (#{paymentNo}, #{consultNo}, #{memberNo}, #{merchantUid},
+             #{amount}, 'READY', SYSDATE, SYSDATE)
+    </insert>
+
+    <!-- ── merchantUid 조회 ───────────────────────────────── -->
+    <select id="selectByMerchantUid" resultMap="paymentRM">
+        SELECT * FROM TB_PAYMENT
+         WHERE MERCHANT_UID = #{merchantUid}
+    </select>
+
+    <!-- ── paymentNo 조회 ────────────────────────────────── -->
+    <select id="selectByPaymentNo" resultMap="paymentRM">
+        SELECT * FROM TB_PAYMENT
+         WHERE PAYMENT_NO = #{paymentNo}
+    </select>
+
+    <!-- ── 회원 결제 목록 ─────────────────────────────────── -->
+    <select id="selectPaymentListByMember" resultMap="paymentRM">
+        SELECT * FROM TB_PAYMENT
+         WHERE MEMBER_NO = #{memberNo}
+         ORDER BY CREATED_AT DESC
+    </select>
+
+    <!-- ── 결제 완료 처리 ─────────────────────────────────── -->
+    <update id="updatePaid">
+        UPDATE TB_PAYMENT
+           SET IMP_UID    = #{impUid},
+               PAY_METHOD = #{payMethod},
+               STATUS     = 'PAID',
+               UPDATED_AT = SYSDATE
+         WHERE MERCHANT_UID = #{merchantUid}
+    </update>
+
+    <!-- ── 환불 처리 ──────────────────────────────────────── -->
+    <update id="updateCancelled">
+        UPDATE TB_PAYMENT
+           SET STATUS        = 'CANCELLED',
+               REFUND_REASON = #{refundReason},
+               UPDATED_AT    = SYSDATE
+         WHERE PAYMENT_NO = #{paymentNo}
+    </update>
+
+</mapper>

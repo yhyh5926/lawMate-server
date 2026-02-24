@@ -1,1 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.edu.springboot.domain.payment.SettlementMapper">
+
+    <!-- ── ResultMap ──────────────────────────────────────── -->
+    <resultMap id="settlementRM" type="com.edu.springboot.domain.payment.vo.SettlementVO">
+        <id     property="settlementNo"     column="SETTLEMENT_NO"/>
+        <result property="lawyerNo"         column="LAWYER_NO"/>
+        <result property="paymentNo"        column="PAYMENT_NO"/>
+        <result property="consultDate"      column="CONSULT_DATE"/>
+        <result property="memberName"       column="MEMBER_NAME"/>
+        <result property="paymentAmount"    column="PAYMENT_AMOUNT"/>
+        <result property="fee"              column="FEE"/>
+        <result property="settlementAmount" column="SETTLEMENT_AMOUNT"/>
+        <result property="status"           column="STATUS"/>
+        <result property="createdAt"        column="CREATED_AT"/>
+        <result property="updatedAt"        column="UPDATED_AT"/>
+        <result property="month"            column="MONTH"/>
+    </resultMap>
+
+    <!-- ── 정산 레코드 생성 ───────────────────────────────── -->
+    <insert id="insertSettlement" parameterType="com.edu.springboot.domain.payment.vo.SettlementVO">
+        <selectKey keyProperty="settlementNo" resultType="long" order="BEFORE">
+            SELECT SEQ_SETTLEMENT.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_SETTLEMENT
+            (SETTLEMENT_NO, LAWYER_NO, PAYMENT_NO,
+             CONSULT_DATE, MEMBER_NAME,
+             PAYMENT_AMOUNT, FEE, SETTLEMENT_AMOUNT,
+             STATUS, CREATED_AT, UPDATED_AT)
+        VALUES
+            (#{settlementNo}, #{lawyerNo}, #{paymentNo},
+             TO_DATE(#{consultDate}, 'YYYY-MM-DD'), #{memberName},
+             #{paymentAmount}, #{fee}, #{settlementAmount},
+             'PENDING', SYSDATE, SYSDATE)
+    </insert>
+
+    <!-- ── 정산 목록 (연/월 필터) ────────────────────────── -->
+    <select id="selectSettlementList" resultMap="settlementRM">
+        SELECT
+            SETTLEMENT_NO,
+            LAWYER_NO,
+            PAYMENT_NO,
+            TO_CHAR(CONSULT_DATE, 'YYYY-MM-DD') AS CONSULT_DATE,
+            MEMBER_NAME,
+            PAYMENT_AMOUNT,
+            FEE,
+            SETTLEMENT_AMOUNT,
+            STATUS,
+            CREATED_AT,
+            UPDATED_AT
+        FROM TB_SETTLEMENT
+        WHERE LAWYER_NO = #{lawyerNo}
+          AND TO_NUMBER(TO_CHAR(CONSULT_DATE, 'YYYY')) = #{year}
+          AND TO_NUMBER(TO_CHAR(CONSULT_DATE, 'MM'))   = #{month}
+        ORDER BY CONSULT_DATE DESC
+    </select>
+
+    <!-- ── 월별 차트 (최근 12개월) ───────────────────────── -->
+    <select id="selectMonthlyChart" resultMap="settlementRM">
+        SELECT
+            TO_CHAR(CONSULT_DATE, 'YYYY-MM') AS MONTH,
+            SUM(SETTLEMENT_AMOUNT)            AS SETTLEMENT_AMOUNT
+        FROM TB_SETTLEMENT
+        WHERE LAWYER_NO    = #{lawyerNo}
+          AND CONSULT_DATE >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -11)
+        GROUP BY TO_CHAR(CONSULT_DATE, 'YYYY-MM')
+        ORDER BY 1
+    </select>
+
+    <!-- ── 정산 완료 처리 ─────────────────────────────────── -->
+    <update id="updateComplete">
+        UPDATE TB_SETTLEMENT
+           SET STATUS     = 'COMPLETED',
+               UPDATED_AT = SYSDATE
+         WHERE SETTLEMENT_NO = #{settlementNo}
+    </update>
+
+</mapper>
