@@ -3,11 +3,14 @@ package com.edu.springboot.domain.member;
 import com.edu.springboot.domain.member.dto.JoinDto;
 import com.edu.springboot.domain.member.dto.LoginDto;
 import com.edu.springboot.domain.member.vo.MemberVO;
+
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Primary
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
     

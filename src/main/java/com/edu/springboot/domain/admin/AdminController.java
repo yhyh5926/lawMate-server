@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import java.util.Map;
 
-@RestController
+//@RestController
 @RequiredArgsConstructor
 public class AdminController {
 

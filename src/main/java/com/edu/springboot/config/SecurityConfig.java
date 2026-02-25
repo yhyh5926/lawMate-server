@@ -28,9 +28,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            // CORS 설정은 WebConfig를 따르도록 시큐리티 필터에서 기본 허용
+            .cors(cors -> cors.configure(http)) 
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
+                // 💡 판례 관련 API(/api/**)를 가장 먼저 전면 허용합니다!
+                .requestMatchers("/api/**", "/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

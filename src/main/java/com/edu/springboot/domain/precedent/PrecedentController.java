@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/precedents")
-@CrossOrigin(origins = "*") // 리액트와의 통신을 위해 허용
+@CrossOrigin(origins = "http://localhost:5173")
 public class PrecedentController {
 
     @Autowired
