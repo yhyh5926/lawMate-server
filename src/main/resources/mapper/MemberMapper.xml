@@ -1,1 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.springboot.domain.member.MemberMapper">
+
+    <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO" useGeneratedKeys="true" keyProperty="memberId" keyColumn="MEMBER_ID">
+        INSERT INTO TB_MEMBER (MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE, NAME, PHONE, EMAIL, PHONE_VERIFIED)
+        VALUES (SEQ_MEMBER.NEXTVAL, #{loginId}, #{password}, #{memberType}, #{name}, #{phone}, #{email}, 'Y')
+    </insert>
+
+    <select id="checkLoginId" resultType="int">
+        SELECT COUNT(*) FROM TB_MEMBER WHERE LOGIN_ID = #{loginId}
+    </select>
+
+    <select id="findByLoginId" resultType="com.edu.springboot.domain.member.vo.MemberVO">
+        SELECT * FROM TB_MEMBER WHERE LOGIN_ID = #{loginId} AND STATUS != 'WITHDRAWN'
+    </select>
+
+    <update id="updateMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
+        UPDATE TB_MEMBER
+        SET PASSWORD = #{password}, EMAIL = #{email}, PHONE = #{phone}, UPDATED_AT = SYSDATE
+        WHERE MEMBER_ID = #{memberId}
+    </update>
+
+    <update id="withdrawMember" parameterType="Long">
+        UPDATE TB_MEMBER 
+        SET STATUS = 'WITHDRAWN', UPDATED_AT = SYSDATE 
+        WHERE MEMBER_ID = #{memberId}
+    </update>
+
+</mapper>

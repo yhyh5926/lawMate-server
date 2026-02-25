@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.springboot.domain.cases.CaseMapper">
+
+    <select id="findCasesByMemberId" resultType="com.edu.springboot.domain.cases.vo.CaseVO">
+        SELECT * FROM TB_CASE 
+        WHERE MEMBER_ID = #{memberId} 
+        ORDER BY CREATED_AT DESC
+    </select>
+
+    <select id="findCaseById" resultType="com.edu.springboot.domain.cases.vo.CaseVO">
+        SELECT * FROM TB_CASE WHERE CASE_ID = #{caseId}
+    </select>
+
+    <select id="findAllCases" resultType="com.edu.springboot.domain.cases.vo.CaseVO">
+        SELECT * FROM TB_CASE ORDER BY CREATED_AT DESC
+    </select>
+
+</mapper>

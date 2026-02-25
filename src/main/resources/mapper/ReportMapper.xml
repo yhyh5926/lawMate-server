@@ -1,1 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.springboot.domain.report.ReportMapper">
+
+    <select id="findAllReports" resultType="com.edu.springboot.domain.report.vo.ReportVO">
+        SELECT * FROM TB_REPORT ORDER BY CREATED_AT DESC
+    </select>
+
+    <select id="findReportById" resultType="com.edu.springboot.domain.report.vo.ReportVO">
+        SELECT * FROM TB_REPORT WHERE REPORT_ID = #{reportId}
+    </select>
+
+    <update id="updateReportStatus" parameterType="com.edu.springboot.domain.report.vo.ReportVO">
+        UPDATE TB_REPORT
+        SET STATUS = #{status}, HANDLED_BY = #{handledBy}, RESULT_NOTE = #{resultNote}, HANDLED_AT = SYSDATE
+        WHERE REPORT_ID = #{reportId}
+    </update>
+
+    <insert id="insertSanction" parameterType="com.edu.springboot.domain.report.vo.SanctionVO">
+        INSERT INTO TB_SANCTION (SANCTION_ID, MEMBER_ID, REPORT_ID, SANCTION_TYPE, REASON, END_DATE, ADMIN_ID)
+        VALUES (SEQ_SANCTION.NEXTVAL, #{memberId}, #{reportId}, #{sanctionType}, #{reason}, #{endDate}, #{adminId})
+    </insert>
+
+</mapper>
