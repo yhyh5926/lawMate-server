@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Controller
+//@Controller
 @RequiredArgsConstructor
 @Slf4j
 public class ChatSocketController {
