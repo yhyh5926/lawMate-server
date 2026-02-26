@@ -1,20 +1,66 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.edu.springboot.domain.lawyer.LawyerMapper">
 
-    <insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO" useGeneratedKeys="true" keyProperty="lawyerId" keyColumn="LAWYER_ID">
-        INSERT INTO TB_LAWYER (LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, APPROVE_STATUS)
-        VALUES (SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 'PENDING')
-    </insert>
-
-    <select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT * FROM TB_LAWYER WHERE APPROVE_STATUS = 'PENDING'
+    <select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+        SELECT 
+            LAWYER_ID as lawyerId,
+            MEMBER_ID as memberId,
+            LICENSE_NO as licenseNo,
+            SPECIALTY,
+            INTRO,
+            CAREER,
+            OFFICE_NAME as officeName,
+            OFFICE_ADDR as officeAddr,
+            CONSULT_FEE as consultFee,
+            AVG_RATING as avgRating,
+            REVIEW_CNT as reviewCnt,
+            APPROVE_STATUS as approveStatus,
+            TO_CHAR(APPROVED_AT, 'YYYY-MM-DD') as approvedAt,
+            APPROVED_BY as approvedBy,
+            TO_CHAR(CREATED_AT, 'YYYY-MM-DD') as createdAt,
+            TO_CHAR(UPDATED_AT, 'YYYY-MM-DD') as updatedAt
+        FROM TB_LAWYER 
+        ORDER BY 
+            CASE WHEN APPROVE_STATUS = 'APPROVED' THEN 1 ELSE 2 END, 
+            CREATED_AT DESC
     </select>
 
-    <update id="updateApproveStatus" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        UPDATE TB_LAWYER
-        SET APPROVE_STATUS = #{approveStatus}
+    <select id="selectLawyerById" parameterType="long" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+        SELECT 
+            LAWYER_ID as lawyerId,
+            MEMBER_ID as memberId,
+            LICENSE_NO as licenseNo,
+            SPECIALTY,
+            INTRO,
+            CAREER,
+            OFFICE_NAME as officeName,
+            OFFICE_ADDR as officeAddr,
+            CONSULT_FEE as consultFee,
+            AVG_RATING as avgRating,
+            REVIEW_CNT as reviewCnt,
+            APPROVE_STATUS as approveStatus,
+            TO_CHAR(APPROVED_AT, 'YYYY-MM-DD') as approvedAt,
+            APPROVED_BY as approvedBy,
+            TO_CHAR(CREATED_AT, 'YYYY-MM-DD') as createdAt,
+            TO_CHAR(UPDATED_AT, 'YYYY-MM-DD') as updatedAt
+        FROM TB_LAWYER 
         WHERE LAWYER_ID = #{lawyerId}
-    </update>
+    </select>
+
+    <select id="selectLawyersBySpecialty" parameterType="string" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+        SELECT 
+            LAWYER_ID as lawyerId,
+            MEMBER_ID as memberId,
+            LICENSE_NO as licenseNo,
+            SPECIALTY,
+            OFFICE_NAME as officeName,
+            CONSULT_FEE as consultFee
+        FROM TB_LAWYER 
+        WHERE SPECIALTY LIKE '%' || #{specialty} || '%'
+          AND APPROVE_STATUS = 'APPROVED'
+        ORDER BY AVG_RATING DESC
+    </select>
 
 </mapper>
