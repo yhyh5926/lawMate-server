@@ -4,15 +4,15 @@ import lombok.Data;
 
 @Data
 public class PostVo {
-	private int post_id;
-	private int member_id;
-	private String case_type;
+	private int postId;
+	private int memberId;
+	private String caseType;
 	private String title;
 	private String content;
-	private int view_cnt;
-	private int comment_cnt;
+	private int viewCnt;
+	private int commentCnt;
 	private String status;
-	private String created_at;
-	private String updated_at;
+	private String createdAt;
+	private String updatedAt;
 	private String name;
 }

@@ -20,5 +20,6 @@
 	        m.name
 		FROM tb_post p
 		JOIN tb_member m ON p.member_id = m.member_id
+		ORDER BY p.post_id DESC
 	</select> 
 </mapper>
