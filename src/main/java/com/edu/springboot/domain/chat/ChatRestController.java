@@ -87,3 +87,4 @@ public class ChatRestController {
         return jwtUtil.getMemberNo(bearer.replace("Bearer ", ""));
     }
 }
+

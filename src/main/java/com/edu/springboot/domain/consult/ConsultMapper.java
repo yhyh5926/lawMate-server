@@ -13,30 +13,23 @@ public interface ConsultMapper {
     int insertConsult(ConsultVO vo);
 
     /** 예약 단건 조회 */
-    ConsultVO selectConsultByNo(@Param("consultNo") Long consultNo);
+    ConsultVO selectConsultByNo(@Param("consultId") Long consultId);
 
     /** 회원 예약 전체 목록 */
-    List<ConsultVO> selectConsultListByMember(@Param("memberNo") Long memberNo);
+    List<ConsultVO> selectConsultListByMember(@Param("memberId") Long memberId);
 
     /** 회원 예약 목록 - 상태 필터 */
     List<ConsultVO> selectConsultListByMemberAndStatus(
-            @Param("memberNo") Long memberNo,
+            @Param("memberId") Long memberId,
             @Param("status")   String status);
 
     /** 변호사 예약 목록 */
-    List<ConsultVO> selectConsultListByLawyer(@Param("lawyerNo") Long lawyerNo);
+    List<ConsultVO> selectConsultListByLawyer(@Param("lawyerId") Long lawyerId);
 
-    /** 특정 날짜 예약된 시간 목록 (가용 시간 계산용) */
-    List<String> selectBookedTimes(@Param("lawyerNo")    Long lawyerNo,
-                                    @Param("consultDate") String consultDate);
+    /** 특정 변호사 예약된 날짜 목록 (가용 날짜 계산용) */
+    List<String> selectBookedDates(@Param("lawyerId") Long lawyerId);
 
     /** 상태 변경 */
-    int updateStatus(@Param("consultNo") Long consultNo,
+    int updateStatus(@Param("consultId") Long consultId,
                      @Param("status")    String status);
-
-    /** 결제 완료 처리 */
-    int updatePaidYn(@Param("consultNo") Long consultNo);
-
-    /** 후기 작성 완료 처리 */
-    int updateReviewedYn(@Param("consultNo") Long consultNo);
 }

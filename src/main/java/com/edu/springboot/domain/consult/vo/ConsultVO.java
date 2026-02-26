@@ -14,15 +14,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ConsultVO {
-
-    private Long          consultNo;
-    private Long          memberNo;
-    private Long          lawyerNo;
-    private String        consultDate;   // yyyy-MM-dd
-    private String        consultTime;   // HH:mm
-    private int           duration;      // 분
-    private String        memo;
-
+    private Long          consultId;     // CONSULT_ID
+    private Long          memberId;      // MEMBER_ID
+    private Long          lawyerId;      // LAWYER_ID
+    private Long          caseId;        // CASE_ID
+    private String        consultDate;   // CONSULT_DATE (yyyy-MM-dd)
+    private int           durationMin;   // DURATION_MIN
+    private String        note;          // NOTE
     /**
      * PENDING   : 예약 대기
      * CONFIRMED : 확정
@@ -30,8 +28,6 @@ public class ConsultVO {
      * CANCELLED : 취소
      */
     private String        status;
-    private String        paidYn;        // Y/N
-    private String        reviewedYn;    // Y/N
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

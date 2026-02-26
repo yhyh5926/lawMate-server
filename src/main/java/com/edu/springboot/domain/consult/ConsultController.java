@@ -1,6 +1,6 @@
 package com.edu.springboot.domain.consult;
 
-import java.time.LocalTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,15 +36,14 @@ public class ConsultController {
             @RequestHeader("Authorization") String bearer,
             @RequestBody ConsultVO vo) {
 
-        Long memberNo = getMemberNo(bearer);
-        vo.setMemberNo(memberNo);
+        Long memberId = getMemberId(bearer);
+        vo.setMemberId(memberId);
 
-        // 중복 시간 체크
-        List<String> booked = consultMapper.selectBookedTimes(
-                vo.getLawyerNo(), vo.getConsultDate());
-        if (booked.contains(vo.getConsultTime())) {
+        // 중복 날짜 체크
+        List<String> booked = consultMapper.selectBookedDates(vo.getLawyerId());
+        if (booked.contains(vo.getConsultDate())) {
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.fail("이미 예약된 시간입니다."));
+                    .body(ApiResponse.fail("이미 예약된 날짜입니다."));
         }
 
         consultMapper.insertConsult(vo);
@@ -55,22 +54,22 @@ public class ConsultController {
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<ConsultVO>>> myList(
             @RequestHeader("Authorization") String bearer,
-            @RequestParam(required = false) String status) {
+            @RequestParam(value = "status", required = false) String status) {
 
-        Long memberNo = getMemberNo(bearer);
+        Long memberId = getMemberId(bearer);
         List<ConsultVO> list = (status == null || status.isBlank())
-                ? consultMapper.selectConsultListByMember(memberNo)
-                : consultMapper.selectConsultListByMemberAndStatus(memberNo, status);
+                ? consultMapper.selectConsultListByMember(memberId)
+                : consultMapper.selectConsultListByMemberAndStatus(memberId, status);
 
         return ResponseEntity.ok(ApiResponse.success(list));
     }
 
     /** 예약 단건 조회 */
-    @GetMapping("/{consultNo}")
+    @GetMapping("/{consultId}")
     public ResponseEntity<ApiResponse<ConsultVO>> detail(
-            @PathVariable Long consultNo) {
+            @PathVariable Long consultId) {
 
-        ConsultVO vo = consultMapper.selectConsultByNo(consultNo);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
         if (vo == null) {
             return ResponseEntity.notFound().build();
         }
@@ -78,18 +77,18 @@ public class ConsultController {
     }
 
     /** 예약 취소 */
-    @PutMapping("/{consultNo}/cancel")
+    @PutMapping("/{consultId}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancel(
-            @PathVariable Long consultNo,
+            @PathVariable Long consultId,
             @RequestHeader("Authorization") String bearer) {
 
-        Long memberNo = getMemberNo(bearer);
-        ConsultVO vo  = consultMapper.selectConsultByNo(consultNo);
+        Long memberId = getMemberId(bearer);
+        ConsultVO vo  = consultMapper.selectConsultByNo(consultId);
 
         if (vo == null) {
             return ResponseEntity.notFound().build();
         }
-        if (!vo.getMemberNo().equals(memberNo)) {
+        if (!vo.getMemberId().equals(memberId)) {
             return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
         }
         if ("DONE".equals(vo.getStatus()) || "CANCELLED".equals(vo.getStatus())) {
@@ -97,31 +96,30 @@ public class ConsultController {
                     .body(ApiResponse.fail("취소할 수 없는 상태입니다."));
         }
 
-        consultMapper.updateStatus(consultNo, "CANCELLED");
+        consultMapper.updateStatus(consultId, "CANCELLED");
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    /** 변호사 가용 시간 조회 */
+    /** 변호사 가용 날짜 조회 (오늘부터 30일) */
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<String>>> available(
-            @RequestParam Long   lawyerNo,
-            @RequestParam String date) {
+            @RequestParam(value = "lawyerId") Long lawyerId) {
 
-        List<String> booked    = consultMapper.selectBookedTimes(lawyerNo, date);
+        List<String> booked    = consultMapper.selectBookedDates(lawyerId);
         List<String> available = new ArrayList<>();
-        DateTimeFormatter fmt  = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter fmt  = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        for (int h = 9; h <= 17; h++) {
-            String slot = LocalTime.of(h, 0).format(fmt);
-            if (!booked.contains(slot)) {
-                available.add(slot);
+        for (int i = 0; i < 30; i++) {
+            String date = LocalDate.now().plusDays(i).format(fmt);
+            if (!booked.contains(date)) {
+                available.add(date);
             }
         }
         return ResponseEntity.ok(ApiResponse.success(available));
     }
 
     // ── 헬퍼 ────────────────────────────────────────────────
-    private Long getMemberNo(String bearer) {
+    private Long getMemberId(String bearer) {
         return jwtUtil.getMemberNo(bearer.replace("Bearer ", ""));
     }
 }
