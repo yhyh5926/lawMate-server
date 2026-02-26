@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!-- 
+  파일위치: src/main/resources/mapper/LawyerMapper.xml
+  기능전체: 전문회원(TB_LAWYER) 정보 및 관리자 승인 처리를 위한 SQL입니다.
+  팀원들의 프로필 조회 로직을 유지하면서 은혁님의 승인 관리 기능을 통합했습니다.
+-->
 <mapper namespace="com.edu.springboot.domain.lawyer.LawyerMapper">
 
+    <!-- 팀원 로직 유지: 승인된 변호사 전체 목록 (평점순) -->
     <select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
-            m.MEMBER_ID as memberId,
-            m.NAME as name,
-            m.EMAIL as email,
-            m.PHONE as phone,
-            l.LAWYER_ID as lawyerId,
-            l.LICENSE_NO as licenseNo,
-            l.SPECIALTY as specialty,
-            l.INTRO as intro,
-            l.OFFICE_NAME as officeName,
-            l.CONSULT_FEE as consultFee,
-            l.AVG_RATING as avgRating,
-            l.REVIEW_CNT as reviewCnt,
-            a.ATTACH_ID as attachId,
-            a.SAVE_PATH as savePath,
-            a.ORIG_NAME as origName
+            m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
+            l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
+            l.INTRO as intro, l.OFFICE_NAME as officeName, l.CONSULT_FEE as consultFee,
+            l.AVG_RATING as avgRating, l.REVIEW_CNT as reviewCnt,
+            a.ATTACH_ID as attachId, a.SAVE_PATH as savePath, a.ORIG_NAME as origName
         FROM TB_MEMBER m
         INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID  AND a.REF_TYPE = 'LAWYER'
-        WHERE l.APPROVE_STATUS = 'APPROVED'
-          AND m.STATUS = 'ACTIVE'
+        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
+        WHERE l.APPROVE_STATUS = 'APPROVED' AND m.STATUS = 'ACTIVE'
         ORDER BY l.AVG_RATING DESC, l.REVIEW_CNT DESC
     </select>
 
+    <!-- 팀원 로직 유지: 변호사 상세 정보 조회 -->
     <select id="selectLawyerById" parameterType="long" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
-            m.MEMBER_ID as memberId,
-            m.NAME as name,
-            m.EMAIL as email,
-            m.PHONE as phone,
-            l.LAWYER_ID as lawyerId,
-            l.LICENSE_NO as licenseNo,
-            l.SPECIALTY as specialty,
-            l.INTRO as intro,
-            l.CAREER as career,
-            l.OFFICE_NAME as officeName,
-            l.OFFICE_ADDR as officeAddr,
-            l.CONSULT_FEE as consultFee,
-            l.AVG_RATING as avgRating,
-            l.REVIEW_CNT as reviewCnt,
-            a.ATTACH_ID as attachId,
-            a.SAVE_PATH as savePath,
-            a.ORIG_NAME as origName
+            m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
+            l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
+            l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
+            l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
+            l.AVG_RATING as avgRating, l.REVIEW_CNT as reviewCnt,
+            a.ATTACH_ID as attachId, a.SAVE_PATH as savePath
         FROM TB_MEMBER m
         INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID  AND a.REF_TYPE = 'LAWYER'
+        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
         WHERE l.LAWYER_ID = #{lawyerId}
     </select>
+
+    <!-- 은혁 파트 추가: 승인 대기 중인 변호사 목록 (AdminController 오류 해결) -->
+    <select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+        SELECT 
+            m.NAME as name, l.* FROM TB_MEMBER m
+        JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        WHERE l.APPROVE_STATUS = 'PENDING'
+        ORDER BY l.CREATED_AT ASC
+    </select>
+
+    <!-- 은혁 파트 추가: 전문회원 승인 상태 업데이트 (AdminController 오류 해결) -->
+    <update id="updateApproveStatus" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+        UPDATE TB_LAWYER 
+        SET APPROVE_STATUS = #{approveStatus}, UPDATED_AT = SYSDATE 
+        WHERE LAWYER_ID = #{lawyerId}
+    </update>
 
 </mapper>

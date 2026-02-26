@@ -1,29 +1,35 @@
+/**
+ * 파일위치: src/main/java/com/edu/springboot/domain/cases/CaseController.java
+ * 기능전체: 사건 등록, 목록 조회, 상태 변경 등 사건 관리와 관련된 HTTP 요청을 처리합니다.
+ */
 package com.edu.springboot.domain.cases;
 
-import com.edu.springboot.domain.cases.vo.CaseVO;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
-import java.util.List;
-import java.util.Map;
 
 @RestController
+@RequestMapping("/api/cases")
 @RequiredArgsConstructor
 public class CaseController {
 
     private final CaseService caseService;
 
-    // 마이페이지: 의뢰인 사건 목록
-    @GetMapping("/mypage/case/list.do")
-    public ResponseEntity<?> getMyCaseList(@RequestParam Long memberId) {
-        List<CaseVO> caseList = caseService.getMyCases(memberId);
-        return ResponseEntity.ok(Map.of("message", "사건 목록 조회 성공", "data", caseList));
+    @PostConstruct
+    public void init() {
+        System.out.println("✅ [domain/cases] 사건 관리 모듈이 활성화되었습니다.");
     }
 
-    // 마이페이지: 사건 상세 내역
-    @GetMapping("/mypage/case/detail.do")
+    // 내 사건 목록 조회
+    @GetMapping("/list.do")
+    public ResponseEntity<?> getMyCaseList(@RequestParam Long memberId) {
+        return ResponseEntity.ok(caseService.getCaseListByMember(memberId));
+    }
+
+    // 사건 상세 조회
+    @GetMapping("/detail.do")
     public ResponseEntity<?> getCaseDetail(@RequestParam Long caseId) {
-        CaseVO caseDetail = caseService.getCaseDetail(caseId);
-        return ResponseEntity.ok(Map.of("message", "사건 상세 조회 성공", "data", caseDetail));
+        return ResponseEntity.ok(caseService.getCaseDetail(caseId));
     }
 }

@@ -1,3 +1,7 @@
+/**
+ * 파일위치: src/main/java/com/edu/springboot/config/SecurityConfig.java
+ * 기능전체: Spring Security 설정을 통해 JWT 인증 필터를 등록하고 페이지별 접근 권한(ADMIN/USER 등)을 제어합니다.
+ */
 package com.edu.springboot.config;
 
 import org.springframework.context.annotation.Bean;
@@ -30,26 +34,28 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        // 임시 비밀번호 생성을 막기 위해 빈(Empty) 유저 매니저를 등록합니다.
         return new InMemoryUserDetailsManager();
     }
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    	System.out.println("✅ SecurityConfig: 필터 체인 설정 시작!");
+        // 기존 print문 유지 및 보안 설정
+        System.out.println("✅ [config] Security 및 JWT 필터 체인 설정이 완료되었습니다.");
+        
         http
             .csrf(csrf -> csrf.disable())
-            // CORS 설정은 WebConfig를 따르도록 시큐리티 필터에서 기본 허용
             .cors(cors -> cors.configure(http)) 
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 💡 판례 관련 API(/api/**)를 가장 먼저 전면 허용합니다!
-                .requestMatchers("/", "/error", "/api/**", "/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
+                // 은혁 파트: 공개 경로 허용
+                .requestMatchers("/", "/error", "/api/**", "/member/login.do", "/member/join/**", 
+                               "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
+                // 은혁 파트: 관리자 권한 설정
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        
+
         return http.build();
     }
 }

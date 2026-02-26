@@ -1,30 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+  파일위치: src/main/resources/mapper/MemberMapper.xml
+  기능전체: 회원(TB_MEMBER) 가입, 로그인, 정보수정 SQL입니다.
+  팀원들의 PK 생성 로직(useGeneratedKeys)을 유지하며 은혁님의 회원 관리 기능을 포함했습니다.
+-->
 <mapper namespace="com.edu.springboot.domain.member.MemberMapper">
 
+    <!-- 팀원 로직 유지: 회원가입 (PK 자동 생성 방식) -->
     <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO" useGeneratedKeys="true" keyProperty="memberId" keyColumn="MEMBER_ID">
-        INSERT INTO TB_MEMBER (MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE, NAME, PHONE, EMAIL, PHONE_VERIFIED)
-        VALUES (SEQ_MEMBER.NEXTVAL, #{loginId}, #{password}, #{memberType}, #{name}, #{phone}, #{email}, 'Y')
+        INSERT INTO TB_MEMBER (MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE, NAME, PHONE, EMAIL, PHONE_VERIFIED, STATUS)
+        VALUES (SEQ_MEMBER.NEXTVAL, #{loginId}, #{password}, #{memberType}, #{name}, #{phone}, #{email}, 'Y', 'ACTIVE')
     </insert>
 
+    <!-- 팀원 로직 유지: 아이디 중복 체크 -->
     <select id="checkLoginId" resultType="int">
         SELECT COUNT(*) FROM TB_MEMBER WHERE LOGIN_ID = #{loginId}
     </select>
 
+    <!-- 은혁 파트: 로그인 정보 조회 -->
     <select id="findByLoginId" resultType="com.edu.springboot.domain.member.vo.MemberVO">
         SELECT * FROM TB_MEMBER WHERE LOGIN_ID = #{loginId} AND STATUS != 'WITHDRAWN'
     </select>
 
+    <!-- 은혁 파트: 회원 정보 수정 -->
     <update id="updateMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
         UPDATE TB_MEMBER
-        SET PASSWORD = #{password}, EMAIL = #{email}, PHONE = #{phone}, UPDATED_AT = SYSDATE
+        SET EMAIL = #{email}, PHONE = #{phone}, UPDATED_AT = SYSDATE
         WHERE MEMBER_ID = #{memberId}
     </update>
 
-    <update id="withdrawMember" parameterType="Long">
-        UPDATE TB_MEMBER 
-        SET STATUS = 'WITHDRAWN', UPDATED_AT = SYSDATE 
-        WHERE MEMBER_ID = #{memberId}
-    </update>
+    <!-- 은혁 파트: 아이디 찾기 -->
+    <select id="findLoginIdByNameAndPhone" resultType="string">
+        SELECT LOGIN_ID FROM TB_MEMBER WHERE NAME = #{name} AND PHONE = #{phone} AND STATUS = 'ACTIVE'
+    </select>
 
 </mapper>
