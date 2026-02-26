@@ -1,6 +1,7 @@
 package com.edu.springboot.domain.chat;
 
-import org.osgi.annotation.bundle.Header;
+import org.springframework.messaging.handler.annotation.Header; // 수정됨
+// import org.osgi.annotation.bundle.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;

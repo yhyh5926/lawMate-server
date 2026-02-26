@@ -41,4 +41,18 @@ public class JwtUtil {
             return false;
         }
     }
+
+    // 수정됨: 컨트롤러에서 토큰을 해석해 회원 번호(Long)를 꺼내기 위해 추가된 메서드
+    public Long getMemberNo(String token) {
+        try {
+            Claims claims = extractClaims(token);
+            // Subject에 저장된 값을 Long 타입으로 변환하여 반환
+            return Long.valueOf(claims.getSubject());
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("토큰의 Subject가 숫자가 아닙니다.", e);
+        } catch (Exception e) {
+            throw new RuntimeException("토큰에서 회원 번호를 추출할 수 없습니다.", e);
+        }
+    }
+    // 원본: (해당 메서드가 아예 존재하지 않았음)
 }

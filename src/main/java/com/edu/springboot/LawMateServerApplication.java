@@ -1,37 +1,27 @@
 package com.edu.springboot;
 
-<<<<<<< HEAD
 import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
-=======
-import org.mybatis.spring.annotation.MapperScan; // 1. 이 줄 추가
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
-<<<<<<< HEAD
 import com.edu.springboot.domain.precedent.PrecedentMapper;
 import com.edu.springboot.domain.precedent.PrecedentVO;
 
 @MapperScan("com.edu.springboot.domain")
 @SpringBootApplication(exclude = { UserDetailsServiceAutoConfiguration.class })
-=======
-@SpringBootApplication
-@MapperScan("com.edu.springboot.domain") // 2. 이 줄 추가 (domain 폴더 안의 모든 매퍼 검색)
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 public class LawMateServerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(LawMateServerApplication.class, args);
 	}
 
-<<<<<<< HEAD
 	// 🚀 서버 기동 즉시 DB 조회를 테스트하는 코드입니다.
 	@Bean
 	public CommandLineRunner testConnection(PrecedentMapper mapper) {
@@ -60,6 +50,3 @@ public class LawMateServerApplication {
 		};
 	}
 }
-=======
-}
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
