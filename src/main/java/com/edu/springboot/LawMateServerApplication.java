@@ -33,7 +33,8 @@ public class LawMateServerApplication {
         SpringApplication.run(LawMateServerApplication.class, args);
     }
 
-    // 🚀 서버 기동 즉시 DB 조회를 테스트하는 코드
+    // 🚀 서버 기동 즉시 DB 조회를 테스트하는 코드 
+    //ㅁㅇㅁㅁㅇ
     @Bean
     public CommandLineRunner testConnection(PrecedentMapper mapper) {
         return args -> {
