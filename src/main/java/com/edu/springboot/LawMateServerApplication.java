@@ -20,7 +20,6 @@ public class LawMateServerApplication {
         SpringApplication.run(LawMateServerApplication.class, args);
     }
 
-<<<<<<< HEAD
 	// 🚀 서버 기동 즉시 DB 조회를 테스트하는 코드입니다.
 	@Bean
 	public CommandLineRunner testConnection(PrecedentMapper mapper) {
@@ -48,29 +47,4 @@ public class LawMateServerApplication {
 			System.out.println("=".repeat(50) + "\n");
 		};
 	}
-=======
-    @Bean
-    public CommandLineRunner testConnection(PrecedentMapper mapper) {
-        return args -> {
-            System.out.println("\n" + "=".repeat(50));
-            System.out.println("🔍 [DB Debugging] 판례 데이터 조회 테스트를 시작합니다.");
-            try {
-                List<PrecedentVO> list = mapper.getPrecedentList();
-                if (list != null) {
-                    System.out.println("✅ [성공] DB 연결 및 조회에 성공했습니다!");
-                    System.out.println("📊 [결과] 현재 DB에 저장된 판례 수: " + list.size() + "건");
-                    if (!list.isEmpty()) {
-                        System.out.println("📋 [샘플] 첫 번째 데이터: " + list.get(0));
-                    } else {
-                        System.out.println("⚠️ [경고] 연결은 됐으나 데이터가 0건입니다.");
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("❌ [실패] 데이터 조회 중 오류가 발생했습니다.");
-                System.err.println("👉 에러 메시지: " + e.getMessage());
-            }
-            System.out.println("=".repeat(50) + "\n");
-        };
-    }
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 }
