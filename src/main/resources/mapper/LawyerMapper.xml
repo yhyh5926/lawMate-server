@@ -5,62 +5,52 @@
 
     <select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
-            LAWYER_ID as lawyerId,
-            MEMBER_ID as memberId,
-            LICENSE_NO as licenseNo,
-            SPECIALTY,
-            INTRO,
-            CAREER,
-            OFFICE_NAME as officeName,
-            OFFICE_ADDR as officeAddr,
-            CONSULT_FEE as consultFee,
-            AVG_RATING as avgRating,
-            REVIEW_CNT as reviewCnt,
-            APPROVE_STATUS as approveStatus,
-            TO_CHAR(APPROVED_AT, 'YYYY-MM-DD') as approvedAt,
-            APPROVED_BY as approvedBy,
-            TO_CHAR(CREATED_AT, 'YYYY-MM-DD') as createdAt,
-            TO_CHAR(UPDATED_AT, 'YYYY-MM-DD') as updatedAt
-        FROM TB_LAWYER 
-        ORDER BY 
-            CASE WHEN APPROVE_STATUS = 'APPROVED' THEN 1 ELSE 2 END, 
-            CREATED_AT DESC
+            m.MEMBER_ID as memberId,
+            m.NAME as name,
+            m.EMAIL as email,
+            m.PHONE as phone,
+            l.LAWYER_ID as lawyerId,
+            l.LICENSE_NO as licenseNo,
+            l.SPECIALTY as specialty,
+            l.INTRO as intro,
+            l.OFFICE_NAME as officeName,
+            l.CONSULT_FEE as consultFee,
+            l.AVG_RATING as avgRating,
+            l.REVIEW_CNT as reviewCnt,
+            a.ATTACH_ID as attachId,
+            a.SAVE_PATH as savePath,
+            a.ORIG_NAME as origName
+        FROM TB_MEMBER m
+        INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID  AND a.REF_TYPE = 'LAWYER'
+        WHERE l.APPROVE_STATUS = 'APPROVED'
+          AND m.STATUS = 'ACTIVE'
+        ORDER BY l.AVG_RATING DESC, l.REVIEW_CNT DESC
     </select>
 
     <select id="selectLawyerById" parameterType="long" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
-            LAWYER_ID as lawyerId,
-            MEMBER_ID as memberId,
-            LICENSE_NO as licenseNo,
-            SPECIALTY,
-            INTRO,
-            CAREER,
-            OFFICE_NAME as officeName,
-            OFFICE_ADDR as officeAddr,
-            CONSULT_FEE as consultFee,
-            AVG_RATING as avgRating,
-            REVIEW_CNT as reviewCnt,
-            APPROVE_STATUS as approveStatus,
-            TO_CHAR(APPROVED_AT, 'YYYY-MM-DD') as approvedAt,
-            APPROVED_BY as approvedBy,
-            TO_CHAR(CREATED_AT, 'YYYY-MM-DD') as createdAt,
-            TO_CHAR(UPDATED_AT, 'YYYY-MM-DD') as updatedAt
-        FROM TB_LAWYER 
-        WHERE LAWYER_ID = #{lawyerId}
-    </select>
-
-    <select id="selectLawyersBySpecialty" parameterType="string" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            LAWYER_ID as lawyerId,
-            MEMBER_ID as memberId,
-            LICENSE_NO as licenseNo,
-            SPECIALTY,
-            OFFICE_NAME as officeName,
-            CONSULT_FEE as consultFee
-        FROM TB_LAWYER 
-        WHERE SPECIALTY LIKE '%' || #{specialty} || '%'
-          AND APPROVE_STATUS = 'APPROVED'
-        ORDER BY AVG_RATING DESC
+            m.MEMBER_ID as memberId,
+            m.NAME as name,
+            m.EMAIL as email,
+            m.PHONE as phone,
+            l.LAWYER_ID as lawyerId,
+            l.LICENSE_NO as licenseNo,
+            l.SPECIALTY as specialty,
+            l.INTRO as intro,
+            l.CAREER as career,
+            l.OFFICE_NAME as officeName,
+            l.OFFICE_ADDR as officeAddr,
+            l.CONSULT_FEE as consultFee,
+            l.AVG_RATING as avgRating,
+            l.REVIEW_CNT as reviewCnt,
+            a.ATTACH_ID as attachId,
+            a.SAVE_PATH as savePath,
+            a.ORIG_NAME as origName
+        FROM TB_MEMBER m
+        INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID  AND a.REF_TYPE = 'LAWYER'
+        WHERE l.LAWYER_ID = #{lawyerId}
     </select>
 
 </mapper>
