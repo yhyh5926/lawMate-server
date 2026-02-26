@@ -18,9 +18,9 @@ public class PrecedentController {
         return precedentService.selectAll();
     }
 
-    // 판례 상세 반환: GET /api/precedents/{id}
+    // 💡 판례 상세 반환: GET /api/precedents/{id}
     @GetMapping("/{id}")
-    public PrecedentVO detail(@PathVariable Long id) {
+    public PrecedentVO detail(@PathVariable("id") Long id) { // 👈 ("id")를 명시적으로 추가.
         return precedentService.selectOne(id);
     }
 }
