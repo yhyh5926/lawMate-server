@@ -23,7 +23,7 @@ public class PostController {
 	}
 	
 	@GetMapping("/detail/{postId}")
-	public PostVo qnaDetail(@PathVariable int postId){
+	public PostVo qnaDetail(@PathVariable("postId") int postId){
 		return dao.detail(postId);
 	}
 }
