@@ -25,7 +25,7 @@ public class MemberController {
         System.out.println("✅ [MemberController] /api/member API 경로가 준비되었습니다.");
     }
 
-    // 아이디 중복 체크 API
+    // 아이디 중복 체크 APIr
     @GetMapping("/check-id.do")
     public ResponseEntity<?> checkId(@RequestParam String loginId) {
         boolean available = memberService.isLoginIdAvailable(loginId);
