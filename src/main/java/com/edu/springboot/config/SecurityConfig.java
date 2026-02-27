@@ -1,7 +1,3 @@
-/**
- * 파일 위치: src/main/java/com/edu/springboot/config/SecurityConfig.java
- * 수정 이유: 회원가입 시 발생하는 403 Forbidden 및 로그인 401 에러 해결을 위해 권한 설정을 최적화했습니다.
- */
 package com.edu.springboot.config;
 
 import com.edu.springboot.common.jwt.JwtFilter;
@@ -40,20 +36,20 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (JWT 사용 시 필수)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-<<<<<<< HEAD
-                // 💡 .do 확장자나 경로 패턴에 상관없이 /api/member/로 시작하는 모든 인증 관련 경로는 허용합니다.
-                .requestMatchers("/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-=======
-                // 은혁 파트: 공개 경로 허용
-                .requestMatchers("/", "/error", "/api/**", "/uploads/**","/member/login.do", "/member/join/**", 
-                               "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
-                // 은혁 파트: 관리자 권한 설정
-                .requestMatchers("/admin/**").hasRole("ADMIN")
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
+                // 1. 누구나 접근 가능한 경로 (로그인, 회원가입, 메인 등)
+                .requestMatchers(
+                    "/", "/error", "/api/**", "/uploads/**", "/main.do",
+                    "/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do",
+                    "/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**"
+                ).permitAll()
+                
+                // 2. 관리자 권한 설정
+                .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                
+                // 3. 그 외 나머지는 인증 필요
                 .anyRequest().authenticated()
             )
-            // 💡 JWT 필터를 필터 체인에 추가
+            // JWT 필터를 필터 체인에 추가
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
