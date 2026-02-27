@@ -1,24 +1,21 @@
-/**
- * 파일위치: src/main/java/com/edu/springboot/config/SecurityConfig.java
- * 기능전체: Spring Security 설정을 통해 JWT 인증 필터를 등록하고 페이지별 접근 권한(ADMIN/USER 등)을 제어합니다.
- */
 package com.edu.springboot.config;
 
+import com.edu.springboot.common.jwt.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.edu.springboot.common.jwt.JwtFilter;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -33,29 +30,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager();
-    }
-    
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // 기존 print문 유지 및 보안 설정
-        System.out.println("✅ [config] Security 및 JWT 필터 체인 설정이 완료되었습니다.");
-        
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configure(http)) 
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 은혁 파트: 공개 경로 허용
-                .requestMatchers("/", "/error", "/api/**", "/member/login.do", "/member/join/**", 
-                               "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
-                // 은혁 파트: 관리자 권한 설정
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                // 💡 핵심: 로그인, 아이디중복체크, 회원가입 경로는 인증 없이 허용해야 401 에러가 안 납니다.
+                .requestMatchers("/api/member/login.do", "/api/member/check-id.do", "/api/member/join/form.do").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
