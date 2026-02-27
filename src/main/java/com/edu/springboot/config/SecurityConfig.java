@@ -48,7 +48,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // 은혁 파트: 공개 경로 허용
-                .requestMatchers("/", "/error", "/api/**", "/member/login.do", "/member/join/**", 
+                .requestMatchers("/", "/error", "/api/**", "/uploads/**","/member/login.do", "/member/join/**", 
                                "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
                 // 은혁 파트: 관리자 권한 설정
                 .requestMatchers("/admin/**").hasRole("ADMIN")
