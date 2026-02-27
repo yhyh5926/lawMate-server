@@ -43,4 +43,23 @@
 		JOIN tb_member m ON p.member_id = m.member_id
 		WHERE p.post_id = #{postId}
 	</select>
+	
+	<select id="commentList"
+		parameterType="int"
+		resultType="com.edu.springboot.domain.community.vo.CommentVo">
+		
+		SELECT
+	        c.comment_id,
+			c.post_id,
+	        c.member_id,
+	        c.parent_id,
+	        c.content,
+	        c.status,
+	        c.created_at,
+	        c.updated_at,
+	        m.name
+		FROM tb_comment c
+		JOIN tb_member m ON c.member_id = m.member_id
+		WHERE c.post_id = #{postId}
+	</select>
 </mapper>
