@@ -32,9 +32,11 @@
             PHONE_VERIFIED, STATUS, SAVE_ID_YN, CREATED_AT, UPDATED_AT
         )
         VALUES (
-            #{memberId}, #{loginId}, #{password}, #{memberType}, #{name}, #{phone}, #{email}, 
-            #{phoneVerified}, #{status}, #{saveIdYn}, SYSDATE, SYSDATE
-        )
+		    #{memberId}, #{loginId}, #{password}, #{memberType}, #{name}, #{phone}, 
+		    #{email, jdbcType=VARCHAR},
+		    #{phoneVerified, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR}, 
+		    #{saveIdYn, jdbcType=VARCHAR}, SYSDATE, SYSDATE
+		)
     </insert>
 
     <!-- 💡 resultMap="MemberResultMap"을 반드시 써야 정보를 제대로 가져옵니다. -->
