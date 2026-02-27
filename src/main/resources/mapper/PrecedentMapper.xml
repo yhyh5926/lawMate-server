@@ -2,40 +2,38 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.edu.springboot.domain.precedent.PrecedentMapper">
+<mapper
+	namespace="com.edu.springboot.domain.precedent.PrecedentMapper">
 
-    <select id="getPrecedentList" resultType="com.edu.springboot.domain.precedent.PrecedentVO">
-        SELECT 
-            PREC_ID as precId,
-            CASE_NO as caseNo,
-            COURT,
-            TO_CHAR(JUDGE_DATE, 'YYYY-MM-DD') as judgeDate,
-            CASE_TYPE as caseType,
-            TITLE,
-            ONE_LINE as oneLine,
-            JUDGMENT,
-            AI_SUMMARY as aiSummary,
-            KEYWORD_CSV as keywordCsv,
-            CREATED_AT as createdAt
-        FROM TB_PRECEDENT 
-        ORDER BY JUDGE_DATE DESC
-    </select>
+	<select id="getPrecedentList"
+		resultType="com.edu.springboot.domain.precedent.PrecedentVO">
+		SELECT * FROM (
+		SELECT a.*, ROWNUM rnum FROM (
+		SELECT * FROM TB_PRECEDENT ORDER BY PREC_ID DESC
+		) a WHERE ROWNUM &lt;= #{end}
+		) WHERE rnum &gt;= #{start}
+	</select>
 
-    <select id="getPrecedentDetail" parameterType="long" resultType="com.edu.springboot.domain.precedent.PrecedentVO">
-        SELECT 
-            PREC_ID as precId,
-            CASE_NO as caseNo,
-            COURT,
-            TO_CHAR(JUDGE_DATE, 'YYYY-MM-DD') as judgeDate,
-            CASE_TYPE as caseType,
-            TITLE,
-            ONE_LINE as oneLine,
-            JUDGMENT,
-            AI_SUMMARY as aiSummary,
-            KEYWORD_CSV as keywordCsv,
-            CREATED_AT as createdAt
-        FROM TB_PRECEDENT 
-        WHERE PREC_ID = #{precId}
-    </select>
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM TB_PRECEDENT
+	</select>
+
+	<select id="getPrecedentDetail" parameterType="long"
+		resultType="com.edu.springboot.domain.precedent.PrecedentVO">
+		SELECT
+		PREC_ID as precId,
+		CASE_NO as caseNo,
+		COURT,
+		TO_CHAR(JUDGE_DATE, 'YYYY-MM-DD') as judgeDate,
+		CASE_TYPE as caseType,
+		TITLE,
+		ONE_LINE as oneLine,
+		JUDGMENT,
+		AI_SUMMARY as aiSummary,
+		KEYWORD_CSV as keywordCsv,
+		CREATED_AT as createdAt
+		FROM TB_PRECEDENT
+		WHERE PREC_ID = #{precId}
+	</select>
 
 </mapper>

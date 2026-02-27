@@ -29,15 +29,8 @@ public class LawMateServerApplication {
             System.out.println("🚀 [System Total Check] DB 연동 및 데이터 매핑 검증");
             System.out.println("=".repeat(60));
 
-            // 1. 판례 데이터 체크
-            try {
-                int pCount = pMapper.getPrecedentList().size();
-                System.out.println("✅ [판례 데이터] 조회 성공 (총 " + pCount + "건)");
-            } catch (Exception e) {
-                System.err.println("❌ [판례 데이터] 조회 실패: " + e.getMessage());
-            }
-
-            // 2. 변호사 JOIN 데이터 상세 체크
+      
+            // 1. 변호사 JOIN 데이터 상세 체크
             try {
                 List<LawyerVO> lawyers = lMapper.selectAllLawyers();
                 System.out.println("✅ [변호사 데이터] 조회 성공 (총 " + lawyers.size() + "건)");
