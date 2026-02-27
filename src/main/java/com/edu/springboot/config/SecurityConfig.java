@@ -1,3 +1,7 @@
+/**
+ * 파일 위치: src/main/java/com/edu/springboot/config/SecurityConfig.java
+ * 수정 이유: 회원가입 시 발생하는 403 Forbidden 및 로그인 401 에러 해결을 위해 권한 설정을 최적화했습니다.
+ */
 package com.edu.springboot.config;
 
 import com.edu.springboot.common.jwt.JwtFilter;
@@ -33,13 +37,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (JWT 사용 시 필수)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 💡 핵심: 로그인, 아이디중복체크, 회원가입 경로는 인증 없이 허용해야 401 에러가 안 납니다.
-                .requestMatchers("/api/member/login.do", "/api/member/check-id.do", "/api/member/join/form.do").permitAll()
+                // 💡 .do 확장자나 경로 패턴에 상관없이 /api/member/로 시작하는 모든 인증 관련 경로는 허용합니다.
+                .requestMatchers("/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
+            // 💡 JWT 필터를 필터 체인에 추가
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

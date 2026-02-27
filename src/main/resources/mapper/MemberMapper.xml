@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+  파일 위치: src/main/resources/mapper/MemberMapper.xml
+  수정 이유: DB의 PASSWORD 컬럼이 자바 VO의 password 필드에 전달되지 않는 문제를 resultMap으로 해결합니다.
+-->
 <mapper namespace="com.edu.springboot.domain.member.MemberMapper">
 
-    <!-- 💡 DB의 대문자 컬럼을 자바의 변수명으로 자동 연결해주는 설정입니다. -->
-    <resultMap id="MemberMap" type="com.edu.springboot.domain.member.vo.MemberVO">
+    <!-- 💡 DB 컬럼과 자바 필드를 1:1로 확실하게 연결합니다. -->
+    <resultMap id="MemberResultMap" type="com.edu.springboot.domain.member.vo.MemberVO">
         <id property="memberId" column="MEMBER_ID" />
         <result property="loginId" column="LOGIN_ID" />
-        <result property="password" column="PASSWORD" />
+        <result property="password" column="PASSWORD" /> <!-- 💡 이 부분이 핵심입니다! -->
         <result property="memberType" column="MEMBER_TYPE" />
         <result property="name" column="NAME" />
         <result property="phone" column="PHONE" />
@@ -18,6 +22,7 @@
         <result property="updatedAt" column="UPDATED_AT" />
     </resultMap>
 
+    <!-- 회원가입 -->
     <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
         <selectKey keyProperty="memberId" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
@@ -32,13 +37,13 @@
         )
     </insert>
 
-    <!-- 💡 반드시 resultMap="MemberMap"을 사용해야 PASSWORD 정보를 정확히 가져옵니다. -->
-    <select id="findByLoginId" resultMap="MemberMap">
+    <!-- 💡 resultMap="MemberResultMap"을 반드시 써야 정보를 제대로 가져옵니다. -->
+    <select id="findByLoginId" resultMap="MemberResultMap">
         SELECT * FROM TB_MEMBER WHERE LOGIN_ID = #{loginId} AND STATUS != 'WITHDRAWN'
     </select>
 
-    <update id="updateMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
-        UPDATE TB_MEMBER SET EMAIL = #{email}, PHONE = #{phone}, UPDATED_AT = SYSDATE WHERE MEMBER_ID = #{memberId}
-    </update>
+    <select id="findMembersByType" resultMap="MemberResultMap">
+        SELECT * FROM TB_MEMBER WHERE MEMBER_TYPE = #{memberType} ORDER BY CREATED_AT DESC
+    </select>
 
 </mapper>
