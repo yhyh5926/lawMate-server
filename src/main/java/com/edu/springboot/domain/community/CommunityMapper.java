@@ -1,6 +1,7 @@
 package com.edu.springboot.domain.community;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -12,4 +13,5 @@ public interface CommunityMapper {
 	
 	// 게시물 리스트
 	public List<PostVo> list();
+	public PostVo detail(int postId);
 }
