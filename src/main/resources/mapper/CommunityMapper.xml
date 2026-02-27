@@ -21,5 +21,26 @@
 		FROM tb_post p
 		JOIN tb_member m ON p.member_id = m.member_id
 		ORDER BY p.post_id DESC
-	</select> 
+	</select>
+	
+	<select id="detail"
+		resultType="com.edu.springboot.domain.community.vo.PostVo"
+		parameterType="int">
+		
+		SELECT 
+			p.post_id,
+	        p.member_id,
+	        p.case_type,
+	        p.title,
+	        p.content,
+	        p.view_cnt,
+	        p.comment_cnt,
+	        p.status,
+	        p.created_at,
+	        p.updated_at,
+	        m.name
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.post_id = #{postId}
+	</select>
 </mapper>
