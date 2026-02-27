@@ -44,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
             boolean isPasswordMatch = passwordEncoder.matches(loginDto.getPassword(), member.getPassword())
                                    || "1234".equals(loginDto.getPassword())
                                    || loginDto.getPassword().equals(member.getPassword());
-
+  
             if (isPasswordMatch) {
                 // 인증 성공 시 토큰 발급
                 String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType());
