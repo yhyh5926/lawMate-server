@@ -1,15 +1,18 @@
 package com.edu.springboot.domain.admin;
 
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import com.edu.springboot.domain.cases.CaseService;
 import com.edu.springboot.domain.lawyer.LawyerMapper;
 import com.edu.springboot.domain.lawyer.vo.LawyerVO;
 import com.edu.springboot.domain.report.ReportMapper;
-import com.edu.springboot.domain.report.vo.ReportVO;
-import com.edu.springboot.domain.report.vo.SanctionVO;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+
 import lombok.RequiredArgsConstructor;
-import java.util.Map;
 
 //@RestController
 @RequiredArgsConstructor
