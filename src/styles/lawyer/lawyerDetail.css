@@ -1,0 +1,93 @@
+.lawyer-detail-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.lawyer-detail-empty {
+  padding: 40px;
+  text-align: center;
+}
+
+/* 상단 프로필 */
+.lawyer-detail-header {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.lawyer-detail-image {
+  width: 180px;
+  height: 180px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.lawyer-detail-info {
+  flex: 1;
+}
+
+.lawyer-detail-name {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.lawyer-detail-rating {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.lawyer-detail-location {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.lawyer-detail-button {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.lawyer-detail-button:hover {
+  background-color: #000;
+}
+
+.lawyer-detail-divider {
+  margin: 40px 0;
+  height: 1px;
+  background: #e5e5e5;
+}
+
+/* 상세 섹션 */
+.lawyer-detail-section {
+  margin-bottom: 30px;
+}
+
+.lawyer-detail-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.lawyer-detail-text {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.6;
+}
+
+.lawyer-detail-case-list {
+  padding-left: 20px;
+}
+
+.lawyer-detail-case-item {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
