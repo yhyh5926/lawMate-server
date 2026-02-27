@@ -1,3 +1,7 @@
+/**
+ * 파일위치: src/main/java/com/edu/springboot/common/jwt/JwtUtil.java
+ * 기능전체: JWT 토큰의 생성, 클레임(정보) 추출 및 유효성 검증 기능을 제공하는 유틸리티입니다.
+ */
 package com.edu.springboot.common.jwt;
 
 import io.jsonwebtoken.Claims;
@@ -10,10 +14,9 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    // 실무에서는 application.yml에서 주입받아 사용합니다.
     private static final String SECRET_KEY = "LawMateSecretKeyForJwtTokenGenerationAlgorithmMakeItLonger";
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 24시간
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
     public String generateToken(String loginId, String role) {
         return Jwts.builder()
@@ -42,17 +45,12 @@ public class JwtUtil {
         }
     }
 
-    // 수정됨: 컨트롤러에서 토큰을 해석해 회원 번호(Long)를 꺼내기 위해 추가된 메서드
     public Long getMemberNo(String token) {
         try {
             Claims claims = extractClaims(token);
-            // Subject에 저장된 값을 Long 타입으로 변환하여 반환
             return Long.valueOf(claims.getSubject());
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("토큰의 Subject가 숫자가 아닙니다.", e);
         } catch (Exception e) {
-            throw new RuntimeException("토큰에서 회원 번호를 추출할 수 없습니다.", e);
+            return null;
         }
     }
-    // 원본: (해당 메서드가 아예 존재하지 않았음)
 }

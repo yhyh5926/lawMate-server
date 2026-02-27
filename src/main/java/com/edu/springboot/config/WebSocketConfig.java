@@ -1,3 +1,7 @@
+/**
+ * 파일위치: src/main/java/com/edu/springboot/config/WebSocketConfig.java
+ * 기능전체: 팀원(원석님)의 실시간 채팅을 위한 STOMP 웹소켓 메시지 브로커 설정입니다.
+ */
 package com.edu.springboot.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -6,22 +10,18 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-@Configuration // 추가 또는 유지
-@EnableWebSocketMessageBroker // 추가됨: 이 어노테이션이 핵심입니다.
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer { // 수정됨
-
-// 기존 코드가 있었다면 아래에 주석으로 남깁니다 (예상되는 기존 코드 형태)
-// public class WebSocketConfig {
-// }
+@Configuration 
+@EnableWebSocketMessageBroker 
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) { // 추가됨
+    public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/sub");
         config.setApplicationDestinationPrefixes("/pub");
     }
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) { // 추가됨
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-stomp") 
                 .setAllowedOriginPatterns("*") 
                 .withSockJS();

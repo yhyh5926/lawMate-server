@@ -1,24 +1,36 @@
+/**
+ * 파일위치: src/main/java/com/edu/springboot/common/util/SmsUtil.java
+ * 수정사항: 외부 라이브러리(CoolSMS, JSON) 임포트를 모두 제거했습니다.
+ * 💡 이 코드를 쓰면 build.gradle을 수정하지 않아도 빨간 줄이 생기지 않습니다.
+ */
 package com.edu.springboot.common.util;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import java.util.Random;
 
 @Component
 public class SmsUtil {
-    
-    /**
-     * 회원가입 및 아이디/비밀번호 찾기 시 SMS 인증번호 발송 유틸리티
-     * (실제 운영에서는 CoolSMS 등 외부 API를 연동합니다)
-     */
-    public boolean sendVerificationCode(String phone, String code) {
-        System.out.println("[SMS 발송] 수신번호: " + phone + " | 인증번호: [" + code + "]");
-        // TODO: 외부 통신 모듈 연동
-        return true; 
+
+    @PostConstruct
+    public void init() {
+        System.out.println("✅ [common/util] SMS 인증 모듈(Mock)이 준비되었습니다.");
     }
 
-    /**
-     * 결제 완료, 알림 등 일반 메시지 발송
-     */
-    public void sendInfoMessage(String phone, String message) {
-        System.out.println("[SMS 알림] 수신번호: " + phone + " | 내용: " + message);
+    public String createCertificationNumber() {
+        Random random = new Random();
+        StringBuilder numStr = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            numStr.append(random.nextInt(10));
+        }
+        return numStr.toString();
+    }
+
+    public void sendSms(String to, String certificationNumber) {
+        // 실제 전송 대신 콘솔에 출력 (라이브러리 충돌 방지)
+        System.out.println("======= [SMS 전송] =======");
+        System.out.println("수신: " + to);
+        System.out.println("번호: [" + certificationNumber + "]");
+        System.out.println("==========================");
     }
 }
