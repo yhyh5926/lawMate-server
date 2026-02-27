@@ -46,7 +46,7 @@ public class MemberServiceImpl implements MemberService {
                                    || loginDto.getPassword().equals(member.getPassword());
   
             if (isPasswordMatch) {    
-                // 인증 성공 시 토큰 발급
+                // 인증 성공 시 토큰
                 String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType());
                 
                 Map<String, Object> result = new HashMap<>();
