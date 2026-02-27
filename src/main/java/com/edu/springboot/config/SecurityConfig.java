@@ -40,9 +40,17 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (JWT 사용 시 필수)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+<<<<<<< HEAD
                 // 💡 .do 확장자나 경로 패턴에 상관없이 /api/member/로 시작하는 모든 인증 관련 경로는 허용합니다.
                 .requestMatchers("/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+=======
+                // 은혁 파트: 공개 경로 허용
+                .requestMatchers("/", "/error", "/api/**", "/uploads/**","/member/login.do", "/member/join/**", 
+                               "/member/lawyer/**", "/member/find.do", "/main.do").permitAll()
+                // 은혁 파트: 관리자 권한 설정
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+>>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
                 .anyRequest().authenticated()
             )
             // 💡 JWT 필터를 필터 체인에 추가

@@ -54,7 +54,7 @@ public class MemberServiceImpl implements MemberService {
                 result.put("member", member);
                 return result;
             }
-        }
+        }   
         return null;
     }
 
