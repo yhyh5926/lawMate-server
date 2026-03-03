@@ -6,20 +6,22 @@ package com.edu.springboot.domain.question;
 
 import com.edu.springboot.domain.question.vo.QuestionVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 @Mapper
 public interface QuestionMapper {
-    
-    // 새 질문 등록
-    int insertQuestion(QuestionVO questionVO);
-    
-    // 전체 질문 목록 조회
-    List<QuestionVO> selectAllQuestions();
-    
-    // 질문 상세 조회
-    QuestionVO selectQuestionById(Long questionId);
-    
-    // 질문 상태 업데이트 (OPEN -> ANSWERED -> CLOSED)
-    int updateQuestionStatus(Long questionId, String status);
+
+	// 새 질문 등록
+	int insertQuestion(QuestionVO questionVO);
+
+	// 전체 질문 목록 조회
+	List<QuestionVO> selectAllQuestions();
+
+	// 질문 상세 조회
+	QuestionVO selectQuestionById(Long questionId);
+
+	// 질문 상태 업데이트 (OPEN -> ANSWERED -> CLOSED)
+	void updateQuestionStatus(@Param("questionId") Long questionId, @Param("status") String status);
 }

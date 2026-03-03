@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.springboot.domain.answer.AnswerMapper">
+
+	<insert id="insertAnswer"
+		parameterType="com.edu.springboot.domain.answer.vo.AnswerVO">
+		INSERT INTO TB_ANSWER (
+		ANSWER_ID,
+		QUESTION_ID,
+		LAWYER_ID,
+		CONTENT,
+		IS_ADOPTED,
+		CREATED_AT
+		) VALUES (
+		SEQ_ANSWER.NEXTVAL,
+		#{questionId},
+		#{lawyerId},
+		#{content},
+		'N',
+		SYSDATE
+		)
+	</insert>
+
+</mapper>
