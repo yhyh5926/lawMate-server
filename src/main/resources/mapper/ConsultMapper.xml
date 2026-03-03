@@ -32,7 +32,7 @@
              CONSULT_DATE, DURATION_MIN, NOTE,
              STATUS, CREATED_AT, UPDATED_AT)
         VALUES
-            (#{consultId}, #{memberId}, #{lawyerId}, #{caseId},
+            (#{consultId}, #{memberId, jdbcType=NUMERIC}, #{lawyerId, jdbcType=NUMERIC}, #{caseId, jdbcType=NUMERIC},
              TO_DATE(#{consultDate}, 'YYYY-MM-DD'),
              #{durationMin}, #{note},
              'PENDING', SYSDATE, SYSDATE)
