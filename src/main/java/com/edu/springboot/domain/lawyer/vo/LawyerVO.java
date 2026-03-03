@@ -1,3 +1,4 @@
+// src/main/java/com/edu/springboot/domain/lawyer/vo/LawyerVO.java
 package com.edu.springboot.domain.lawyer.vo;
 
 import lombok.Data;
@@ -21,9 +22,12 @@ public class LawyerVO {
     private long consultFee;
     private double avgRating;
     private int reviewCnt;
+    
+    // 💡 에러 해결: 승인 상태를 저장할 필드 추가
+    private String approveStatus; 
 
     // TB_ATTACH 컬럼 (이미지 연결)
-    private int attachId;      // 첨부파일 PK
-    private String savePath;   // 실제 파일 저장 경로 (/uploads/...)
-    private String origName;   // 원본 파일명
+    private int attachId;
+    private String savePath;
+    private String origName;
 }

@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- 
-  파일위치: src/main/resources/mapper/LawyerMapper.xml
-  기능전체: 전문회원(TB_LAWYER) 정보 및 관리자 승인 처리를 위한 SQL입니다.
-  팀원들의 프로필 조회 로직을 유지하면서 은혁님의 승인 관리 기능을 통합했습니다.
--->
+
 <mapper namespace="com.edu.springboot.domain.lawyer.LawyerMapper">
 
-    <!-- 팀원 로직 유지: 승인된 변호사 전체 목록 (평점순) -->
     <select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
             m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
@@ -22,7 +17,6 @@
         ORDER BY l.AVG_RATING DESC, l.REVIEW_CNT DESC
     </select>
 
-    <!-- 팀원 로직 유지: 변호사 상세 정보 조회 -->
     <select id="selectLawyerById" parameterType="long" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
             m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
@@ -37,7 +31,6 @@
         WHERE l.LAWYER_ID = #{lawyerId}
     </select>
 
-    <!-- 은혁 파트 추가: 승인 대기 중인 변호사 목록 (AdminController 오류 해결) -->
     <select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         SELECT 
             m.NAME as name, l.* FROM TB_MEMBER m
@@ -46,11 +39,21 @@
         ORDER BY l.CREATED_AT ASC
     </select>
 
-    <!-- 은혁 파트 추가: 전문회원 승인 상태 업데이트 (AdminController 오류 해결) -->
     <update id="updateApproveStatus" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
         UPDATE TB_LAWYER 
         SET APPROVE_STATUS = #{approveStatus}, UPDATED_AT = SYSDATE 
         WHERE LAWYER_ID = #{lawyerId}
     </update>
+
+    <insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+        INSERT INTO TB_LAWYER (
+            LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
+            APPROVE_STATUS, CREATED_AT, UPDATED_AT
+        )
+        VALUES (
+            SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
+            'PENDING', SYSDATE, SYSDATE
+        )
+    </insert>
 
 </mapper>

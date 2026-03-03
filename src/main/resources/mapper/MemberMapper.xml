@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- 
-  파일 위치: src/main/resources/mapper/MemberMapper.xml
-  수정 이유: DB의 PASSWORD 컬럼이 자바 VO의 password 필드에 전달되지 않는 문제를 resultMap으로 해결합니다.
--->
+
 <mapper namespace="com.edu.springboot.domain.member.MemberMapper">
 
-    <!-- 💡 DB 컬럼과 자바 필드를 1:1로 확실하게 연결합니다. -->
     <resultMap id="MemberResultMap" type="com.edu.springboot.domain.member.vo.MemberVO">
         <id property="memberId" column="MEMBER_ID" />
         <result property="loginId" column="LOGIN_ID" />
-        <result property="password" column="PASSWORD" /> <!-- 💡 이 부분이 핵심입니다! -->
+        <result property="password" column="PASSWORD" />
         <result property="memberType" column="MEMBER_TYPE" />
         <result property="name" column="NAME" />
         <result property="phone" column="PHONE" />
         <result property="email" column="EMAIL" />
+        <result property="provider" column="PROVIDER" />
         <result property="phoneVerified" column="PHONE_VERIFIED" />
         <result property="status" column="STATUS" />
         <result property="saveIdYn" column="SAVE_ID_YN" />
@@ -22,30 +19,51 @@
         <result property="updatedAt" column="UPDATED_AT" />
     </resultMap>
 
-    <!-- 회원가입 -->
+    <select id="findByLoginId" resultMap="MemberResultMap">
+        SELECT * FROM TB_MEMBER 
+        WHERE LOGIN_ID = #{loginId} 
+        AND STATUS != 'WITHDRAWN'
+    </select>
+
     <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
         <selectKey keyProperty="memberId" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
         </selectKey>
         INSERT INTO TB_MEMBER (
             MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE, NAME, PHONE, EMAIL, 
-            PHONE_VERIFIED, STATUS, SAVE_ID_YN, CREATED_AT, UPDATED_AT
+            PROVIDER, PHONE_VERIFIED, STATUS, SAVE_ID_YN, CREATED_AT, UPDATED_AT
         )
         VALUES (
-		    #{memberId}, #{loginId}, #{password}, #{memberType}, #{name}, #{phone}, 
-		    #{email, jdbcType=VARCHAR},
-		    #{phoneVerified, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR}, 
-		    #{saveIdYn, jdbcType=VARCHAR}, SYSDATE, SYSDATE
-		)
+            #{memberId}, 
+            #{loginId, jdbcType=VARCHAR}, 
+            #{password, jdbcType=VARCHAR}, 
+            #{memberType, jdbcType=VARCHAR}, 
+            #{name, jdbcType=VARCHAR}, 
+            #{phone, jdbcType=VARCHAR}, 
+            #{email, jdbcType=VARCHAR},
+            #{provider, jdbcType=VARCHAR}, 
+            #{phoneVerified, jdbcType=VARCHAR}, 
+            #{status, jdbcType=VARCHAR}, 
+            #{saveIdYn, jdbcType=VARCHAR}, 
+            SYSDATE, 
+            SYSDATE
+        )
     </insert>
 
-    <!-- 💡 resultMap="MemberResultMap"을 반드시 써야 정보를 제대로 가져옵니다. -->
-    <select id="findByLoginId" resultMap="MemberResultMap">
-        SELECT * FROM TB_MEMBER WHERE LOGIN_ID = #{loginId} AND STATUS != 'WITHDRAWN'
+    <select id="selectAllMembers" resultMap="MemberResultMap">
+        SELECT * FROM TB_MEMBER ORDER BY CREATED_AT DESC
     </select>
 
     <select id="findMembersByType" resultMap="MemberResultMap">
         SELECT * FROM TB_MEMBER WHERE MEMBER_TYPE = #{memberType} ORDER BY CREATED_AT DESC
+    </select>
+
+    <delete id="deleteMember">
+        UPDATE TB_MEMBER SET STATUS='WITHDRAWN', UPDATED_AT=SYSDATE WHERE MEMBER_ID=#{memberId}
+    </delete>
+    
+    <select id="findLoginIdByNameAndPhone" resultType="string">
+        SELECT LOGIN_ID FROM TB_MEMBER WHERE NAME=#{name} AND PHONE=#{phone}
     </select>
 
 </mapper>

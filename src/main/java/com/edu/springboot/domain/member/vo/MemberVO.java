@@ -1,7 +1,4 @@
-/**
- * 파일위치: src/main/java/com/edu/springboot/domain/member/vo/MemberVO.java
- * 수정내용: TB_MEMBER 테이블의 Not Null 컬럼들에 대한 기본값을 @Builder.Default로 설정했습니다.
- */
+// src/main/java/com/edu/springboot/domain/member/vo/MemberVO.java
 package com.edu.springboot.domain.member.vo;
 
 import lombok.AllArgsConstructor;
@@ -18,19 +15,20 @@ public class MemberVO {
     private Long memberId;
     private String loginId;
     private String password;
-    private String memberType;
+    private String memberType; // PERSONAL, LAWYER
     private String name;
     private String phone;
     private String email;
+    private String provider; // 💡 추가: LOCAL, GOOGLE
 
     @Builder.Default
-    private String phoneVerified = "N"; // 💡 DB 필수값(NN) 대응
+    private String phoneVerified = "N";
 
     @Builder.Default
-    private String status = "ACTIVE";   // 💡 DB 필수값(NN) 대응
+    private String status = "ACTIVE"; // ACTIVE, PENDING(승인대기), WITHDRAWN
 
     @Builder.Default
-    private String saveIdYn = "N";      // 💡 DB 필수값(NN) 대응
+    private String saveIdYn = "N";
 
     private Date createdAt;
     private Date updatedAt;
