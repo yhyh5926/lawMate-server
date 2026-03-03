@@ -1,7 +1,4 @@
-/**
- * 파일 위치: src/main/java/com/edu/springboot/domain/member/MemberService.java
- * 수정 내용: 인터페이스에는 @Service 어노테이션을 사용하지 않습니다. 순수 인터페이스로 유지하여 빈 충돌을 방지합니다.
- */
+// src/main/java/com/edu/springboot/domain/member/MemberService.java
 package com.edu.springboot.domain.member;
 
 import com.edu.springboot.domain.member.dto.JoinDto;
@@ -14,11 +11,14 @@ public interface MemberService {
     // 아이디 사용 가능 여부 확인
     boolean isLoginIdAvailable(String loginId);
 
-    // 회원가입 처리
+    // 회원가입 처리 (TB_MEMBER + TB_LAWYER 통합 저장)
     boolean join(JoinDto dto);
 
-    // 로그인 처리 및 토큰 반환
+    // 일반 로그인 처리 (1234 프리패스 및 승인 대기 차단 포함)
     Map<String, Object> login(LoginDto dto);
+    
+    // 💡 소셜 로그인 처리 (구글 전용)
+    Map<String, Object> socialLogin(Map<String, String> socialData);
 
     // 회원 정보 상세 조회
     MemberVO getMemberInfo(String loginId);
