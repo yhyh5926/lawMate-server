@@ -94,10 +94,14 @@
             SELECT SEQ_CHAT_MSG.NEXTVAL FROM DUAL
         </selectKey>
         INSERT INTO TB_CHAT_MSG
-            (MSG_ID, ROOM_ID, SENDER_ID, MSG_TYPE, CONTENT, READ_YN, CREATED_AT)
-        VALUES
-            (#{msgNo}, #{roomNo}, #{senderNo}, #{msgType},
-             #{content}, 'N', SYSDATE)
+    		(MSG_ID, ROOM_ID, SENDER_ID, MSG_TYPE, CONTENT, READ_YN, CREATED_AT)
+		VALUES
+		    (SEQ_CHAT_MSG.NEXTVAL,
+		     #{roomNo, jdbcType=NUMERIC},
+		     #{senderNo, jdbcType=NUMERIC},
+		     #{msgType, jdbcType=VARCHAR},
+		     #{content, jdbcType=VARCHAR},
+		     'N', SYSDATE)
     </insert>
 
     <!-- ── 메시지 목록 (페이징) ──────────────────────────── -->
