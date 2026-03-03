@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<<<<<<< HEAD
-=======
-
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 <mapper namespace="com.edu.springboot.domain.lawyer.LawyerMapper">
 
-<<<<<<< HEAD
 	<resultMap id="lawyerDetailMap" type="com.edu.springboot.domain.lawyer.vo.LawyerVO">
 		<id property="lawyerId" column="lawyerId" />
 		<result property="memberId" column="memberId" />
@@ -32,23 +27,7 @@
 			<result property="consultSummary" column="CONSULT_SUMMARY" />
 		</collection>
 	</resultMap>
-=======
-    <select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-            l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
-            l.INTRO as intro, l.OFFICE_NAME as officeName, l.CONSULT_FEE as consultFee,
-            l.AVG_RATING as avgRating, l.REVIEW_CNT as reviewCnt,
-            a.ATTACH_ID as attachId, a.SAVE_PATH as savePath, a.ORIG_NAME as origName
-        FROM TB_MEMBER m
-        INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
-        WHERE l.APPROVE_STATUS = 'APPROVED' AND m.STATUS = 'ACTIVE'
-        ORDER BY l.AVG_RATING DESC, l.REVIEW_CNT DESC
-    </select>
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 
-<<<<<<< HEAD
 	<select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
 		SELECT
 			m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
@@ -63,59 +42,29 @@
 		WHERE l.APPROVE_STATUS = 'APPROVED' AND m.STATUS = 'ACTIVE'
 		ORDER BY avgRating DESC, reviewCnt DESC
 	</select>
-=======
-    <select id="selectLawyerById" parameterType="long" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-            l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
-            l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
-            l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
-            l.AVG_RATING as avgRating, l.REVIEW_CNT as reviewCnt,
-            a.ATTACH_ID as attachId, a.SAVE_PATH as savePath
-        FROM TB_MEMBER m
-        INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
-        WHERE l.LAWYER_ID = #{lawyerId}
-    </select>
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 
-<<<<<<< HEAD
 	<select id="selectLawyerById" parameterType="long" resultMap="lawyerDetailMap">
 		SELECT
 			m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
 			l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
 			l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
 			l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
-			-- [평점, 리뷰 수 실시간 계산]
 			(SELECT NVL(AVG(RATING), 0) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
 			(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as reviewCnt,
 			a.SAVE_PATH as savePath,
-			-- 리뷰 데이터
 			r.REVIEW_ID, r.RATING, r.CONTENT, r.CREATED_AT as REVIEW_CREATED_AT,
 			SUBSTR(rm.NAME, 1, 1) || '*' || SUBSTR(rm.NAME, 3) as REVIEWER_NAME,
-			-- 상담 메모 마스킹 처리
 			SUBSTR(c.NOTE, 1, 5) || '***' as CONSULT_SUMMARY
 		FROM TB_MEMBER m
 		INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
 		LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
 		LEFT OUTER JOIN TB_REVIEW r ON l.LAWYER_ID = r.LAWYER_ID AND r.STATUS = 'ACTIVE'
 		LEFT OUTER JOIN TB_MEMBER rm ON r.MEMBER_ID = rm.MEMBER_ID
-		-- 리뷰와 상담 테이블 1:1 조인 (상담 정보 추출용)
 		LEFT OUTER JOIN TB_CONSULT c ON r.CONSULT_ID = c.CONSULT_ID
 		WHERE l.LAWYER_ID = #{lawyerId}
 		ORDER BY r.CREATED_AT DESC
 	</select>
-=======
-    <select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            m.NAME as name, l.* FROM TB_MEMBER m
-        JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        WHERE l.APPROVE_STATUS = 'PENDING'
-        ORDER BY l.CREATED_AT ASC
-    </select>
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 
-<<<<<<< HEAD
 	<select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
 		SELECT m.NAME as name, l.* FROM TB_MEMBER m
 		JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
@@ -128,23 +77,16 @@
 		SET APPROVE_STATUS = #{approveStatus}, UPDATED_AT = SYSDATE
 		WHERE LAWYER_ID = #{lawyerId}
 	</update>
-=======
-    <update id="updateApproveStatus" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        UPDATE TB_LAWYER 
-        SET APPROVE_STATUS = #{approveStatus}, UPDATED_AT = SYSDATE 
-        WHERE LAWYER_ID = #{lawyerId}
-    </update>
->>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 
-    <insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        INSERT INTO TB_LAWYER (
-            LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
-            APPROVE_STATUS, CREATED_AT, UPDATED_AT
-        )
-        VALUES (
-            SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
-            'PENDING', SYSDATE, SYSDATE
-        )
-    </insert>
+	<insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		INSERT INTO TB_LAWYER (
+			LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
+			APPROVE_STATUS, CREATED_AT, UPDATED_AT
+		)
+		VALUES (
+			SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
+			'PENDING', SYSDATE, SYSDATE
+		)
+	</insert>
 
 </mapper>
