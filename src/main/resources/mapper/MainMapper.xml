@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  파일위치: src/main/resources/mapper/MainMapper.xml
+  기능전체: 메인 화면에서 사용하는 공지/통계/최근게시글 쿼리
+  주의: 공지사항은 tb_post.case_type 값을 'NOTICE' 또는 '공지'/'공지사항'으로 분류한 글을 사용합니다.
+-->
+<mapper namespace="com.edu.springboot.domain.main.MainMapper">
+
+    <!-- 최신 공지사항 N건 -->
+    <select id="selectLatestNotices" parameterType="int"
+            resultType="com.edu.springboot.domain.main.vo.MainNoticeVO">
+        SELECT
+            p.post_id    AS postId,
+            p.title      AS title,
+            p.content    AS content,
+            m.name       AS name,
+            TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
+        FROM tb_post p
+        JOIN tb_member m ON p.member_id = m.member_id
+        WHERE p.case_type IN ('NOTICE', '공지', '공지사항')
+        ORDER BY p.post_id DESC
+        FETCH FIRST #{limit} ROWS ONLY
+    </select>
+
+    <!-- 오늘 접수 사건 수 -->
+    <select id="countTodayCases" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_CASE
+        WHERE TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+    </select>
+
+    <!-- 주간 누적 상담 건수 (최근 7일, 오늘 포함) -->
+    <select id="countWeeklyConsults" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_CONSULT
+        WHERE TRUNC(CREATED_AT) BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE)
+    </select>
+
+    <!-- 최근 게시글 N건 -->
+    <select id="selectRecentPosts" parameterType="int"
+            resultType="com.edu.springboot.domain.main.vo.MainRecentPostVO">
+        SELECT
+            p.post_id    AS postId,
+            p.title      AS title,
+            m.name       AS name,
+            TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
+        FROM tb_post p
+        JOIN tb_member m ON p.member_id = m.member_id
+        ORDER BY p.post_id DESC
+        FETCH FIRST #{limit} ROWS ONLY
+    </select>
+
+</mapper>
