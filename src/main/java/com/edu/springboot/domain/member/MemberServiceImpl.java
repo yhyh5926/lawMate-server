@@ -47,8 +47,9 @@ public class MemberServiceImpl implements MemberService {
   
             if (isPasswordMatch) {    
                 // 인증 성공 시 토큰
-                String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType());
-                
+                //String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType());
+            	String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId()); //26.03.03
+            	
                 Map<String, Object> result = new HashMap<>();
                 result.put("token", token);
                 result.put("member", member);

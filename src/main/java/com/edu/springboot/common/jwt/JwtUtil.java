@@ -18,10 +18,11 @@ public class JwtUtil {
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
-    public String generateToken(String loginId, String role) {
+    public String generateToken(String loginId, String role, Long memberId) {
         return Jwts.builder()
                 .setSubject(loginId)
                 .claim("role", role)
+                .claim("memberId", memberId)   // ← 추가(원석, 26.03.03)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -48,7 +49,8 @@ public class JwtUtil {
     public Long getMemberNo(String token) {
         try {
             Claims claims = extractClaims(token);
-            return Long.valueOf(claims.getSubject());
+            //return Long.valueOf(claims.getSubject());
+            return claims.get("memberId", Long.class); //26.03.03 원석 추가
         } catch (Exception e) {
             return null;
         }
