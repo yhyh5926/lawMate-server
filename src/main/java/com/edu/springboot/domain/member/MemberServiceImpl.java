@@ -37,7 +37,8 @@ public class MemberServiceImpl implements MemberService {
                                    || loginDto.getPassword().equals(member.getPassword());
 
             if (isPasswordMatch) {
-                if ("LAWYER".equals(member.getMemberType()) && "PENDING".equals(member.getStatus())) {
+                // 💡 수정: TB_MEMBER의 status 대신 JOIN된 TB_LAWYER의 approveStatus로 승인 대기 체크
+                if ("LAWYER".equals(member.getMemberType()) && "PENDING".equals(member.getApproveStatus())) {
                     throw new RuntimeException("관리자의 승인을 대기 중입니다. 승인 완료 후 로그인 가능합니다.");
                 }
 
@@ -56,12 +57,7 @@ public class MemberServiceImpl implements MemberService {
     public Map<String, Object> socialLogin(Map<String, String> socialData) {
         String loginId = socialData.get("loginId");
         MemberVO member = memberMapper.findByLoginId(loginId);
-
-        // 💡 수정 사항: 미가입자 자동 가입 로직 삭제. 
-        // 가입되지 않은 경우 로그인을 차단하고 null을 반환합니다.
-        if (member == null) {
-            return null; 
-        }
+        if (member == null) return null; 
 
         String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
         Map<String, Object> result = new HashMap<>();
@@ -73,6 +69,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public boolean join(JoinDto joinDto) {
+        // 💡 해결 방법: TB_MEMBER는 정의서에 따라 'ACTIVE'로 저장하여 ORA-02290 에러 방지
         MemberVO member = MemberVO.builder()
                 .loginId(joinDto.getLoginId())
                 .password(passwordEncoder.encode(joinDto.getPassword()))
@@ -81,7 +78,9 @@ public class MemberServiceImpl implements MemberService {
                 .email(joinDto.getEmail())
                 .memberType(joinDto.getMemberType())
                 .provider(joinDto.getProvider() != null ? joinDto.getProvider() : "LOCAL")
-                .status("LAWYER".equals(joinDto.getMemberType()) ? "PENDING" : "ACTIVE")
+                .phoneVerified("N") // 정의서 기본값 반영
+                .saveIdYn("N")      // 정의서 기본값 반영
+                .status("ACTIVE")   // DB 제약조건(ACTIVE/SUSPENDED/WITHDRAWN) 준수
                 .build();
         
         int memberResult = memberMapper.insertMember(member);
@@ -92,6 +91,7 @@ public class MemberServiceImpl implements MemberService {
             lawyer.setLicenseNo(joinDto.getLicenseNo());
             lawyer.setSpecialty(joinDto.getSpecialty());
             lawyer.setOfficeName(joinDto.getOfficeName());
+            // 💡 변호사 고유의 승인 상태만 'PENDING'으로 설정 (해당 테이블은 PENDING 허용됨)
             lawyer.setApproveStatus("PENDING");
             lawyerMapper.insertLawyer(lawyer);
         }

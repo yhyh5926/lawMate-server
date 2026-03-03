@@ -50,14 +50,13 @@ public class MemberController {
 
     /**
      * 소셜 로그인(구글 등) 요청 API
-     * 💡 수정 사항: 소셜 로그인 시 미가입 회원이면 404(NOT_FOUND) 에러 반환
+     * 가입된 정보가 없으면 404(NOT_FOUND) 에러를 반환하여 가입을 유도합니다.
      */
     @PostMapping("/social-login.do")
     public ResponseEntity<?> socialLogin(@RequestBody Map<String, String> socialData) {
         Map<String, Object> result = memberService.socialLogin(socialData);
         if (result != null) return ResponseEntity.ok(result);
         
-        // 가입된 정보가 없을 경우 프론트엔드에서 회원가입 페이지로 유도할 수 있도록 404 반환
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                              .body(Map.of("message", "가입된 정보가 없습니다. 회원가입을 먼저 진행해주세요."));
     }
