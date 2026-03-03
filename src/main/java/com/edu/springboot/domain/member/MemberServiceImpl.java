@@ -38,12 +38,14 @@ public class MemberServiceImpl implements MemberService {
                                    || loginDto.getPassword().equals(member.getPassword());
 
             if (isPasswordMatch) {
-                // 변호사 회원 승인 대기 체크
+                // 1. 변호사 회원 승인 대기 체크 (로컬 수정 사항 유지)
                 if ("LAWYER".equals(member.getMemberType()) && "PENDING".equals(member.getStatus())) {
                     throw new RuntimeException("관리자의 승인을 대기 중입니다. 승인 완료 후 로그인 가능합니다.");
                 }
 
-                String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType());
+                // 2. 인증 성공 시 토큰 발행 (서버 최신본 적용: memberId 포함)
+                String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
+                
                 Map<String, Object> result = new HashMap<>();
                 result.put("token", token);
                 result.put("member", member);
@@ -59,7 +61,7 @@ public class MemberServiceImpl implements MemberService {
         String loginId = socialData.get("loginId");
         MemberVO member = memberMapper.findByLoginId(loginId);
 
-        // 💡 신규 소셜 회원이면 자동 가입 처리 (구글 전용)
+        // 신규 소셜 회원이면 자동 가입 처리 (구글 전용)
         if (member == null) {
             member = MemberVO.builder()
                     .loginId(loginId)
@@ -73,8 +75,8 @@ public class MemberServiceImpl implements MemberService {
             memberMapper.insertMember(member);
         }
 
-        // 로그인 성공 처리 (토큰 발급)
-        String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType());
+        // 💡 로그인 성공 처리 (서버 규격에 맞춰 memberId 추가)
+        String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
         result.put("member", member);

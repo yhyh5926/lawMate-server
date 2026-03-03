@@ -62,9 +62,9 @@ public class ChatRestController {
     /** 메시지 목록 (페이징) */
     @GetMapping("/rooms/{roomNo}/messages")
     public ResponseEntity<ApiResponse<List<ChatMsgVO>>> getMessages(
-            @PathVariable Long roomNo,
-            @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "30") int size) {
+            @PathVariable("roomNo") Long roomNo,
+            @RequestParam(value = "page", defaultValue = "0")  int page,
+            @RequestParam(value = "size", defaultValue = "30") int size) {
 
         int offset = page * size;
         return ResponseEntity.ok(
@@ -74,7 +74,7 @@ public class ChatRestController {
     /** 읽음 처리 */
     @PutMapping("/rooms/{roomNo}/read")
     public ResponseEntity<ApiResponse<Void>> markRead(
-            @PathVariable Long roomNo,
+            @PathVariable("roomNo") Long roomNo,
             @RequestHeader("Authorization") String bearer) {
 
         Long memberNo = getMemberNo(bearer);

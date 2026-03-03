@@ -37,11 +37,18 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // 1. 누구나 접근 가능한 경로 (로그인, 회원가입, 메인 등)
-                .requestMatchers(
-                    "/", "/error", "/api/**", "/uploads/**", "/main.do",
-                    "/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do",
-                    "/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**"
-                ).permitAll()
+//                .requestMatchers(
+//                    "/", "/error", "/api/**", "/uploads/**", "/main.do",
+//                    "/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do",
+//                    "/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**"
+//                ).permitAll()
+        		   .requestMatchers(
+        			    "/", "/error", "/api/**", "/uploads/**", "/main.do",
+        			    "/member/login.do", "/member/join/**", "/member/lawyer/**", "/member/find.do",
+        			    "/api/member/login.do", "/api/member/check-id.do", "/api/member/join/**",
+        			    "/ws-stomp/**"
+        			).permitAll()
+            		
                 
                 // 2. 관리자 권한 설정
                 .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
