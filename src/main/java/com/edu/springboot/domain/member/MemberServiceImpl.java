@@ -32,20 +32,16 @@ public class MemberServiceImpl implements MemberService {
         MemberVO member = memberMapper.findByLoginId(loginDto.getLoginId());
         
         if (member != null) {
-            // 💡 1234 프리패스 및 평문 비교 유지
             boolean isPasswordMatch = passwordEncoder.matches(loginDto.getPassword(), member.getPassword())
                                    || "1234".equals(loginDto.getPassword())
                                    || loginDto.getPassword().equals(member.getPassword());
 
             if (isPasswordMatch) {
-                // 1. 변호사 회원 승인 대기 체크 (로컬 수정 사항 유지)
                 if ("LAWYER".equals(member.getMemberType()) && "PENDING".equals(member.getStatus())) {
                     throw new RuntimeException("관리자의 승인을 대기 중입니다. 승인 완료 후 로그인 가능합니다.");
                 }
 
-                // 2. 인증 성공 시 토큰 발행 (서버 최신본 적용: memberId 포함)
                 String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
-                
                 Map<String, Object> result = new HashMap<>();
                 result.put("token", token);
                 result.put("member", member);
@@ -61,21 +57,12 @@ public class MemberServiceImpl implements MemberService {
         String loginId = socialData.get("loginId");
         MemberVO member = memberMapper.findByLoginId(loginId);
 
-        // 신규 소셜 회원이면 자동 가입 처리 (구글 전용)
+        // 💡 수정 사항: 미가입자 자동 가입 로직 삭제. 
+        // 가입되지 않은 경우 로그인을 차단하고 null을 반환합니다.
         if (member == null) {
-            member = MemberVO.builder()
-                    .loginId(loginId)
-                    .password(passwordEncoder.encode("SOCIAL_PASS"))
-                    .name(socialData.get("name"))
-                    .email(socialData.get("email"))
-                    .provider(socialData.get("provider"))
-                    .memberType("PERSONAL")
-                    .status("ACTIVE")
-                    .build();
-            memberMapper.insertMember(member);
+            return null; 
         }
 
-        // 💡 로그인 성공 처리 (서버 규격에 맞춰 memberId 추가)
         String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
@@ -86,7 +73,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public boolean join(JoinDto joinDto) {
-        // 일반 회원 정보 생성
         MemberVO member = MemberVO.builder()
                 .loginId(joinDto.getLoginId())
                 .password(passwordEncoder.encode(joinDto.getPassword()))
@@ -94,13 +80,12 @@ public class MemberServiceImpl implements MemberService {
                 .phone(joinDto.getPhone())
                 .email(joinDto.getEmail())
                 .memberType(joinDto.getMemberType())
-                .provider("LOCAL")
+                .provider(joinDto.getProvider() != null ? joinDto.getProvider() : "LOCAL")
                 .status("LAWYER".equals(joinDto.getMemberType()) ? "PENDING" : "ACTIVE")
                 .build();
         
         int memberResult = memberMapper.insertMember(member);
         
-        // 변호사(LAWYER)일 경우 전문가 테이블 추가 정보 저장
         if (memberResult > 0 && "LAWYER".equals(joinDto.getMemberType())) {
             LawyerVO lawyer = new LawyerVO();
             lawyer.setMemberId(member.getMemberId().intValue());

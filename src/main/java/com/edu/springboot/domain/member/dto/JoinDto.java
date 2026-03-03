@@ -16,6 +16,9 @@ public class JoinDto {
     private String phone;
     private String email;
     private String saveIdYn;
+    
+    // 💡 추가: 가입 경로 (LOCAL, GOOGLE 등)
+    private String provider; 
 
     // --- 전문회원(변호사) 전용 필드 ---
     private String licenseNo;

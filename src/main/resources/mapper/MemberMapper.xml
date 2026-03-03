@@ -19,12 +19,6 @@
         <result property="updatedAt" column="UPDATED_AT" />
     </resultMap>
 
-    <select id="findByLoginId" resultMap="MemberResultMap">
-        SELECT * FROM TB_MEMBER 
-        WHERE LOGIN_ID = #{loginId} 
-        AND STATUS != 'WITHDRAWN'
-    </select>
-
     <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
         <selectKey keyProperty="memberId" resultType="long" order="BEFORE">
             SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
@@ -49,6 +43,12 @@
             SYSDATE
         )
     </insert>
+
+    <select id="findByLoginId" resultMap="MemberResultMap">
+        SELECT * FROM TB_MEMBER 
+        WHERE LOGIN_ID = #{loginId} 
+        AND STATUS != 'WITHDRAWN'
+    </select>
 
     <select id="selectAllMembers" resultMap="MemberResultMap">
         SELECT * FROM TB_MEMBER ORDER BY CREATED_AT DESC
