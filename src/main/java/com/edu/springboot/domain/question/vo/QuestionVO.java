@@ -6,6 +6,9 @@ package com.edu.springboot.domain.question.vo;
 
 import lombok.Data;
 import java.util.Date;
+import java.util.List;
+
+import com.edu.springboot.domain.answer.vo.AnswerVO;
 
 @Data
 public class QuestionVO {
@@ -19,4 +22,6 @@ public class QuestionVO {
     private String status;        // STATUS (OPEN / ANSWERED / CLOSED)
     private Date createdAt;       // CREATED_AT
     private Date updatedAt;       // UPDATED_AT
+    
+    private List<AnswerVO> answers;
 }

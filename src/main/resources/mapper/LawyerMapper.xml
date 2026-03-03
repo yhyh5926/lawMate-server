@@ -1,59 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.edu.springboot.domain.lawyer.LawyerMapper">
 
-    <select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-            l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
-            l.INTRO as intro, l.OFFICE_NAME as officeName, l.CONSULT_FEE as consultFee,
-            l.AVG_RATING as avgRating, l.REVIEW_CNT as reviewCnt,
-            a.ATTACH_ID as attachId, a.SAVE_PATH as savePath, a.ORIG_NAME as origName
-        FROM TB_MEMBER m
-        INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
-        WHERE l.APPROVE_STATUS = 'APPROVED' AND m.STATUS = 'ACTIVE'
-        ORDER BY l.AVG_RATING DESC, l.REVIEW_CNT DESC
-    </select>
+	<resultMap id="lawyerDetailMap" type="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		<id property="lawyerId" column="lawyerId" />
+		<result property="memberId" column="memberId" />
+		<result property="name" column="name" />
+		<result property="email" column="email" />
+		<result property="phone" column="phone" />
+		<result property="licenseNo" column="licenseNo" />
+		<result property="specialty" column="specialty" />
+		<result property="intro" column="intro" />
+		<result property="career" column="career" />
+		<result property="officeName" column="officeName" />
+		<result property="officeAddr" column="officeAddr" />
+		<result property="consultFee" column="consultFee" />
+		<result property="avgRating" column="avgRating" />
+		<result property="reviewCnt" column="reviewCnt" />
+		<result property="savePath" column="savePath" />
+		<collection property="reviews" ofType="com.edu.springboot.domain.review.vo.ReviewVO">
+			<id property="reviewId" column="REVIEW_ID" />
+			<result property="rating" column="RATING" />
+			<result property="content" column="CONTENT" />
+			<result property="createdAt" column="REVIEW_CREATED_AT" />
+			<result property="reviewerName" column="REVIEWER_NAME" />
+			<result property="consultSummary" column="CONSULT_SUMMARY" />
+		</collection>
+	</resultMap>
 
-    <select id="selectLawyerById" parameterType="long" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-            l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
-            l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
-            l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
-            l.AVG_RATING as avgRating, l.REVIEW_CNT as reviewCnt,
-            a.ATTACH_ID as attachId, a.SAVE_PATH as savePath
-        FROM TB_MEMBER m
-        INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
-        WHERE l.LAWYER_ID = #{lawyerId}
-    </select>
+	<select id="selectAllLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		SELECT
+			m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
+			l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
+			l.INTRO as intro, l.OFFICE_NAME as officeName, l.CONSULT_FEE as consultFee,
+			(SELECT NVL(AVG(RATING), 0) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
+			(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as reviewCnt,
+			a.ATTACH_ID as attachId, a.SAVE_PATH as savePath, a.ORIG_NAME as origName
+		FROM TB_MEMBER m
+		INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
+		WHERE l.APPROVE_STATUS = 'APPROVED' AND m.STATUS = 'ACTIVE'
+		ORDER BY avgRating DESC, reviewCnt DESC
+	</select>
 
-    <select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        SELECT 
-            m.NAME as name, l.* FROM TB_MEMBER m
-        JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        WHERE l.APPROVE_STATUS = 'PENDING'
-        ORDER BY l.CREATED_AT ASC
-    </select>
+	<select id="selectLawyerById" parameterType="long" resultMap="lawyerDetailMap">
+		SELECT
+			m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
+			l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
+			l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
+			l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
+			(SELECT NVL(AVG(RATING), 0) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
+			(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as reviewCnt,
+			a.SAVE_PATH as savePath,
+			r.REVIEW_ID, r.RATING, r.CONTENT, r.CREATED_AT as REVIEW_CREATED_AT,
+			SUBSTR(rm.NAME, 1, 1) || '*' || SUBSTR(rm.NAME, 3) as REVIEWER_NAME,
+			SUBSTR(c.NOTE, 1, 5) || '***' as CONSULT_SUMMARY
+		FROM TB_MEMBER m
+		INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
+		LEFT OUTER JOIN TB_REVIEW r ON l.LAWYER_ID = r.LAWYER_ID AND r.STATUS = 'ACTIVE'
+		LEFT OUTER JOIN TB_MEMBER rm ON r.MEMBER_ID = rm.MEMBER_ID
+		LEFT OUTER JOIN TB_CONSULT c ON r.CONSULT_ID = c.CONSULT_ID
+		WHERE l.LAWYER_ID = #{lawyerId}
+		ORDER BY r.CREATED_AT DESC
+	</select>
 
-    <update id="updateApproveStatus" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        UPDATE TB_LAWYER 
-        SET APPROVE_STATUS = #{approveStatus}, UPDATED_AT = SYSDATE 
-        WHERE LAWYER_ID = #{lawyerId}
-    </update>
+	<select id="findPendingLawyers" resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		SELECT m.NAME as name, l.* FROM TB_MEMBER m
+		JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		WHERE l.APPROVE_STATUS = 'PENDING'
+		ORDER BY l.CREATED_AT ASC
+	</select>
 
-    <insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-        INSERT INTO TB_LAWYER (
-            LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
-            APPROVE_STATUS, CREATED_AT, UPDATED_AT
-        )
-        VALUES (
-            SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
-            'PENDING', SYSDATE, SYSDATE
-        )
-    </insert>
+	<update id="updateApproveStatus" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		UPDATE TB_LAWYER
+		SET APPROVE_STATUS = #{approveStatus}, UPDATED_AT = SYSDATE
+		WHERE LAWYER_ID = #{lawyerId}
+	</update>
+
+	<insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		INSERT INTO TB_LAWYER (
+			LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
+			APPROVE_STATUS, CREATED_AT, UPDATED_AT
+		)
+		VALUES (
+			SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
+			'PENDING', SYSDATE, SYSDATE
+		)
+	</insert>
 
 </mapper>

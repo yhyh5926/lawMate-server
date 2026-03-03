@@ -1,17 +1,18 @@
-// src/main/java/com/edu/springboot/domain/lawyer/vo/LawyerVO.java
 package com.edu.springboot.domain.lawyer.vo;
 
+import java.util.List;
+import com.edu.springboot.domain.review.vo.ReviewVO;
 import lombok.Data;
 
 @Data
 public class LawyerVO {
-    // TB_MEMBER 컬럼
+    // 1. TB_MEMBER 컬럼 (공통 계정 정보)
     private int memberId;
     private String name;
     private String email;
     private String phone;
 
-    // TB_LAWYER 컬럼
+    // 2. TB_LAWYER 컬럼 (변호사 상세 정보)
     private int lawyerId;
     private String licenseNo;
     private String specialty;
@@ -23,11 +24,14 @@ public class LawyerVO {
     private double avgRating;
     private int reviewCnt;
     
-    // 💡 에러 해결: 승인 상태를 저장할 필드 추가
+    // 💡 추가: 변호사 승인 상태 (PENDING, APPROVED, REJECTED)
     private String approveStatus; 
 
-    // TB_ATTACH 컬럼 (이미지 연결)
-    private int attachId;
-    private String savePath;
-    private String origName;
+    // 3. TB_ATTACHMENT 컬럼 (이미지/첨부파일 연결)
+    private int attachId;     // 첨부파일 PK
+    private String savePath;  // 실제 파일 저장 경로 (/uploads/...)
+    private String origName;  // 원본 파일명
+
+    // 4. 1:N 관계 매핑 (MyBatis Collection용)
+    private List<ReviewVO> reviews;
 }

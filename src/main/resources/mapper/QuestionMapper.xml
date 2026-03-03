@@ -1,32 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- 
-  파일위치: src/main/resources/mapper/QuestionMapper.xml
-  수정사항: TB_QUESTION 테이블 명칭과 SEQ_QUESTION 시퀀스를 적용했습니다.
--->
-<mapper namespace="com.edu.springboot.domain.question.QuestionMapper">
+<mapper
+	namespace="com.edu.springboot.domain.question.QuestionMapper">
 
-    <!-- 법률 질문 등록 -->
-    <insert id="insertQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
-        <selectKey keyProperty="questionId" resultType="long" order="BEFORE">
-            SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
-        </selectKey>
-        INSERT INTO TB_QUESTION (
-            QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT, CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
-        )
-        VALUES (
-            #{questionId}, #{memberId}, #{caseId}, #{title}, #{content}, #{caseType}, 'OPEN', SYSDATE, SYSDATE
-        )
-    </insert>
+	<resultMap id="questionDetailMap"
+		type="com.edu.springboot.domain.question.vo.QuestionVO">
+		<id property="questionId" column="QUESTION_ID" />
+		<result property="memberId" column="MEMBER_ID" />
+		<result property="caseId" column="CASE_ID" />
+		<result property="title" column="TITLE" />
+		<result property="content" column="CONTENT" />
+		<result property="caseType" column="CASE_TYPE" />
+		<result property="assignedLawyer" column="ASSIGNED_LAWYER" />
+		<result property="status" column="STATUS" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="updatedAt" column="UPDATED_AT" />
 
-    <!-- 전체 질문 목록 조회 -->
-    <select id="selectAllQuestions" resultType="com.edu.springboot.domain.question.vo.QuestionVO">
-        SELECT * FROM TB_QUESTION ORDER BY CREATED_AT DESC
-    </select>
+		<collection property="answers"
+			ofType="com.edu.springboot.domain.answer.vo.AnswerVO">
+			<id property="answerId" column="ANSWER_ID" />
+			<result property="content" column="ANSWER_CONTENT" />
+			<result property="createdAt" column="ANSWER_CREATED_AT" />
+			<result property="lawyerId" column="LAWYER_ID" />
+			<result property="lawyerName" column="LAWYER_NAME" />
+			<result property="isAdopted" column="IS_ADOPTED" />
+		</collection>
+	</resultMap>
 
-    <!-- 질문 상세 조회 -->
-    <select id="selectQuestionById" resultType="com.edu.springboot.domain.question.vo.QuestionVO">
-        SELECT * FROM TB_QUESTION WHERE QUESTION_ID = #{questionId}
-    </select>
+	<insert id="insertQuestion"
+		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+		<selectKey keyProperty="questionId" resultType="long"
+			order="BEFORE">
+			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TB_QUESTION (
+		QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT, CASE_TYPE, STATUS, CREATED_AT,
+		UPDATED_AT
+		)
+		VALUES (
+		#{questionId}, #{memberId}, #{caseId}, #{title}, #{content}, #{caseType}, 'OPEN',
+		SYSDATE, SYSDATE
+		)
+	</insert>
+
+	<select id="selectAllQuestions"
+		resultType="com.edu.springboot.domain.question.vo.QuestionVO">
+		SELECT * FROM TB_QUESTION ORDER BY CREATED_AT DESC
+	</select>
+
+	<select id="selectQuestionById" resultMap="questionDetailMap">
+		SELECT
+		q.QUESTION_ID, q.MEMBER_ID, q.CASE_ID, q.TITLE, q.CONTENT,
+		q.CASE_TYPE, q.ASSIGNED_LAWYER, q.STATUS, q.CREATED_AT, q.UPDATED_AT,
+		a.ANSWER_ID,
+		a.CONTENT as ANSWER_CONTENT,
+		a.CREATED_AT as ANSWER_CREATED_AT,
+		a.LAWYER_ID,
+		a.IS_ADOPTED,
+		m.NAME as LAWYER_NAME
+		FROM TB_QUESTION q
+		LEFT OUTER JOIN TB_ANSWER a ON q.QUESTION_ID = a.QUESTION_ID
+		LEFT OUTER JOIN TB_LAWYER l ON a.LAWYER_ID = l.LAWYER_ID
+		LEFT OUTER JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
+		WHERE q.QUESTION_ID = #{questionId}
+		ORDER BY a.CREATED_AT DESC
+	</select>
+
+	<update id="updateQuestionStatus">
+		UPDATE TB_QUESTION
+		SET STATUS = #{status}, UPDATED_AT = SYSDATE
+		WHERE QUESTION_ID = #{questionId}
+	</update>
 
 </mapper>

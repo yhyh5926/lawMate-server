@@ -1,6 +1,8 @@
 package com.edu.springboot.domain.precedent;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,15 +14,15 @@ public class PrecedentController {
     @Autowired
     private PrecedentService precedentService;
 
-    // 판례 목록 반환: GET /api/precedents
     @GetMapping
-    public List<PrecedentVO> list() {
-        return precedentService.selectAll();
+    public Map<String, Object> list(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        return precedentService.selectAll(page, size);
     }
 
-    // 💡 판례 상세 반환: GET /api/precedents/{id}
     @GetMapping("/{id}")
-    public PrecedentVO detail(@PathVariable("id") Long id) { // 👈 ("id")를 명시적으로 추가.
+    public PrecedentVO detail(@PathVariable("id") Long id) {
         return precedentService.selectOne(id);
     }
 }

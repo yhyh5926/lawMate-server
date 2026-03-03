@@ -17,7 +17,27 @@
         <result property="saveIdYn" column="SAVE_ID_YN" />
         <result property="createdAt" column="CREATED_AT" />
         <result property="updatedAt" column="UPDATED_AT" />
+
+        <result property="lawyerId" column="LAWYER_ID" />
+        <result property="licenseNo" column="LICENSE_NO" />
+        <result property="specialty" column="SPECIALTY" />
+        <result property="officeName" column="OFFICE_NAME" />
+        <result property="approveStatus" column="APPROVE_STATUS" />
     </resultMap>
+
+    <select id="findByLoginId" resultMap="MemberResultMap">
+        SELECT 
+            m.*, 
+            l.LAWYER_ID, 
+            l.LICENSE_NO, 
+            l.SPECIALTY, 
+            l.OFFICE_NAME, 
+            l.APPROVE_STATUS
+        FROM TB_MEMBER m
+        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        WHERE m.LOGIN_ID = #{loginId} 
+        AND m.STATUS != 'WITHDRAWN'
+    </select>
 
     <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
         <selectKey keyProperty="memberId" resultType="long" order="BEFORE">
@@ -44,18 +64,19 @@
         )
     </insert>
 
-    <select id="findByLoginId" resultMap="MemberResultMap">
-        SELECT * FROM TB_MEMBER 
-        WHERE LOGIN_ID = #{loginId} 
-        AND STATUS != 'WITHDRAWN'
-    </select>
-
     <select id="selectAllMembers" resultMap="MemberResultMap">
-        SELECT * FROM TB_MEMBER ORDER BY CREATED_AT DESC
+        SELECT m.*, l.LAWYER_ID 
+        FROM TB_MEMBER m
+        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        ORDER BY m.CREATED_AT DESC
     </select>
 
     <select id="findMembersByType" resultMap="MemberResultMap">
-        SELECT * FROM TB_MEMBER WHERE MEMBER_TYPE = #{memberType} ORDER BY CREATED_AT DESC
+        SELECT m.*, l.LAWYER_ID 
+        FROM TB_MEMBER m
+        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        WHERE m.MEMBER_TYPE = #{memberType} 
+        ORDER BY m.CREATED_AT DESC
     </select>
 
     <delete id="deleteMember">
