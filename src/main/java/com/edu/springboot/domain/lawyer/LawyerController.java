@@ -22,4 +22,10 @@ public class LawyerController {
 	public LawyerVO detail(@PathVariable("id") Long id) {
 		return lawyerService.getLawyerById(id);
 	}
+	
+	//'26.03.04 원석 추가
+	@GetMapping("/by-member/{memberId}")
+	public LawyerVO detailByMember(@PathVariable("memberId") Long memberId) {
+	    return lawyerService.getLawyerByMemberId(memberId);
+	}
 }

@@ -91,4 +91,19 @@
         )
     </insert>
 
+	<!-- '26.03.04 원석 추가 -->
+	<select id="selectLawyerByMemberId" parameterType="long" resultMap="lawyerDetailMap">
+    SELECT
+        m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
+        l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as specialty,
+        l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
+        l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
+        (SELECT NVL(AVG(RATING), 0) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
+        (SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS = 'ACTIVE') as reviewCnt,
+        a.SAVE_PATH as savePath
+    FROM TB_MEMBER m
+    INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+    LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
+    WHERE m.MEMBER_ID = #{memberId}
+</select>
 </mapper>

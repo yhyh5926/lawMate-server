@@ -16,4 +16,7 @@ public interface LawyerMapper {
 
     // 💡 에러 해결: 전문회원 가입 시 전문가 정보를 저장할 메서드 정의
     int insertLawyer(LawyerVO lawyerVO);
+    
+    //26.03.04 원석 추가
+    LawyerVO selectLawyerByMemberId(Long memberId);
 }

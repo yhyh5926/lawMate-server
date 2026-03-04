@@ -18,4 +18,9 @@ public class LawyerService {
 	public LawyerVO getLawyerById(Long id) {
 		return lawyerMapper.selectLawyerById(id);
 	}
+	
+	//26.03.04 원석 추가
+	public LawyerVO getLawyerByMemberId(Long memberId) {
+	    return lawyerMapper.selectLawyerByMemberId(memberId);
+	}
 }

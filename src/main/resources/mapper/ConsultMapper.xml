@@ -33,7 +33,7 @@
              STATUS, CREATED_AT, UPDATED_AT)
         VALUES
             (#{consultId}, #{memberId, jdbcType=NUMERIC}, #{lawyerId, jdbcType=NUMERIC}, #{caseId, jdbcType=NUMERIC},
-             TO_DATE(#{consultDate}, 'YYYY-MM-DD'),
+             TO_DATE(#{consultDate, jdbcType=VARCHAR}, 'YYYY-MM-DD"T"HH24:MI:SS'),
              #{durationMin}, #{note},
              'PENDING', SYSDATE, SYSDATE)
     </insert>

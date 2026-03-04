@@ -41,4 +41,6 @@ public interface ChatMapper {
     /** 읽음 처리 */
     int markAllRead(@Param("roomNo")   Long roomNo,
                     @Param("memberNo") Long memberNo);
+    
+    Long selectLawyerIdByMemberId(@Param("memberId") Long memberId);
 }

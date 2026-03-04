@@ -20,10 +20,12 @@ import com.edu.springboot.domain.chat.vo.ChatMsgVO;
 import com.edu.springboot.domain.chat.vo.ChatRoomVO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
+@Slf4j
 public class ChatRestController {
 
     private final ChatMapper chatMapper;
@@ -48,11 +50,17 @@ public class ChatRestController {
         Long myNo     = getMemberNo(bearer);
         Long targetNo = body.get("targetMemberNo");
 
-        ChatRoomVO room = chatMapper.findRoomByMembers(myNo, targetNo);
+        Long lawyerId = chatMapper.selectLawyerIdByMemberId(targetNo);
+        log.info("=== targetNo: {}, lawyerId: {}", targetNo, lawyerId);
+
+        Long no2 = lawyerId != null ? lawyerId : targetNo;
+        log.info("=== no2 (최종): {}", no2);
+
+        ChatRoomVO room = chatMapper.findRoomByMembers(myNo, no2);
         if (room == null) {
             room = ChatRoomVO.builder()
                     .memberNo1(myNo)
-                    .memberNo2(targetNo)
+                    .memberNo2(no2)
                     .build();
             chatMapper.insertRoom(room);
         }
