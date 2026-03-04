@@ -3,66 +3,58 @@
 
 <mapper namespace="com.edu.springboot.domain.report.ReportMapper">
 
-	<resultMap id="ReportResultMap"
-		type="com.edu.springboot.domain.report.vo.ReportVO">
-		<id property="reportId" column="REPORT_ID" />
-		<result property="reporterId" column="REPORTER_ID" />
-		<result property="reporterName" column="REPORTER_NAME" />
-		<result property="targetType" column="TARGET_TYPE" />
-		<result property="targetId" column="TARGET_ID" />
-		<result property="reason" column="REASON" />
-		<result property="detail" column="DETAIL" />
-		<result property="status" column="STATUS" />
-		<result property="handledBy" column="HANDLED_BY" />
-		<result property="handledAt" column="HANDLED_AT" />
-		<result property="resultNote" column="RESULT_NOTE" />
-		<result property="createdAt" column="CREATED_AT" />
-	</resultMap>
+    <resultMap id="ReportResultMap" type="com.edu.springboot.domain.report.vo.ReportVO">
+        <id property="reportId" column="REPORT_ID" />
+        <result property="reporterId" column="REPORTER_ID" />
+        <result property="reporterName" column="REPORTER_NAME" />
+        <result property="targetType" column="TARGET_TYPE" />
+        <result property="targetId" column="TARGET_ID" />
+        <result property="reason" column="REASON" />
+        <result property="detail" column="DETAIL" />
+        <result property="status" column="STATUS" />
+        <result property="handledBy" column="HANDLED_BY" />
+        <result property="handledAt" column="HANDLED_AT" />
+        <result property="resultNote" column="RESULT_NOTE" />
+        <result property="createdAt" column="CREATED_AT" />
+    </resultMap>
 
-	<select id="findAllReports" resultMap="ReportResultMap">
-		SELECT r.*, m.NAME as REPORTER_NAME
-		FROM TB_REPORT r
-		JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
-		ORDER BY r.CREATED_AT DESC
-	</select>
+    <select id="findAllReports" resultMap="ReportResultMap">
+        SELECT r.*, m.NAME as REPORTER_NAME
+        FROM TB_REPORT r
+        JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
+        ORDER BY r.CREATED_AT DESC
+    </select>
 
-	<select id="findReportById" resultMap="ReportResultMap">
-		SELECT r.*, m.NAME as REPORTER_NAME
-		FROM TB_REPORT r
-		JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
-		WHERE r.REPORT_ID = #{reportId}
-	</select>
+    <select id="findReportById" resultMap="ReportResultMap">
+        SELECT r.*, m.NAME as REPORTER_NAME
+        FROM TB_REPORT r
+        JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
+        WHERE r.REPORT_ID = #{reportId}
+    </select>
 
-	<update id="updateReportStatus"
-		parameterType="com.edu.springboot.domain.report.vo.ReportVO">
-		UPDATE TB_REPORT
-		SET STATUS = #{status},
-		HANDLED_BY = #{handledBy},
-		RESULT_NOTE = #{resultNote},
-		HANDLED_AT = SYSDATE
-		WHERE REPORT_ID = #{reportId}
-	</update>
+    <update id="updateReportStatus" parameterType="com.edu.springboot.domain.report.vo.ReportVO">
+        UPDATE TB_REPORT
+        SET STATUS = #{status}, 
+            HANDLED_BY = #{handledBy}, 
+            RESULT_NOTE = #{resultNote}, 
+            HANDLED_AT = SYSDATE
+        WHERE REPORT_ID = #{reportId}
+    </update>
 
-	<insert id="insertSanction"
-		parameterType="com.edu.springboot.domain.report.vo.SanctionVO">
-		INSERT INTO TB_SANCTION (
-		SANCTION_ID, MEMBER_ID, REPORT_ID, SANCTION_TYPE, REASON, START_DATE, END_DATE,
-		ADMIN_ID, CREATED_AT
-		) VALUES (
-		SEQ_SANCTION.NEXTVAL, #{memberId}, #{reportId, jdbcType=NUMBER}, #{sanctionType},
-		#{reason}, SYSDATE, #{endDate, jdbcType=DATE}, #{adminId}, SYSDATE
-		)
-	</insert>
+    <insert id="insertSanction" parameterType="com.edu.springboot.domain.report.vo.SanctionVO">
+        INSERT INTO TB_SANCTION (
+            SANCTION_ID, MEMBER_ID, REPORT_ID, SANCTION_TYPE, REASON, START_DATE, END_DATE, ADMIN_ID, CREATED_AT
+        ) VALUES (
+            SEQ_SANCTION.NEXTVAL, #{memberId}, #{reportId, jdbcType=NUMERIC}, #{sanctionType}, #{reason}, SYSDATE, #{endDate, jdbcType=DATE}, #{adminId}, SYSDATE
+        )
+    </insert>
 
-	<insert id="insertReport"
-		parameterType="com.edu.springboot.domain.report.vo.ReportVO">
-		INSERT INTO TB_REPORT (
-		REPORT_ID, REPORTER_ID, TARGET_TYPE, TARGET_ID, REASON, DETAIL, STATUS,
-		CREATED_AT
-		) VALUES (
-		SEQ_REPORT.NEXTVAL, #{reporterId}, #{targetType}, #{targetId}, #{reason}, #{detail},
-		'PENDING', SYSDATE
-		)
-	</insert>
+    <insert id="insertReport" parameterType="com.edu.springboot.domain.report.vo.ReportVO">
+        INSERT INTO TB_REPORT (
+            REPORT_ID, REPORTER_ID, TARGET_TYPE, TARGET_ID, REASON, DETAIL, STATUS, CREATED_AT
+        ) VALUES (
+            SEQ_REPORT.NEXTVAL, #{reporterId}, #{targetType}, #{targetId}, #{reason}, #{detail}, 'PENDING', SYSDATE
+        )
+    </insert>
 
 </mapper>
