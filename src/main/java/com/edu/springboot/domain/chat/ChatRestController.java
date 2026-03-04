@@ -44,15 +44,20 @@ public class ChatRestController {
     public ResponseEntity<ApiResponse<ChatRoomVO>> getOrCreate(
             @RequestHeader("Authorization") String bearer,
             @RequestBody Map<String, Long> body) {
-
         Long myNo     = getMemberNo(bearer);
         Long targetNo = body.get("targetMemberNo");
 
-        ChatRoomVO room = chatMapper.findRoomByMembers(myNo, targetNo);
+        // targetNo가 LAWYER의 MEMBER_ID인 경우 LAWYER_ID로 변환
+        Long lawyerId = chatMapper.selectLawyerIdByMemberId(targetNo);
+        
+        Long no1 = myNo;
+        Long no2 = lawyerId != null ? lawyerId : targetNo;
+
+        ChatRoomVO room = chatMapper.findRoomByMembers(myNo, no2);
         if (room == null) {
             room = ChatRoomVO.builder()
                     .memberNo1(myNo)
-                    .memberNo2(targetNo)
+                    .memberNo2(no2)
                     .build();
             chatMapper.insertRoom(room);
         }
