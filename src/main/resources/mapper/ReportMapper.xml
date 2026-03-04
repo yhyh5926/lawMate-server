@@ -1,33 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- 
-  파일위치: src/main/resources/mapper/ReportMapper.xml
-  기능전체: 신고(TB_REPORT) 및 제재(TB_SANCTION) 관련 SQL입니다. 
-  은혁님의 관리자 전용 신고 처리 기능을 담당합니다.
--->
+
 <mapper namespace="com.edu.springboot.domain.report.ReportMapper">
 
-    <!-- 은혁 파트: 전체 신고 접수 목록 조회 -->
-    <select id="findAllReports" resultType="com.edu.springboot.domain.report.vo.ReportVO">
-        SELECT * FROM TB_REPORT ORDER BY CREATED_AT DESC
-    </select>
+	<resultMap id="ReportResultMap"
+		type="com.edu.springboot.domain.report.vo.ReportVO">
+		<id property="reportId" column="REPORT_ID" />
+		<result property="reporterId" column="REPORTER_ID" />
+		<result property="reporterName" column="REPORTER_NAME" />
+		<result property="targetType" column="TARGET_TYPE" />
+		<result property="targetId" column="TARGET_ID" />
+		<result property="reason" column="REASON" />
+		<result property="detail" column="DETAIL" />
+		<result property="status" column="STATUS" />
+		<result property="handledBy" column="HANDLED_BY" />
+		<result property="handledAt" column="HANDLED_AT" />
+		<result property="resultNote" column="RESULT_NOTE" />
+		<result property="createdAt" column="CREATED_AT" />
+	</resultMap>
 
-    <!-- 은혁 파트: 신고 상세 조회 -->
-    <select id="findReportById" resultType="com.edu.springboot.domain.report.vo.ReportVO">
-        SELECT * FROM TB_REPORT WHERE REPORT_ID = #{reportId}
-    </select>
+	<select id="findAllReports" resultMap="ReportResultMap">
+		SELECT r.*, m.NAME as REPORTER_NAME
+		FROM TB_REPORT r
+		JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
+		ORDER BY r.CREATED_AT DESC
+	</select>
 
-    <!-- 은혁 파트: 신고 처리 상태 업데이트 -->
-    <update id="updateReportStatus" parameterType="com.edu.springboot.domain.report.vo.ReportVO">
-        UPDATE TB_REPORT
-        SET STATUS = #{status}, HANDLED_BY = #{handledBy}, RESULT_NOTE = #{resultNote}, HANDLED_AT = SYSDATE
-        WHERE REPORT_ID = #{reportId}
-    </update>
+	<select id="findReportById" resultMap="ReportResultMap">
+		SELECT r.*, m.NAME as REPORTER_NAME
+		FROM TB_REPORT r
+		JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
+		WHERE r.REPORT_ID = #{reportId}
+	</select>
 
-    <!-- 은혁 파트: 제재 내역 등록 -->
-    <insert id="insertSanction" parameterType="com.edu.springboot.domain.report.vo.SanctionVO">
-        INSERT INTO TB_SANCTION (SANCTION_ID, MEMBER_ID, REPORT_ID, SANCTION_TYPE, REASON, END_DATE, ADMIN_ID)
-        VALUES (SEQ_SANCTION.NEXTVAL, #{memberId}, #{reportId}, #{sanctionType}, #{reason}, #{endDate}, #{adminId})
-    </insert>
+	<update id="updateReportStatus"
+		parameterType="com.edu.springboot.domain.report.vo.ReportVO">
+		UPDATE TB_REPORT
+		SET STATUS = #{status},
+		HANDLED_BY = #{handledBy},
+		RESULT_NOTE = #{resultNote},
+		HANDLED_AT = SYSDATE
+		WHERE REPORT_ID = #{reportId}
+	</update>
+
+	<insert id="insertSanction"
+		parameterType="com.edu.springboot.domain.report.vo.SanctionVO">
+		INSERT INTO TB_SANCTION (
+		SANCTION_ID, MEMBER_ID, REPORT_ID, SANCTION_TYPE, REASON, START_DATE, END_DATE,
+		ADMIN_ID, CREATED_AT
+		) VALUES (
+		SEQ_SANCTION.NEXTVAL, #{memberId}, #{reportId, jdbcType=NUMBER}, #{sanctionType},
+		#{reason}, SYSDATE, #{endDate, jdbcType=DATE}, #{adminId}, SYSDATE
+		)
+	</insert>
+
+	<insert id="insertReport"
+		parameterType="com.edu.springboot.domain.report.vo.ReportVO">
+		INSERT INTO TB_REPORT (
+		REPORT_ID, REPORTER_ID, TARGET_TYPE, TARGET_ID, REASON, DETAIL, STATUS,
+		CREATED_AT
+		) VALUES (
+		SEQ_REPORT.NEXTVAL, #{reporterId}, #{targetType}, #{targetId}, #{reason}, #{detail},
+		'PENDING', SYSDATE
+		)
+	</insert>
 
 </mapper>
