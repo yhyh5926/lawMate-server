@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.springboot.domain.admin.AdminMapper">
+
+	<select id="countTotalPersonalMembers" resultType="int">
+		SELECT COUNT(*) FROM TB_MEMBER
+		WHERE MEMBER_TYPE = 'PERSONAL' AND STATUS != 'WITHDRAWN'
+	</select>
+
+	<select id="countTotalLawyerMembers" resultType="int">
+		SELECT COUNT(*) FROM TB_MEMBER m
+		JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		WHERE m.MEMBER_TYPE = 'LAWYER'
+		AND m.STATUS != 'WITHDRAWN'
+		AND l.APPROVE_STATUS = 'APPROVED'
+	</select>
+
+	<select id="countCompletedCases" resultType="int">
+		SELECT COUNT(*) FROM TB_CASE WHERE STEP = 'COMPLETED'
+	</select>
+
+	<select id="getDailyMemberStats" resultType="java.util.Map">
+		SELECT
+		TO_CHAR(CREATED_AT, 'MM-DD') AS "date",
+		COUNT(*) AS "count"
+		FROM TB_MEMBER
+		WHERE CREATED_AT >= TRUNC(SYSDATE) - 4
+		GROUP BY TO_CHAR(CREATED_AT, 'MM-DD')
+		ORDER BY "date" ASC
+	</select>
+
+	<select id="getDailyCaseStats" resultType="java.util.Map">
+		SELECT
+		TO_CHAR(CREATED_AT, 'MM-DD') AS "date",
+		COUNT(*) AS "count"
+		FROM TB_CASE
+		WHERE CREATED_AT >= TRUNC(SYSDATE) - 4
+		GROUP BY TO_CHAR(CREATED_AT, 'MM-DD')
+		ORDER BY "date" ASC
+	</select>
+
+</mapper>

@@ -1,65 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper 
+<mapper
 	namespace="com.edu.springboot.domain.community.CommunityMapper">
-	
+
 	<select id="list"
 		resultType="com.edu.springboot.domain.community.vo.PostVo">
-		
-		SELECT 
-			p.post_id,
-	        p.member_id,
-	        p.case_type,
-	        p.title,
-	        p.content,
-	        p.view_cnt,
-	        p.comment_cnt,
-	        p.status,
-	        p.created_at,
-	        p.updated_at,
-	        m.name
+		SELECT
+		p.post_id,
+		p.member_id,
+		p.case_type,
+		p.title,
+		p.content,
+		p.view_cnt,
+		p.comment_cnt,
+		p.status,
+		p.created_at,
+		p.updated_at,
+		m.name
 		FROM tb_post p
 		JOIN tb_member m ON p.member_id = m.member_id
-		ORDER BY p.post_id DESC
+		ORDER BY
+		p.post_id DESC
 	</select>
-	
+
 	<select id="detail"
 		resultType="com.edu.springboot.domain.community.vo.PostVo"
 		parameterType="int">
-		
-		SELECT 
-			p.post_id,
-	        p.member_id,
-	        p.case_type,
-	        p.title,
-	        p.content,
-	        p.view_cnt,
-	        p.comment_cnt,
-	        p.status,
-	        p.created_at,
-	        p.updated_at,
-	        m.name
+		SELECT
+		p.post_id,
+		p.member_id,
+		p.case_type,
+		p.title,
+		p.content,
+		p.view_cnt,
+		p.comment_cnt,
+		p.status,
+		p.created_at,
+		p.updated_at,
+		m.name
 		FROM tb_post p
 		JOIN tb_member m ON p.member_id = m.member_id
-		WHERE p.post_id = #{postId}
+		WHERE
+		p.post_id = #{postId}
 	</select>
-	
+
 	<select id="commentList"
-		parameterType="int"
-		resultType="com.edu.springboot.domain.community.vo.CommentVo">
-		
+		resultType="com.edu.springboot.domain.community.vo.CommentVo"
+		parameterType="int">
 		SELECT
-	        c.comment_id,
-			c.post_id,
-	        c.member_id,
-	        c.parent_id,
-	        c.content,
-	        c.status,
-	        c.created_at,
-	        c.updated_at,
-	        m.name
+		c.comment_id,
+		c.post_id,
+		c.member_id,
+		c.parent_id,
+		c.content,
+		c.status,
+		c.created_at,
+		c.updated_at,
+		m.name
 		FROM tb_comment c
 		JOIN tb_member m ON c.member_id = m.member_id
-		WHERE c.post_id = #{postId}
+		WHERE
+		c.post_id = #{postId}
+		ORDER BY c.created_at ASC
 	</select>
+
+	<update id="updatePostStatus">
+		UPDATE tb_post
+		SET status = #{status}, updated_at = SYSDATE
+		WHERE post_id = #{postId}
+	</update>
+
 </mapper>

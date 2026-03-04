@@ -79,14 +79,16 @@
 	</update>
 
 	<insert id="insertLawyer" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-		INSERT INTO TB_LAWYER (
-			LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
-			APPROVE_STATUS, CREATED_AT, UPDATED_AT
-		)
-		VALUES (
-			SEQ_LAWYER.NEXTVAL, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
-			'PENDING', SYSDATE, SYSDATE
-		)
-	</insert>
+        <selectKey keyProperty="lawyerId" resultType="int" order="BEFORE">
+            SELECT SEQ_LAWYER.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_LAWYER (
+            LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY, OFFICE_NAME, 
+            OFFICE_ADDR, OFFICE_DETAIL_ADDR, APPROVE_STATUS, CREATED_AT, UPDATED_AT
+        ) VALUES (
+            #{lawyerId}, #{memberId}, #{licenseNo}, #{specialty}, #{officeName}, 
+            #{officeAddr}, #{officeDetailAddr}, #{approveStatus}, SYSDATE, SYSDATE
+        )
+    </insert>
 
 </mapper>
