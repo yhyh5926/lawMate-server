@@ -42,5 +42,5 @@ public interface ChatMapper {
     int markAllRead(@Param("roomNo")   Long roomNo,
                     @Param("memberNo") Long memberNo);
     
-    Long selectLawyerIdByMemberId(Long memberId);
+    Long selectLawyerIdByMemberId(@Param("memberId") Long memberId);
 }

@@ -20,10 +20,12 @@ import com.edu.springboot.domain.chat.vo.ChatMsgVO;
 import com.edu.springboot.domain.chat.vo.ChatRoomVO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
+@Slf4j
 public class ChatRestController {
 
     private final ChatMapper chatMapper;
@@ -44,14 +46,15 @@ public class ChatRestController {
     public ResponseEntity<ApiResponse<ChatRoomVO>> getOrCreate(
             @RequestHeader("Authorization") String bearer,
             @RequestBody Map<String, Long> body) {
+
         Long myNo     = getMemberNo(bearer);
         Long targetNo = body.get("targetMemberNo");
 
-        // targetNo가 LAWYER의 MEMBER_ID인 경우 LAWYER_ID로 변환
         Long lawyerId = chatMapper.selectLawyerIdByMemberId(targetNo);
-        
-        Long no1 = myNo;
+        log.info("=== targetNo: {}, lawyerId: {}", targetNo, lawyerId);
+
         Long no2 = lawyerId != null ? lawyerId : targetNo;
+        log.info("=== no2 (최종): {}", no2);
 
         ChatRoomVO room = chatMapper.findRoomByMembers(myNo, no2);
         if (room == null) {
