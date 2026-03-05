@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class AnswerController {
 	private final AnswerService answerService;
 
-	@PostMapping("/write.do")
+	@PostMapping("/write")
 	public ResponseEntity<?> writeAnswer(@RequestBody AnswerVO answerVO) {
 
 		boolean success = answerService.registerAnswer(answerVO);

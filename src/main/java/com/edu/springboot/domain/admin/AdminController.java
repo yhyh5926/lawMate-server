@@ -43,7 +43,7 @@ public class AdminController {
 		System.out.println("✅ [domain/admin] 관리자 컨트롤러가 가동되었습니다.");
 	}
 
-	@GetMapping("/stats.do")
+	@GetMapping("/stats")
 	public ResponseEntity<?> getDashboardStats() {
 		int totalPersonal = adminMapper.countTotalPersonalMembers();
 		int totalLawyer = adminMapper.countTotalLawyerMembers();
@@ -57,12 +57,12 @@ public class AdminController {
 				dailyUsers, "cases", dailyCases));
 	}
 
-	@GetMapping("/member/list.do")
+	@GetMapping("/member/list")
 	public ResponseEntity<?> getMemberList() {
 		return ResponseEntity.ok(Map.of("data", memberMapper.selectAllMembers()));
 	}
 
-	@PostMapping("/member/delete.do")
+	@PostMapping("/member/delete")
 	public ResponseEntity<?> suspendMember(@RequestBody Map<String, Long> payload) {
 		try {
 			Long memberId = payload.get("memberId");
@@ -73,23 +73,23 @@ public class AdminController {
 		}
 	}
 
-	@GetMapping("/lawyer/approve.do")
+	@GetMapping("/lawyer/approve")
 	public ResponseEntity<?> getPendingLawyers() {
 		return ResponseEntity.ok(Map.of("data", lawyerMapper.findPendingLawyers()));
 	}
 
-	@PostMapping("/lawyer/approve.do")
+	@PostMapping("/lawyer/approve")
 	public ResponseEntity<?> approveLawyer(@RequestBody LawyerVO lawyerVO) {
 		lawyerMapper.updateApproveStatus(lawyerVO);
 		return ResponseEntity.ok(Map.of("message", "전문회원 승인 상태가 업데이트 되었습니다."));
 	}
 
-	@GetMapping("/case/list.do")
+	@GetMapping("/case/list")
 	public ResponseEntity<?> getAllCases() {
 		return ResponseEntity.ok(Map.of("data", caseService.getAllCasesForAdmin()));
 	}
 
-	@GetMapping("/board/list.do")
+	@GetMapping("/board/list")
 	public ResponseEntity<?> getBoardList() {
 		List<PostVo> posts = communityMapper.list();
 		List<QuestionVO> questions = questionMapper.selectAllQuestions();
@@ -97,7 +97,7 @@ public class AdminController {
 		return ResponseEntity.ok(Map.of("data", Map.of("posts", posts, "questions", questions)));
 	}
 
-	@PostMapping("/board/delete.do")
+	@PostMapping("/board/delete")
 	public ResponseEntity<?> deleteBoardItem(@RequestBody Map<String, Object> payload) {
 		try {
 			String type = payload.get("type").toString();
@@ -114,17 +114,17 @@ public class AdminController {
 		}
 	}
 
-	@GetMapping("/report/list.do")
+	@GetMapping("/report/list")
 	public ResponseEntity<?> getReportList() {
 		return ResponseEntity.ok(Map.of("data", reportService.getAllReports()));
 	}
 
-	@GetMapping("/report/detail.do")
+	@GetMapping("/report/detail")
 	public ResponseEntity<?> getReportDetail(@RequestParam("reportId") Long reportId) {
 		return ResponseEntity.ok(Map.of("data", reportService.getReportDetail(reportId)));
 	}
 
-	@PostMapping("/report/process.do")
+	@PostMapping("/report/process")
 	public ResponseEntity<?> processSanction(@RequestBody Map<String, Object> payload) {
 		try {
 			ReportVO rVO = new ReportVO();

@@ -19,7 +19,7 @@ public class ReportController {
     private final ReportService reportService;
 
     // 일반 사용자의 신고 등록 (게시글, 댓글, 리뷰 등)
-    @PostMapping("/submit.do")
+    @PostMapping("/submit")
     public ResponseEntity<?> submitReport(@RequestBody ReportVO reportVO) {
         boolean success = reportService.registerReport(reportVO);
         return ResponseEntity.ok(Map.of("success", success));
