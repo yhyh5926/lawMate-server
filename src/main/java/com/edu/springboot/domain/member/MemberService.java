@@ -4,7 +4,6 @@ package com.edu.springboot.domain.member;
 import com.edu.springboot.domain.member.dto.JoinDto;
 import com.edu.springboot.domain.member.dto.LoginDto;
 import com.edu.springboot.domain.member.vo.MemberVO;
-import java.util.List;
 import java.util.Map;
 
 public interface MemberService {
@@ -14,10 +13,10 @@ public interface MemberService {
     // 회원가입 처리 (TB_MEMBER + TB_LAWYER 통합 저장)
     boolean join(JoinDto dto);
 
-    // 일반 로그인 처리 (1234 프리패스 및 승인 대기 차단 포함)
+    // 💡 [수정] 일반 로그인 처리 (1234 임시 프리패스 제거 및 정상 암호화 검증 적용)
     Map<String, Object> login(LoginDto dto);
     
-    // 💡 소셜 로그인 처리 (구글 전용)
+    // 소셜 로그인 처리 (구글 전용)
     Map<String, Object> socialLogin(Map<String, String> socialData);
 
     // 회원 정보 상세 조회
@@ -34,7 +33,4 @@ public interface MemberService {
 
     // 인증번호 발송 (테스트용)
     String sendAuthCode(String phone);
-
-    // 관리자용: 회원 유형별 목록 조회
-    List<MemberVO> getMembersByType(String memberType);
 }
