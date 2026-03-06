@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,7 +20,7 @@ public class QuestionController {
 
 	@PostConstruct
 	public void init() {
-		System.out.println("✅ [domain/question] 법률 질문 컨트롤러가 /api/question 경로로 활성화되었습니다.");
+		System.out.println("✅ [domain/question] 법률 질문 컨트롤러가 활성화되었습니다.");
 	}
 
 	// 1. 새 질문 등록
@@ -28,40 +30,62 @@ public class QuestionController {
 		return ResponseEntity.ok(Map.of("success", result > 0));
 	}
 
-	// 2. 전체 질문 목록 조회 (수정된 Mapper에 의해 작성자명, 답변수 포함)
+	/**
+	 * 2. 질문 목록 조회 (검색 및 페이지네이션 반영)
+	 * 
+	 * @param page:     현재 페이지 (1부터 시작)
+	 * @param size:     한 페이지당 게시물 수
+	 * @param caseType: 사건 유형 필터
+	 * @param title:    제목 검색어
+	 */
 	@GetMapping("/list")
-	public ResponseEntity<?> getQuestionList() {
-		return ResponseEntity.ok(Map.of("data", questionMapper.selectAllQuestions()));
+	public ResponseEntity<?> getQuestionList(@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "size", defaultValue = "10") int size,
+			@RequestParam(value = "caseType", required = false) String caseType,
+			@RequestParam(value = "title", required = false) String title) {
+
+		// MyBatis 페이징 처리를 위한 시작 위치 계산 (offset)
+		int offset = (page - 1) * size;
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("offset", offset);
+		params.put("size", size);
+		params.put("caseType", caseType);
+		params.put("title", title);
+
+		// 검색 조건에 맞는 데이터 리스트와 전체 개수 조회
+		List<QuestionVO> list = questionMapper.selectQuestionsWithPaging(params);
+		int totalCount = questionMapper.selectQuestionCount(params);
+
+		return ResponseEntity.ok(Map.of("data", list, "totalCount", totalCount, "currentPage", page, "totalPages",
+				(int) Math.ceil((double) totalCount / size)));
 	}
 
-	// 3. 질문 상세 조회 (수정된 Mapper에 의해 질문자명, 답변 리스트 포함)
+	// 3. 질문 상세 조회
 	@GetMapping("/detail")
 	public ResponseEntity<?> getQuestionDetail(@RequestParam("questionId") Long questionId) {
 		return ResponseEntity.ok(Map.of("data", questionMapper.selectQuestionById(questionId)));
 	}
 
 	/**
-	 * 4. 변호사 답변 채택 API 기능: 질문 상태를 ADOPTED로 변경하고, 채택된 변호사 ID를 질문 테이블에 할당합니다.
-	 * Transactional: 질문 업데이트와 답변 채택 상태 변경을 원자적으로 처리합니다.
+	 * 4. 변호사 답변 채택
 	 */
 	@Transactional
 	@PostMapping("/adopt")
-	public ResponseEntity<?> adoptAnswer(@RequestBody Map<String, Long> params) {
-		Long questionId = params.get("questionId");
-		Long lawyerId = params.get("lawyerId");
-		Long memberId = params.get("memberId"); // 현재 로그인한 사용자 ID (작성자 확인용)
-		Long answerId = params.get("answerId");
+	public ResponseEntity<?> adoptAnswer(@RequestBody Map<String, Object> params) {
+		// Map에서 값을 꺼낼 때 타입 안정성을 위해 체크 필요
+		Long questionId = Long.valueOf(params.get("questionId").toString());
+		Long lawyerId = Long.valueOf(params.get("lawyerId").toString());
+		Long memberId = Long.valueOf(params.get("memberId").toString());
+		Long answerId = Long.valueOf(params.get("answerId").toString());
 
-		// 1. 질문 테이블 업데이트 (상태 변경 및 변호사 할당)
 		int qResult = questionMapper.updateQuestionAdoption(questionId, lawyerId, memberId);
-
-		// 2. 답변 테이블 업데이트 (해당 답변 IS_ADOPTED = 'Y')
 		int aResult = questionMapper.updateAnswerAdoption(answerId);
 
 		if (qResult > 0 && aResult > 0) {
 			return ResponseEntity.ok(Map.of("success", true, "message", "채택이 완료되었습니다."));
 		} else {
-			return ResponseEntity.status(400).body(Map.of("success", false, "message", "채택에 실패했습니다. 작성자 본인인지 확인하세요."));
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "채택에 실패했습니다."));
 		}
 	}
 }
