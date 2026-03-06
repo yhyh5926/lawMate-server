@@ -47,12 +47,12 @@
 			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO TB_QUESTION (
-		QUESTION_ID, MEMBER_ID, CASE_ID, TITLE,
+		QUESTION_ID, MEMBER_ID, TITLE,
 		CONTENT, CASE_TYPE, STATUS, CREATED_AT,
 		UPDATED_AT
 		)
 		VALUES (
-		#{questionId}, #{memberId}, #{caseId}, #{title}, #{content},
+		#{questionId}, #{memberId}, #{title}, #{content},
 		#{caseType}, 'OPEN',
 		SYSDATE, SYSDATE
 		)
