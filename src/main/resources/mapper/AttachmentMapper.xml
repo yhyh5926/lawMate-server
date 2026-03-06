@@ -1,20 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.edu.springboot.domain.attachment.AttachmentMapper">
+<mapper
+	namespace="com.edu.springboot.domain.attachment.AttachmentMapper">
 
-    <insert id="insertAttachment" parameterType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
-        INSERT INTO TB_ATTACHMENT (ATTACH_ID, REF_TYPE, REF_ID, UPLOADER_ID, ORIG_NAME, SAVE_PATH, FILE_SIZE, MIME_TYPE)
-        VALUES (SEQ_ATTACH.NEXTVAL, #{refType}, #{refId}, #{uploaderId}, #{origName}, #{savePath}, #{fileSize}, #{mimeType})
-    </insert>
+	<insert id="insertAttachment"
+		parameterType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+		INSERT INTO TB_ATTACHMENT (ATTACH_ID, REF_TYPE, REF_ID, UPLOADER_ID,
+		ORIG_NAME, SAVE_PATH, FILE_SIZE, MIME_TYPE)
+		VALUES (SEQ_ATTACH.NEXTVAL, #{refType}, #{refId}, #{uploaderId},
+		#{origName}, #{savePath}, #{fileSize}, #{mimeType})
+	</insert>
 
-    <select id="findAttachmentsByRef" resultType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
-        SELECT * FROM TB_ATTACHMENT 
-        WHERE REF_TYPE = #{refType} AND REF_ID = #{refId}
-        ORDER BY CREATED_AT ASC
-    </select>
+	<select id="findAttachmentsByRef"
+		resultType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+		SELECT * FROM TB_ATTACHMENT
+		WHERE REF_TYPE = #{refType} AND REF_ID = #{refId}
+		ORDER BY CREATED_AT ASC
+	</select>
 
-    <select id="findAttachmentById" resultType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
-        SELECT * FROM TB_ATTACHMENT WHERE ATTACH_ID = #{attachId}
-    </select>
+	<select id="findAttachmentById"
+		resultType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+		SELECT * FROM TB_ATTACHMENT WHERE ATTACH_ID = #{attachId}
+	</select>
+
+	<delete id="deleteAttachmentsByRef">
+		DELETE FROM TB_ATTACHMENT
+		WHERE REF_TYPE = #{refType} AND REF_ID = #{refId}
+	</delete>
 
 </mapper>
