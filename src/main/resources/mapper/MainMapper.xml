@@ -2,92 +2,85 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!--
-  파일위치: src/main/resources/mapper/MainMapper.xml
-  기능: 메인 화면(공지/통계/최근게시글) 쿼리
-  - Oracle + MyBatis 안전 버전
-  - FETCH FIRST ? ROWS ONLY 이슈 방지: ROWNUM 방식 사용
-  - 차트 ORA-00923 방지: SQL에서 (? - 1) 형태 제거 (offsetDays 사용)
--->
+<!-- 파일위치: src/main/resources/mapper/MainMapper.xml 기능: 메인 화면(공지/통계/최근게시글) 
+	쿼리 - Oracle + MyBatis 안전 버전 - FETCH FIRST ? ROWS ONLY 이슈 방지: ROWNUM 방식 사용 
+	- 차트 ORA-00923 방지: SQL에서 (? - 1) 형태 제거 (offsetDays 사용) -->
 <mapper namespace="com.edu.springboot.domain.main.MainMapper">
 
-    <!-- 최신 공지사항 N건 -->
-    <select id="selectLatestNotices"
-            resultType="com.edu.springboot.domain.main.vo.MainNoticeVO">
-        SELECT *
-        FROM (
-            SELECT
-                p.post_id    AS postId,
-                p.title      AS title,
-                p.content    AS content,
-                m.name       AS name,
-                TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
-            FROM tb_post p
-            JOIN tb_member m ON p.member_id = m.member_id
-            WHERE p.case_type IN ('NOTICE', '공지', '공지사항')
-            ORDER BY p.post_id DESC
-        )
-        WHERE ROWNUM &lt;= #{limit}
-    </select>
+	<!-- 최신 공지사항 N건 -->
+	<select id="selectLatestNotices"
+		resultType="com.edu.springboot.domain.main.vo.MainNoticeVO">
+		SELECT *
+		FROM (
+		SELECT
+		p.post_id AS postId,
+		p.title AS title,
+		p.content AS content,
+		m.name AS name,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.case_type IN ('NOTICE', '공지', '공지사항')
+		ORDER BY p.post_id DESC
+		)
+		WHERE ROWNUM &lt;= #{limit}
+	</select>
 
-    <!-- 오늘 접수 사건 수 -->
-    <select id="countTodayCases" resultType="int">
-        SELECT COUNT(*)
-        FROM TB_CASE
-        WHERE TRUNC(CREATED_AT) = TRUNC(SYSDATE)
-    </select>
+	<!-- 오늘 접수 사건 수 -->
+	<select id="countTodayCases" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_CASE
+		WHERE TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+	</select>
 
-    <!-- 주간 누적 상담 건수 (최근 7일, 오늘 포함) -->
-    <select id="countWeeklyConsults" resultType="int">
-        SELECT COUNT(*)
-        FROM TB_CONSULT
-        WHERE TRUNC(CREATED_AT) BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE)
-    </select>
+	<!-- 주간 누적 상담 건수 (최근 7일, 오늘 포함) -->
+	<select id="countWeeklyConsults" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_CONSULT
+		WHERE TRUNC(CREATED_AT) BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE)
+	</select>
 
-    <!-- 최근 게시글 N건 -->
-    <select id="selectRecentPosts"
-            resultType="com.edu.springboot.domain.main.vo.MainRecentPostVO">
-        SELECT *
-        FROM (
-            SELECT
-                p.post_id    AS postId,
-                p.title      AS title,
-                m.name       AS name,
-                TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
-            FROM tb_post p
-            JOIN tb_member m ON p.member_id = m.member_id
-            ORDER BY p.post_id DESC
-        )
-        WHERE ROWNUM &lt;= #{limit}
-    </select>
+	<!-- 최근 게시글 N건 -->
+	<select id="selectRecentPosts"
+		resultType="com.edu.springboot.domain.main.vo.MainRecentPostVO">
+		SELECT *
+		FROM (
+		SELECT
+		p.post_id AS postId,
+		p.title AS title,
+		m.name AS name,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		ORDER BY p.post_id DESC
+		)
+		WHERE ROWNUM &lt;= #{limit}
+	</select>
 
-    <!-- 차트용: 최근 N일(오늘 포함) 일자별 사건 수
-         offsetDays = days - 1 (Java에서 계산해서 전달)
-    -->
-    <select id="selectDailyCaseCounts"
-            resultType="com.edu.springboot.domain.main.dto.MainSeriesPointDTO">
-        SELECT
-            TO_CHAR(TRUNC(c.CREATED_AT), 'YYYY-MM-DD') AS date,
-            COUNT(*) AS count
-        FROM TB_CASE c
-        WHERE TRUNC(c.CREATED_AT)
-              BETWEEN TRUNC(SYSDATE) - #{offsetDays} AND TRUNC(SYSDATE)
-        GROUP BY TRUNC(c.CREATED_AT)
-        ORDER BY TRUNC(c.CREATED_AT) ASC
-    </select>
-
-    <!-- 공지 상세(모달) -->
-    <select id="selectNoticeDetail"
-            resultType="com.edu.springboot.domain.main.vo.MainNoticeVO">
-        SELECT
-            p.post_id    AS postId,
-            p.title      AS title,
-            p.content    AS content,
-            m.name       AS name,
-            TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
-        FROM tb_post p
-        JOIN tb_member m ON p.member_id = m.member_id
-        WHERE p.post_id = #{postId}
-    </select>
+	<!-- 차트용: 최근 N일(오늘 포함) 일자별 사건 수 offsetDays = days - 1 (Java에서 계산해서 전달) -->
+	<select id="selectDailyCaseCounts"
+		resultType="com.edu.springboot.domain.main.dto.MainSeriesPointDTO">
+		SELECT
+		TO_CHAR(TRUNC(c.CREATED_AT), 'YYYY-MM-DD') AS "date",
+		COUNT(*) AS "count"
+		FROM TB_CASE c
+		WHERE TRUNC(c.CREATED_AT)
+		BETWEEN TRUNC(SYSDATE) - #{offsetDays} AND TRUNC(SYSDATE)
+		GROUP BY TRUNC(c.CREATED_AT)
+		ORDER BY TRUNC(c.CREATED_AT) ASC
+	</select>
+	<!-- 공지 상세(모달) -->
+	<select id="selectNoticeDetail"
+		resultType="com.edu.springboot.domain.main.vo.MainNoticeVO">
+		SELECT
+		p.post_id AS postId,
+		p.title AS title,
+		p.content AS content,
+		m.name AS name,
+		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.post_id = #{postId}
+	</select>
 
 </mapper>
