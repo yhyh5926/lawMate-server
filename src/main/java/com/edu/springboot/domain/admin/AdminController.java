@@ -1,7 +1,3 @@
-/**
- * 파일위치: src/main/java/com/edu/springboot/domain/admin/AdminController.java
- * 기능전체: 관리자 전용 기능 통합 컨트롤러 (회원, 승인, 사건, 커뮤니티, 신고, 통계 API)
- */
 package com.edu.springboot.domain.admin;
 
 import java.util.Map;
@@ -114,14 +110,16 @@ public class AdminController {
 		}
 	}
 
+	// 💡 [수정] DB 직접 조회 코드로 교체 완료!
 	@GetMapping("/report/list")
 	public ResponseEntity<?> getReportList() {
-		return ResponseEntity.ok(Map.of("data", reportService.getAllReports()));
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllReports()));
 	}
 
+	// 💡 [수정] DB 직접 조회 코드로 교체 완료!
 	@GetMapping("/report/detail")
 	public ResponseEntity<?> getReportDetail(@RequestParam("reportId") Long reportId) {
-		return ResponseEntity.ok(Map.of("data", reportService.getReportDetail(reportId)));
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectReportDetail(reportId)));
 	}
 
 	@PostMapping("/report/process")
@@ -148,5 +146,17 @@ public class AdminController {
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body(Map.of("success", false, "error", e.getMessage()));
 		}
+	}
+
+	// 💡 [추가] 결제 데이터 직접 조회 API
+	@GetMapping("/payment/list")
+	public ResponseEntity<?> getPaymentList() {
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllPayments()));
+	}
+
+	// 💡 [추가] 정산 데이터 직접 조회 API
+	@GetMapping("/settlement/list")
+	public ResponseEntity<?> getSettlementList() {
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllSettlements()));
 	}
 }

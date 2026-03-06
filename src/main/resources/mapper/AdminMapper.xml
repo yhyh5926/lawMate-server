@@ -3,29 +3,37 @@
 <mapper namespace="com.edu.springboot.domain.admin.AdminMapper">
 
 	<select id="countTotalPersonalMembers" resultType="int">
-		SELECT COUNT(*) FROM TB_MEMBER
-		WHERE MEMBER_TYPE = 'PERSONAL' AND STATUS != 'WITHDRAWN'
+		SELECT
+		COUNT(*) FROM TB_MEMBER
+		WHERE MEMBER_TYPE = 'PERSONAL' AND STATUS !=
+		'WITHDRAWN'
 	</select>
 
 	<select id="countTotalLawyerMembers" resultType="int">
-		SELECT COUNT(*) FROM TB_MEMBER m
+		SELECT COUNT(*)
+		FROM TB_MEMBER m
 		JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-		WHERE m.MEMBER_TYPE = 'LAWYER'
+		WHERE
+		m.MEMBER_TYPE = 'LAWYER'
 		AND m.STATUS != 'WITHDRAWN'
-		AND l.APPROVE_STATUS = 'APPROVED'
+		AND
+		l.APPROVE_STATUS = 'APPROVED'
 	</select>
 
 	<select id="countCompletedCases" resultType="int">
-		SELECT COUNT(*) FROM TB_CASE WHERE STEP = 'COMPLETED'
+		SELECT COUNT(*) FROM
+		TB_CASE WHERE STEP = 'COMPLETED'
 	</select>
 
 	<select id="getDailyMemberStats" resultType="java.util.Map">
 		SELECT
 		TO_CHAR(CREATED_AT, 'MM-DD') AS "date",
 		COUNT(*) AS "count"
-		FROM TB_MEMBER
+		FROM
+		TB_MEMBER
 		WHERE CREATED_AT >= TRUNC(SYSDATE) - 4
-		GROUP BY TO_CHAR(CREATED_AT, 'MM-DD')
+		GROUP BY
+		TO_CHAR(CREATED_AT, 'MM-DD')
 		ORDER BY "date" ASC
 	</select>
 
@@ -35,8 +43,73 @@
 		COUNT(*) AS "count"
 		FROM TB_CASE
 		WHERE CREATED_AT >= TRUNC(SYSDATE) - 4
-		GROUP BY TO_CHAR(CREATED_AT, 'MM-DD')
+		GROUP BY TO_CHAR(CREATED_AT,
+		'MM-DD')
 		ORDER BY "date" ASC
+	</select>
+
+	<select id="selectAllReports" resultType="map">
+		SELECT
+		r.REPORT_ID as "reportId",
+		r.REPORTER_ID as "reporterId",
+		m.NAME as "reporterName",
+		r.TARGET_ID as "targetId",
+		r.TARGET_TYPE as "targetType",
+		r.REASON as "reason",
+		r.STATUS as "status",
+		TO_CHAR(r.CREATED_AT, 'YYYY-MM-DD HH24:MI') as "createdAt"
+		FROM TB_REPORT r
+		LEFT JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
+		ORDER BY r.CREATED_AT DESC
+	</select>
+
+	<select id="selectReportDetail" resultType="map">
+		SELECT
+		r.REPORT_ID as "reportId",
+		r.REPORTER_ID as "reporterId",
+		m.NAME as "reporterName",
+		r.TARGET_ID as "targetId",
+		r.TARGET_TYPE as "targetType",
+		r.REASON as "reason",
+		r.DETAIL as "detail",
+		r.STATUS as "status",
+		r.RESULT_NOTE as "resultNote",
+		TO_CHAR(r.CREATED_AT, 'YYYY-MM-DD HH24:MI') as "createdAt"
+		FROM TB_REPORT r
+		LEFT JOIN TB_MEMBER m ON r.REPORTER_ID = m.MEMBER_ID
+		WHERE r.REPORT_ID = #{reportId}
+	</select>
+
+	<select id="selectAllPayments" resultType="map">
+		SELECT
+		p.PAYMENT_ID as "paymentId",
+		p.CONSULT_ID as "consultId",
+		p.PAYER_ID as "memberId",
+		m.NAME as "memberName",
+		p.AMOUNT as "amount",
+		p.PAY_METHOD as "method",
+		p.PAY_STATUS as "status",
+		TO_CHAR(p.CREATED_AT, 'YYYY-MM-DD HH24:MI') as "createdAt"
+		FROM TB_PAYMENT p
+		LEFT JOIN TB_MEMBER m ON p.PAYER_ID = m.MEMBER_ID
+		ORDER BY p.CREATED_AT DESC
+	</select>
+
+	<select id="selectAllSettlements" resultType="map">
+		SELECT
+		s.SETTLE_ID as "settlementId",
+		s.LAWYER_ID as "lawyerId",
+		m.NAME as "lawyerName",
+		s.GROSS_AMT as "grossAmt",
+		s.COMMISSION_RATE as "commissionRate",
+		s.COMMISSION_AMT as "commissionAmt",
+		s.NET_AMT as "netAmount",
+		s.SETTLE_STATUS as "status",
+		TO_CHAR(s.CREATED_AT, 'YYYY-MM-DD HH24:MI') as "createdAt"
+		FROM TB_SETTLEMENT s
+		LEFT JOIN TB_LAWYER l ON s.LAWYER_ID = l.LAWYER_ID
+		LEFT JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
+		ORDER BY s.CREATED_AT DESC
 	</select>
 
 </mapper>
