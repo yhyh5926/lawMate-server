@@ -91,7 +91,6 @@
         )
     </insert>
 
-	<!-- '26.03.04 원석 추가 -->
 	<select id="selectLawyerByMemberId" parameterType="long" resultMap="lawyerDetailMap">
     SELECT
         m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
@@ -105,5 +104,18 @@
     INNER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
     LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
     WHERE m.MEMBER_ID = #{memberId}
-</select>
+	</select>
+
+	<update id="updateLawyerProfile" parameterType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
+		UPDATE TB_LAWYER
+		SET OFFICE_NAME = #{officeName},
+			OFFICE_ADDR = #{officeAddr},
+			SPECIALTY = #{specialty},
+			INTRO = #{intro},
+			CAREER = #{career},
+			CONSULT_FEE = #{consultFee},
+			UPDATED_AT = SYSDATE
+		WHERE LAWYER_ID = #{lawyerId}
+	</update>
+
 </mapper>

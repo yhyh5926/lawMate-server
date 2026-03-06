@@ -1,3 +1,4 @@
+// src/main/java/com/edu/springboot/domain/lawyer/LawyerController.java
 package com.edu.springboot.domain.lawyer;
 
 import java.util.List;
@@ -27,5 +28,12 @@ public class LawyerController {
 	@GetMapping("/by-member/{memberId}")
 	public LawyerVO detailByMember(@PathVariable("memberId") Long memberId) {
 	    return lawyerService.getLawyerByMemberId(memberId);
+	}
+
+	@PutMapping("/{id}")
+	public String updateLawyer(@PathVariable("id") int lawyerId, @RequestBody LawyerVO lawyerVO) {
+		lawyerVO.setLawyerId(lawyerId);
+		int result = lawyerService.updateLawyerProfile(lawyerVO);
+		return result > 0 ? "success" : "fail";
 	}
 }
