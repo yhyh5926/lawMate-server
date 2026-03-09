@@ -44,15 +44,12 @@ public class PrecedentService {
 		return precedentMapper.getPrecedentDetail(precId);
 	}
 
-	public List<PrecedentVO> selectRelated(String caseType, String keyword, Long excludeId, int limit) {
-		// 맵 객체에 담아 Mapper로 전달
-		Map<String, Object> params = new HashMap<>();
-		params.put("caseType", caseType);
-		params.put("keyword", keyword);
-		params.put("excludeId", excludeId);
-		params.put("limit", limit);
+	// PrecedentService.java
 
-		return precedentMapper.getRelatedList(params);
+	public List<PrecedentVO> selectRelated(String caseType, String keyword, Long excludeId, int limit) {
+		// 에러 원인: getRelatedList(params) 대신 Mapper에 정의한 getRelatedPrecedents 호출
+		// Mapper 인터페이스에서 @Param을 사용했으므로 인자값을 순서대로 넣어주면 됩니다.
+		return precedentMapper.getRelatedPrecedents(caseType, keyword, excludeId, limit);
 	}
 
 }

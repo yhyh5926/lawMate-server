@@ -13,7 +13,8 @@
 		PREC_ID as precId,
 		CASE_NO as caseNo,
 		COURT,
-		TO_CHAR(JUDGE_DATE, 'YYYY-MM-DD') as judgeDate,
+		TO_CHAR(JUDGE_DATE, 'YYYY-MM-DD') as
+		judgeDate,
 		CASE_TYPE as caseType,
 		TITLE,
 		ONE_LINE as oneLine,
@@ -22,9 +23,11 @@
 		FROM TB_PRECEDENT
 		<where>
 			<if test="query != null and query != ''">
-				AND (UPPER(TITLE) LIKE '%' || UPPER(TRIM(#{query})) || '%'
+				AND (UPPER(TITLE) LIKE '%' || UPPER(TRIM(#{query})) ||
+				'%'
 				OR UPPER(CASE_NO) LIKE '%' || UPPER(TRIM(#{query})) || '%'
-				OR UPPER(KEYWORD_CSV) LIKE '%' || UPPER(TRIM(#{query})) || '%')
+				OR
+				UPPER(KEYWORD_CSV) LIKE '%' || UPPER(TRIM(#{query})) || '%')
 			</if>
 			<if test="caseType != null and caseType != ''">
 				AND CASE_TYPE = #{caseType}
@@ -32,16 +35,19 @@
 		</where>
 		ORDER BY PREC_ID DESC
 		) a WHERE ROWNUM &lt;= #{end}
-		) WHERE rnum &gt;= #{start}
+		) WHERE rnum &gt;=
+		#{start}
 	</select>
 
 	<select id="getTotalCount" resultType="int">
 		SELECT COUNT(*) FROM TB_PRECEDENT
 		<where>
 			<if test="query != null and query != ''">
-				AND (UPPER(TITLE) LIKE '%' || UPPER(TRIM(#{query})) || '%'
+				AND (UPPER(TITLE) LIKE '%' || UPPER(TRIM(#{query})) ||
+				'%'
 				OR UPPER(CASE_NO) LIKE '%' || UPPER(TRIM(#{query})) || '%'
-				OR UPPER(KEYWORD_CSV) LIKE '%' || UPPER(TRIM(#{query})) || '%')
+				OR
+				UPPER(KEYWORD_CSV) LIKE '%' || UPPER(TRIM(#{query})) || '%')
 			</if>
 			<if test="caseType != null and caseType != ''">
 				AND CASE_TYPE = #{caseType}
@@ -66,21 +72,31 @@
 		FROM TB_PRECEDENT
 		WHERE PREC_ID = #{precId}
 	</select>
-	
+
 	<select id="getRelatedPrecedents"
 		resultType="com.edu.springboot.domain.precedent.PrecedentVO">
 		SELECT * FROM (
 		SELECT
-		PREC_ID, CASE_NO, COURT, JUDGE_DATE, CASE_TYPE, TITLE, JUDGMENT
+		PREC_ID as precId, CASE_NO as caseNo,
+		COURT,
+		TO_CHAR(JUDGE_DATE, 'YYYY-MM-DD') as judgeDate,
+		CASE_TYPE as caseType,
+		TITLE,
+		JUDGMENT
 		FROM TB_PRECEDENT
-		WHERE PREC_ID != #{excludeId}
-		AND (
-		CASE_TYPE = #{caseType}
-		<if test="keyword != null and keyword != ''">
-			OR TITLE LIKE '%' || #{keyword} || '%'
-			OR KEYWORD_CSV LIKE '%' || #{keyword} || '%'
-		</if>
-		)
+		<where>
+			<if test="excludeId != null and excludeId != 0">
+				AND PREC_ID != #{excludeId}
+			</if>
+
+			AND (
+			CASE_TYPE = #{caseType}
+			<if test="keyword != null and keyword != ''">
+				OR TITLE LIKE '%' || #{keyword} || '%'
+				OR KEYWORD_CSV LIKE '%' || #{keyword} || '%'
+			</if>
+			)
+		</where>
 		ORDER BY
 		-- 같은 카테고리이면서 키워드까지 겹치면 최상단 노출
 		(CASE WHEN CASE_TYPE = #{caseType} THEN 1 ELSE 0 END +
