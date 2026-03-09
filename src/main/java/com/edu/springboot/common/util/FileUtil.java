@@ -12,7 +12,7 @@ import java.util.UUID;
 public class FileUtil {
 
     // 로컬 폴더에 저장할 기본 경로 (원하시는 경로로 수정 가능)
-    private final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
+    private final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/lawyer/";
 
     public String saveFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) return null;
@@ -30,6 +30,6 @@ public class FileUtil {
         File dest = new File(savePath);
         file.transferTo(dest);
 
-        return "/uploads/" + saveFilename; // DB에 저장될 웹 접근 경로
+        return "/uploads/lawyer/" + saveFilename; // DB에 저장될 웹 접근 경로
     }
 }

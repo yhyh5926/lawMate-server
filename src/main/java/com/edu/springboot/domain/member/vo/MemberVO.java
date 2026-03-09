@@ -37,4 +37,7 @@ public class MemberVO {
 	private String specialty;
 	private String officeName;
 	private String approveStatus; // PENDING, APPROVED, REJECTED
+
+	// 💡 [추가] 탈퇴 일시 (30일 재가입 방지용)
+	private Date withdrawnAt;
 }

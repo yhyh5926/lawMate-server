@@ -18,8 +18,7 @@
         <result property="detailAddress" column="DETAIL_ADDR" />
         <result property="createdAt" column="CREATED_AT" />
         <result property="updatedAt" column="UPDATED_AT" />
-
-        <result property="lawyerId" column="LAWYER_ID" />
+        <result property="withdrawnAt" column="WITHDRAWN_AT" /> <result property="lawyerId" column="LAWYER_ID" />
         <result property="licenseNo" column="LICENSE_NO" />
         <result property="specialty" column="SPECIALTY" />
         <result property="officeName" column="OFFICE_NAME" />
@@ -31,6 +30,13 @@
         FROM TB_MEMBER m
         LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
         WHERE m.LOGIN_ID = #{loginId}
+    </select>
+
+    <select id="findByEmail" resultMap="MemberResultMap">
+        SELECT m.*, l.LAWYER_ID, l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME, l.APPROVE_STATUS
+        FROM TB_MEMBER m
+        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+        WHERE m.EMAIL = #{email}
     </select>
 
     <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
@@ -71,6 +77,12 @@
         UPDATE TB_MEMBER SET STATUS = 'WITHDRAWN', UPDATED_AT = SYSDATE WHERE MEMBER_ID = #{memberId}
     </update>
 
+    <update id="withdrawMember">
+        UPDATE TB_MEMBER 
+        SET STATUS = 'WITHDRAWN', WITHDRAWN_AT = SYSDATE, UPDATED_AT = SYSDATE 
+        WHERE LOGIN_ID = #{loginId}
+    </update>
+
     <select id="findLoginIdByNameAndPhone" resultType="string">
         SELECT LOGIN_ID FROM TB_MEMBER WHERE NAME = #{name} AND PHONE = #{phone} AND STATUS != 'WITHDRAWN'
     </select>
@@ -91,5 +103,25 @@
         WHERE m.MEMBER_TYPE = #{memberType} 
         ORDER BY m.CREATED_AT DESC
     </select>
+
+    <select id="findWithdrawnMembersForAnonymization" resultMap="MemberResultMap">
+        SELECT * FROM TB_MEMBER
+        WHERE STATUS = 'WITHDRAWN' AND WITHDRAWN_AT &lt;= SYSDATE - 30
+    </select>
+
+    <update id="anonymizeMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
+        UPDATE TB_MEMBER
+        SET LOGIN_ID = #{loginId},
+            EMAIL = #{email},
+            NAME = '알수없음',
+            PHONE = '000-0000-0000',
+            PASSWORD = NULL,
+            ADDRESS = NULL,
+            DETAIL_ADDR = NULL,
+            PROVIDER = NULL,
+            STATUS = 'ANONYMIZED',
+            UPDATED_AT = SYSDATE
+        WHERE MEMBER_ID = #{memberId}
+    </update>
 
 </mapper>
