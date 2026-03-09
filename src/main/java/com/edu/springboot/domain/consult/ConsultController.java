@@ -67,7 +67,7 @@ public class ConsultController {
     /** 예약 단건 조회 */
     @GetMapping("/{consultId}")
     public ResponseEntity<ApiResponse<ConsultVO>> detail(
-            @PathVariable Long consultId) {
+    		@PathVariable("consultId") Long consultId) {
 
         ConsultVO vo = consultMapper.selectConsultByNo(consultId);
         if (vo == null) {
@@ -79,7 +79,7 @@ public class ConsultController {
     /** 예약 취소 */
     @PutMapping("/{consultId}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancel(
-            @PathVariable Long consultId,
+    		@PathVariable("consultId") Long consultId,
             @RequestHeader("Authorization") String bearer) {
 
         Long memberId = getMemberId(bearer);

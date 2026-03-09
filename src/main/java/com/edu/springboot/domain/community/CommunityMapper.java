@@ -40,14 +40,16 @@ public interface CommunityMapper {
     
     //  게시물 좋아요 관련
     public int checkPostLike(@Param("postId") int postId, @Param("memberId") int memberId);
-
     public void insertPostLike(@Param("postId") int postId, @Param("memberId") int memberId);
-
     public void deletePostLike(@Param("postId") int postId, @Param("memberId") int memberId);
-
     public void increaseLikeCnt(@Param("postId") int postId);
-
     public void decreaseLikeCnt(@Param("postId") int postId);
-
     public List<PostVo> topLikedPosts();
+    
+    // 댓글 관련
+    public void insertComment(CommentVo comment);
+    public void increaseCommentCnt(@Param("postId") int postId);
+    public CommentVo getCommentById(@Param("commentId") int commentId);
+    public void deleteComment(@Param("commentId") int commentId);
+    public void decreaseCommentCnt(@Param("postId") int postId);
 }
