@@ -12,35 +12,26 @@ import com.edu.springboot.domain.poll.vo.VoteVo;
 
 @Mapper
 public interface CommunityMapper {
+	
+	// 게시물 리스트
+	public List<PostVo> list(@Param("sortType") String sortType);
+	public PostVo detail(int postId);
+	public List<CommentVo> commentList(int postId);
+	public void increaseViewCnt(@Param("postId") int postId);
 
-    // 일반 게시글 목록 조회
-    List<PostVo> list();
-
-    // 일반 게시글 상세 조회
-    PostVo detail(int postId);
-
-    // 댓글 목록 조회
-    List<CommentVo> commentList(int postId);
-
-    // [관리자용] 일반 게시글 상태 변경 (삭제 처리)
-    int updatePostStatus(@Param("postId") int postId, @Param("status") String status);
-
-    // 모의판결 게시글 목록 조회
-    List<PollVo> pollList();
-
-    // 모의판결 게시글 상세 조회
-    PollVo pollDetail(int pollId);
-
-    // 모의판결 선택지 목록 조회
-    List<PollOptionVo> optionList(int pollId);
-
-    // 모의판결 투표 여부 확인
-    int checkAlreadyVoted(@Param("pollId") int pollId, @Param("memberId") int memberId);
-
-    // 모의판결 투표 등록
-    int insertVote(VoteVo voteVo);
-
-    // 모의판결 투표수 증가
-    int increaseVoteCnt(@Param("pollId") int pollId, @Param("optionId") int optionId);
-    
+	// [은혁 추가] 관리자 게시글 상태 업데이트 (삭제 처리용)
+	public int updatePostStatus(@Param("postId") int postId, @Param("status") String status);
+	
+	public List<PollVo> pollList();
+    public PollVo pollDetail(int pollId);
+    public List<PollOptionVo> optionList(int pollId);
+    int checkAlreadyVoted(
+    	    @Param("pollId") int pollId,
+    	    @Param("memberId") int memberId
+    	);
+    public void insertVote(VoteVo vote);
+    void increaseVoteCnt(
+    	    @Param("pollId") int pollId,
+    	    @Param("optionId") int optionId
+    	);
 }
