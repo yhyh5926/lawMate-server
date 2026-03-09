@@ -6,11 +6,10 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface AnswerMapper {
-	/**
-	 * 답변 등록
-	 * 
-	 * @param answerVO 답변 데이터
-	 * @return 영향받은 행 수
-	 */
+
 	int insertAnswer(AnswerVO answerVO);
+
+	int updateAnswer(AnswerVO answerVO);
+
+	int deleteAnswer(@Param("answerId") int answerId);
 }
