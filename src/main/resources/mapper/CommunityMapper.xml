@@ -138,9 +138,6 @@
         (#{voteId}, #{pollId}, #{optionId}, #{memberId}, SYSDATE)
     </insert>
 
-<<<<<<< HEAD
-	</select>
-
 	<select id="checkAlreadyVoted" resultType="int">
 		SELECT COUNT(*)
 		FROM tb_poll_vote
