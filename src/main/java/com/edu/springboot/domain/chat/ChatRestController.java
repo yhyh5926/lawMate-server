@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -93,6 +94,16 @@ public class ChatRestController {
     // ── 헬퍼 ────────────────────────────────────────────────
     private Long getMemberNo(String bearer) {
         return jwtUtil.getMemberNo(bearer.replace("Bearer ", ""));
+    }
+    
+    /** 삭제 처리 */
+    @DeleteMapping("/rooms/{roomNo}")
+    public ResponseEntity<ApiResponse<Void>> deleteRoom(
+            @PathVariable Long roomNo,
+            @RequestHeader("Authorization") String bearer) {
+        chatMapper.deleteMsgsByRoomNo(roomNo);
+        chatMapper.deleteRoom(roomNo);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
 

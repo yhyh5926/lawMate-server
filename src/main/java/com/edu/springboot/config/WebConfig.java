@@ -29,5 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
         // 프로젝트 루트 폴더의 uploads/ 디렉토리에서 파일을 찾습니다.
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
+        registry.addResourceHandler("/uploads/chat/**")
+        		.addResourceLocations("file:uploads/chat/");
     }
 }

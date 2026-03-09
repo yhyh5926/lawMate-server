@@ -143,4 +143,13 @@
     SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{memberId}
 	</select>
 
+    <!-- ── 삭제 처리 ──────────────────────────────────────── -->
+	<delete id="deleteMsgsByRoomNo">
+	    DELETE FROM TB_CHAT_MSG WHERE ROOM_ID = #{roomNo}
+	</delete>
+	
+	<delete id="deleteRoom">
+	    DELETE FROM TB_CHAT_ROOM WHERE ROOM_ID = #{roomNo}
+	</delete>
+
 </mapper>
