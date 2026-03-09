@@ -3,12 +3,16 @@ package com.edu.springboot.domain.community;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.edu.springboot.domain.community.vo.CommentVo;
 import com.edu.springboot.domain.community.vo.PostVo;
 
 @RestController
@@ -19,12 +23,28 @@ public class PostController {
 	CommunityMapper dao;
 	
 	@GetMapping("/posts")
-	public List<PostVo> postList(){
-		return dao.list();
+	public List<PostVo> postList(
+	        @RequestParam(value = "sortType", defaultValue = "latest") String sortType){
+	    return dao.list(sortType);
 	}
 	
 	@GetMapping("/detail/{postId}")
 	public PostVo qnaDetail(@PathVariable("postId") int postId){
 		return dao.detail(postId);
+	}
+	
+	@PostMapping("/write")
+	public void writePost(@RequestBody PostVo postVo) {
+	    dao.insertPost(postVo);
+	}
+	
+	@PutMapping("/edit")
+	public void updatePost(@RequestBody PostVo postVo) {
+	    dao.updatePost(postVo);
+	}
+	
+	@DeleteMapping("/posts/{postId}")
+	public void deletePost(@PathVariable("postId") int postId) {
+	    dao.updatePostStatus(postId, "DELETED");
 	}
 }
