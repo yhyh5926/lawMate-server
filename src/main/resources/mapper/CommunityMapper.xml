@@ -12,6 +12,7 @@
 	        p.content,
 	        p.view_cnt,
 	        p.comment_cnt,
+	        p.like_cnt,
 	        p.status,
 	        p.created_at,
 	        p.updated_at,
@@ -26,9 +27,6 @@
 	        <when test="sortType == 'comments'">
 	            ORDER BY p.comment_cnt DESC, p.post_id DESC
 	        </when>
-	        <when test="sortType == 'caseType'">
-	            ORDER BY p.case_type ASC, p.post_id DESC
-	        </when>
 	        <otherwise>
 	            ORDER BY p.post_id DESC
 	        </otherwise>
@@ -36,8 +34,8 @@
 	</select>
 
 	<select id="detail"
-	    resultType="com.edu.springboot.domain.community.vo.PostVo"
-	    parameterType="int">
+    resultType="com.edu.springboot.domain.community.vo.PostVo"
+    parameterType="int">
 	    SELECT
 	        p.post_id,
 	        p.member_id,
@@ -46,6 +44,7 @@
 	        p.content,
 	        p.view_cnt,
 	        p.comment_cnt,
+	        p.like_cnt,
 	        p.status,
 	        p.created_at,
 	        p.updated_at,
@@ -89,6 +88,13 @@
 	    )
 	</insert>
 	
+	<update id="increaseViewCnt">
+	    UPDATE tb_post
+	    SET view_cnt = view_cnt + 1
+	    WHERE post_id = #{postId}
+	      AND status = 'ACTIVE'
+	</update>
+	
 	<update id="updatePost"
     parameterType="com.edu.springboot.domain.community.vo.PostVo">
 	    UPDATE tb_post
@@ -122,7 +128,74 @@
         SET status = #{status}, updated_at = SYSDATE
         WHERE post_id = #{postId}
     </update>
-
+    
+    <!-- 게시물 좋아요 관련 -->
+	<select id="checkPostLike" resultType="int">
+	    SELECT COUNT(*)
+	    FROM tb_post_like
+	    WHERE post_id = #{postId}
+	      AND member_id = #{memberId}
+	</select>
+	
+	<insert id="insertPostLike">
+	    INSERT INTO tb_post_like (
+	        like_id,
+	        post_id,
+	        member_id,
+	        created_at
+	    ) VALUES (
+	        seq_tb_post_like.NEXTVAL,
+	        #{postId},
+	        #{memberId},
+	        SYSDATE
+	    )
+	</insert>
+	
+	<delete id="deletePostLike">
+	    DELETE FROM tb_post_like
+	    WHERE post_id = #{postId}
+	      AND member_id = #{memberId}
+	</delete>
+	
+	<update id="increaseLikeCnt">
+	    UPDATE tb_post
+	    SET like_cnt = like_cnt + 1
+	    WHERE post_id = #{postId}
+	</update>
+	
+	<update id="decreaseLikeCnt">
+	    UPDATE tb_post
+	    SET like_cnt = like_cnt - 1
+	    WHERE post_id = #{postId}
+	      AND like_cnt > 0
+	</update>
+	
+	<select id="topLikedPosts"
+    resultType="com.edu.springboot.domain.community.vo.PostVo">
+    SELECT *
+	    FROM (
+	        SELECT
+	            p.post_id,
+	            p.member_id,
+	            p.case_type,
+	            p.title,
+	            p.content,
+	            p.view_cnt,
+	            p.comment_cnt,
+	            p.like_cnt,
+	            p.status,
+	            p.created_at,
+	            p.updated_at,
+	            m.name
+	        FROM tb_post p
+	        JOIN tb_member m ON p.member_id = m.member_id
+	        WHERE p.status = 'ACTIVE'
+	        ORDER BY p.like_cnt DESC, p.post_id DESC
+	    )
+	    WHERE ROWNUM &lt;= 3
+	</select>
+	
+	<!-- 투표 게시물 관련 -->
     <select id="pollList" resultType="com.edu.springboot.domain.poll.vo.PollVo">
         SELECT
             p.poll_id,
