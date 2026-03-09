@@ -138,28 +138,6 @@
         (#{voteId}, #{pollId}, #{optionId}, #{memberId}, SYSDATE)
     </insert>
 
-	<select id="checkAlreadyVoted" resultType="int">
-		SELECT COUNT(*)
-		FROM tb_poll_vote
-		WHERE poll_id = #{pollId}
-		AND member_id = #{memberId}
-	</select>
-
-	<insert id="insertVote"
-		parameterType="com.edu.springboot.domain.poll.vo.VoteVo">
-
-		<selectKey keyProperty="voteId" resultType="int"
-			order="BEFORE">
-			SELECT SEQ_POLL_VOTE.NEXTVAL FROM DUAL
-		</selectKey>
-
-		INSERT INTO tb_poll_vote
-		(vote_id, poll_id, option_id, member_id, voted_at)
-		VALUES
-		(#{voteId}, #{pollId}, #{optionId}, #{memberId}, SYSDATE)
-
-	</insert>
-
 	<update id="increaseVoteCnt">
 		UPDATE tb_poll_option
 		SET vote_cnt = vote_cnt + 1
@@ -167,32 +145,5 @@
 		AND option_id = #{optionId}
 	</update>
 
-	<select id="commentList"
-		resultType="com.edu.springboot.domain.community.vo.CommentVo"
-		parameterType="int">
-		SELECT
-		c.comment_id,
-		c.post_id,
-		c.member_id,
-		c.parent_id,
-		c.content,
-		c.status,
-		c.created_at,
-		c.updated_at,
-		m.name
-		FROM tb_comment c
-		JOIN tb_member m ON c.member_id = m.member_id
-		WHERE
-		c.post_id =
-		#{postId}
-		ORDER BY c.created_at ASC
-	</select>
 
-	<update id="updatePostStatus">
-		UPDATE tb_post
-		SET status = #{status}, updated_at =
-		SYSDATE
-		WHERE post_id = #{postId}
-	</update>
-	
 </mapper>
