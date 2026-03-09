@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.edu.springboot.domain.answer.vo.AnswerVO;
+import com.edu.springboot.domain.attachment.vo.AttachmentVO;
 
 @Data
 public class QuestionVO {
@@ -22,9 +23,11 @@ public class QuestionVO {
 	private Date createdAt; // CREATED_AT
 	private Date updatedAt; // UPDATED_AT
 
-	// 💡 추가 필드: MyBatis selectAllQuestions 및 selectQuestionById 매핑용
-	private String memberName; // SQL의 MEMBER_NAME 매핑
-	private int answerCount; // SQL의 ANSWER_COUNT 매핑
-
+	// 조인
+	private String memberName;
+	private int answerCount;
+	private int fileCount;
 	private List<AnswerVO> answers;
+
+	private List<AttachmentVO> files;
 }

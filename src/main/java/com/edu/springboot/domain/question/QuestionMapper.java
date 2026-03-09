@@ -8,35 +8,26 @@ import java.util.Map;
 
 @Mapper
 public interface QuestionMapper {
-
-	// 1. 새 질문 등록
 	int insertQuestion(QuestionVO questionVO);
-
-	// 2. 질문 목록 조회 (검색 및 페이징 반영)
+	int updateQuestion(QuestionVO questionVO);
+	int deleteQuestion(Long questionId);
+	QuestionVO selectQuestionById(Long questionId);
 	List<QuestionVO> selectQuestionsWithPaging(Map<String, Object> params);
-
-	// 3. 조건에 맞는 질문 전체 개수 조회 (페이징 계산용)
 	int selectQuestionCount(Map<String, Object> params);
 
-	// 4. 질문 상세 조회
-	QuestionVO selectQuestionById(Long questionId);
-
-	// 5. 질문 채택 업데이트 (상태를 'ADOPTED'로 변경하고 채택 변호사 지정)
+		
+	// 질문 채택 업데이트 (상태를 'ADOPTED'로 변경하고 채택 변호사 지정)
 	int updateQuestionAdoption(@Param("questionId") Long questionId, @Param("lawyerId") Long lawyerId,
 			@Param("memberId") Long memberId);
 
-	// 6. 답변 채택 업데이트 (답변의 상태를 채택됨으로 변경)
+	// 답변 채택 업데이트 (답변의 상태를 채택됨으로 변경)
 	int updateAnswerAdoption(Long answerId);
 
-	// 7. [관리자용] 전체 질문 목록 조회
+	// [관리자용]
+	// 전체 질문 목록 조회
 	List<QuestionVO> selectAllQuestions();
 
-	// 8. [관리자용] 질문 상태 변경 (게시글 숨김/삭제 처리용)
+	// 질문 상태 변경 (게시글 숨김/삭제 처리용)
 	int updateQuestionStatus(@Param("questionId") Long questionId, @Param("status") String status);
 
-	// 9. 질문 내용 수정 (제목, 내용, 사건 유형 업데이트)
-	int updateQuestion(QuestionVO questionVO);
-
-	// 10. 질문 삭제 (ID 기반 행 삭제)
-	int deleteQuestion(Long questionId);
 }
