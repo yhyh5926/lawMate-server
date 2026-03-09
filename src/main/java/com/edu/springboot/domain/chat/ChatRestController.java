@@ -99,7 +99,7 @@ public class ChatRestController {
     /** 삭제 처리 */
     @DeleteMapping("/rooms/{roomNo}")
     public ResponseEntity<ApiResponse<Void>> deleteRoom(
-            @PathVariable Long roomNo,
+    		@PathVariable("roomNo") Long roomNo,
             @RequestHeader("Authorization") String bearer) {
         chatMapper.deleteMsgsByRoomNo(roomNo);
         chatMapper.deleteRoom(roomNo);

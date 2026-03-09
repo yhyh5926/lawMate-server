@@ -25,7 +25,7 @@
         <result property="senderName" column="SENDER_NAME"/>
         <result property="msgType"    column="MSG_TYPE"/>
         <result property="content"    column="CONTENT"/>
-        <result property="fileUrl"    column="ATTACH_ID"/>
+        <result property="fileUrl"    column="FILE_URL"/>
         <result property="readYn"     column="READ_YN"/>
         <result property="sentAt"     column="CREATED_AT"/>
     </resultMap>
@@ -49,38 +49,38 @@
 
     <!-- ── 채팅방 목록 ────────────────────────────────────── -->
     <select id="selectRoomList" resultMap="roomRM">
-	    SELECT
-	        r.ROOM_ID,
-	        r.MEMBER_ID  AS MEMBER_ID,
-	        r.LAWYER_ID  AS LAWYER_ID,
-	        r.CREATED_AT,
-	        CASE WHEN r.MEMBER_ID = #{memberNo}
-	             THEN r.LAWYER_ID  ELSE r.MEMBER_ID  END AS TARGET_MEMBER_NO,
-	        CASE WHEN r.MEMBER_ID = #{memberNo}
-	             THEN m2.NAME      ELSE m1.NAME       END AS TARGET_NAME,
-	        lm.CONTENT   AS LAST_MESSAGE,
-	        lm.CREATED_AT AS LAST_MESSAGE_AT,
-	        NVL(un.CNT, 0) AS UNREAD_COUNT
-	    FROM TB_CHAT_ROOM r
-	    JOIN TB_MEMBER m1 ON m1.MEMBER_ID = r.MEMBER_ID
-	    JOIN TB_LAWYER l  ON l.LAWYER_ID  = r.LAWYER_ID
-	    JOIN TB_MEMBER m2 ON m2.MEMBER_ID = l.MEMBER_ID
-	    LEFT JOIN (
-	        SELECT ROOM_ID, CONTENT, CREATED_AT,
-	               ROW_NUMBER() OVER (PARTITION BY ROOM_ID ORDER BY CREATED_AT DESC) AS RN
-	        FROM TB_CHAT_MSG
-	    ) lm ON lm.ROOM_ID = r.ROOM_ID AND lm.RN = 1
-	    LEFT JOIN (
-	        SELECT ROOM_ID, COUNT(*) AS CNT
-	        FROM TB_CHAT_MSG
-	        WHERE SENDER_ID != #{memberNo}
-	          AND READ_YN = 'N'
-	        GROUP BY ROOM_ID
-	    ) un ON un.ROOM_ID = r.ROOM_ID
-	    WHERE r.MEMBER_ID = #{memberNo}
-	       OR r.LAWYER_ID = #{memberNo}
-	    ORDER BY NVL(lm.CREATED_AT, r.CREATED_AT) DESC
-	</select>
+        SELECT
+            r.ROOM_ID,
+            r.MEMBER_ID  AS MEMBER_ID,
+            r.LAWYER_ID  AS LAWYER_ID,
+            r.CREATED_AT,
+            CASE WHEN r.MEMBER_ID = #{memberNo}
+                 THEN r.LAWYER_ID  ELSE r.MEMBER_ID  END AS TARGET_MEMBER_NO,
+            CASE WHEN r.MEMBER_ID = #{memberNo}
+                 THEN m2.NAME      ELSE m1.NAME       END AS TARGET_NAME,
+            lm.CONTENT   AS LAST_MESSAGE,
+            lm.CREATED_AT AS LAST_MESSAGE_AT,
+            NVL(un.CNT, 0) AS UNREAD_COUNT
+        FROM TB_CHAT_ROOM r
+        JOIN TB_MEMBER m1 ON m1.MEMBER_ID = r.MEMBER_ID
+        JOIN TB_LAWYER l  ON l.LAWYER_ID  = r.LAWYER_ID
+        JOIN TB_MEMBER m2 ON m2.MEMBER_ID = l.MEMBER_ID
+        LEFT JOIN (
+            SELECT ROOM_ID, CONTENT, CREATED_AT,
+                   ROW_NUMBER() OVER (PARTITION BY ROOM_ID ORDER BY CREATED_AT DESC) AS RN
+            FROM TB_CHAT_MSG
+        ) lm ON lm.ROOM_ID = r.ROOM_ID AND lm.RN = 1
+        LEFT JOIN (
+            SELECT ROOM_ID, COUNT(*) AS CNT
+            FROM TB_CHAT_MSG
+            WHERE SENDER_ID != #{memberNo}
+              AND READ_YN = 'N'
+            GROUP BY ROOM_ID
+        ) un ON un.ROOM_ID = r.ROOM_ID
+        WHERE r.MEMBER_ID = #{memberNo}
+           OR r.LAWYER_ID = #{memberNo}
+        ORDER BY NVL(lm.CREATED_AT, r.CREATED_AT) DESC
+    </select>
 
     <!-- ── 채팅방 단건 ────────────────────────────────────── -->
     <select id="selectRoomByNo" resultMap="roomRM">
@@ -95,14 +95,15 @@
             SELECT SEQ_CHAT_MSG.NEXTVAL FROM DUAL
         </selectKey>
         INSERT INTO TB_CHAT_MSG
-    		(MSG_ID, ROOM_ID, SENDER_ID, MSG_TYPE, CONTENT, READ_YN, CREATED_AT)
-		VALUES
-		    (SEQ_CHAT_MSG.NEXTVAL,
-		     #{roomNo, jdbcType=NUMERIC},
-		     #{senderNo, jdbcType=NUMERIC},
-		     #{msgType, jdbcType=VARCHAR},
-		     #{content, jdbcType=VARCHAR},
-		     'N', SYSDATE)
+            (MSG_ID, ROOM_ID, SENDER_ID, MSG_TYPE, CONTENT, FILE_URL, READ_YN, CREATED_AT)
+        VALUES
+            (SEQ_CHAT_MSG.NEXTVAL,
+             #{roomNo, jdbcType=NUMERIC},
+             #{senderNo, jdbcType=NUMERIC},
+             #{msgType, jdbcType=VARCHAR},
+             #{content, jdbcType=VARCHAR},
+             #{fileUrl, jdbcType=VARCHAR},
+             'N', SYSDATE)
     </insert>
 
     <!-- ── 메시지 목록 (페이징) ──────────────────────────── -->
@@ -112,6 +113,7 @@
                 m.MSG_ID, m.ROOM_ID, m.SENDER_ID,
                 mb.NAME AS SENDER_NAME,
                 m.MSG_TYPE, m.CONTENT,
+                m.FILE_URL,
                 m.READ_YN, m.CREATED_AT,
                 ROW_NUMBER() OVER (ORDER BY m.CREATED_AT ASC) AS RN
             FROM TB_CHAT_MSG m
@@ -138,18 +140,18 @@
            AND SENDER_ID != #{memberNo}
            AND READ_YN    = 'N'
     </update>
-    
+
     <select id="selectLawyerIdByMemberId" resultType="long">
-    SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{memberId}
-	</select>
+        SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{memberId}
+    </select>
 
     <!-- ── 삭제 처리 ──────────────────────────────────────── -->
-	<delete id="deleteMsgsByRoomNo">
-	    DELETE FROM TB_CHAT_MSG WHERE ROOM_ID = #{roomNo}
-	</delete>
-	
-	<delete id="deleteRoom">
-	    DELETE FROM TB_CHAT_ROOM WHERE ROOM_ID = #{roomNo}
-	</delete>
+    <delete id="deleteMsgsByRoomNo">
+        DELETE FROM TB_CHAT_MSG WHERE ROOM_ID = #{roomNo}
+    </delete>
+
+    <delete id="deleteRoom">
+        DELETE FROM TB_CHAT_ROOM WHERE ROOM_ID = #{roomNo}
+    </delete>
 
 </mapper>
