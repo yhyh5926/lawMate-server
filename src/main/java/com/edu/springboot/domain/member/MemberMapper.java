@@ -3,7 +3,9 @@ package com.edu.springboot.domain.member;
 
 import com.edu.springboot.domain.member.vo.MemberVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface MemberMapper {
@@ -47,4 +49,6 @@ public interface MemberMapper {
 	// 💡 XML과 맞춰서 String loginId를 받는 것으로 추가/수정
     int withdrawMember(String loginId);
 
+    // 💡 [추가] 내가 쓴 글 목록 조회 쿼리 매핑
+    List<Map<String, Object>> findMyPosts(@Param("memberId") Long memberId, @Param("type") String type);
 }

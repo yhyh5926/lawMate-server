@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -222,4 +223,10 @@ public class MemberServiceImpl implements MemberService {
 	public boolean withdrawMember(Long memberId) {
 		return memberMapper.withdrawMember(memberId) > 0;
 	}
+
+    // 💡 [추가] 내가 쓴 글 목록 조회 실제 구현
+    @Override
+    public List<Map<String, Object>> getMyPosts(Long memberId, String type) {
+        return memberMapper.findMyPosts(memberId, type);
+    }
 }
