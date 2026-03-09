@@ -22,12 +22,12 @@ public class MemberController {
 		System.out.println("✅ [MemberController] /api/member API 경로가 준비되었습니다.");
 	}
 
-	@GetMapping("/check-id.do")
+	@GetMapping("/check-id")
 	public ResponseEntity<?> checkId(@RequestParam("loginId") String loginId) {
 		return ResponseEntity.ok(Map.of("available", memberService.isLoginIdAvailable(loginId)));
 	}
 
-	@PostMapping("/join/form.do")
+	@PostMapping("/join/form")
 	public ResponseEntity<?> join(@ModelAttribute JoinDto joinDto) {
 		if (memberService.join(joinDto)) {
 			return ResponseEntity.ok(Map.of("success", true, "message", "회원가입 성공"));
@@ -35,7 +35,7 @@ public class MemberController {
 		return ResponseEntity.status(500).body(Map.of("success", false, "message", "가입 중 오류 발생"));
 	}
 
-	@PostMapping("/login.do")
+	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
 		Map<String, Object> result = memberService.login(loginDto);
 		if (result != null)
@@ -44,7 +44,7 @@ public class MemberController {
 	}
 
 	// 💡 [오류 해결] 구글 로그인 (이미 가입된 회원 확인용)
-	@PostMapping("/social-login.do")
+	@PostMapping("/social-login")
 	public ResponseEntity<?> socialLogin(@RequestBody Map<String, String> socialData) {
 		Map<String, Object> result = memberService.socialLogin(socialData);
 		if (result != null)
@@ -54,7 +54,7 @@ public class MemberController {
 	}
 
 	// 💡 [오류 해결] 구글 회원가입 (신규 가입 및 파일 업로드용)
-	@PostMapping("/join/social.do")
+	@PostMapping("/join/social")
 	public ResponseEntity<?> socialJoin(@ModelAttribute JoinDto joinDto) {
 		if (memberService.join(joinDto)) {
 			return ResponseEntity.ok(Map.of("success", true, "message", "소셜 회원가입 완료"));
@@ -62,7 +62,7 @@ public class MemberController {
 		return ResponseEntity.status(500).body(Map.of("success", false, "message", "소셜 가입 중 오류 발생"));
 	}
 
-	@PostMapping("/find.do")
+	@PostMapping("/find")
 	public ResponseEntity<?> findIdPw(@RequestBody FindDto findDto) {
 		return ResponseEntity.ok(Map.of("success", true, "message", "찾기 기능은 준비중입니다."));
 	}

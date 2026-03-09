@@ -4,23 +4,36 @@
 	namespace="com.edu.springboot.domain.community.CommunityMapper">
 
 	<select id="list"
-		resultType="com.edu.springboot.domain.community.vo.PostVo">
-		SELECT
-		p.post_id,
-		p.member_id,
-		p.case_type,
-		p.title,
-		p.content,
-		p.view_cnt,
-		p.comment_cnt,
-		p.status,
-		p.created_at,
-		p.updated_at,
-		m.name
-		FROM tb_post p
-		JOIN tb_member m ON p.member_id = m.member_id
-		ORDER BY
-		p.post_id DESC
+    resultType="com.edu.springboot.domain.community.vo.PostVo">
+	    SELECT
+	        p.post_id,
+	        p.member_id,
+	        p.case_type,
+	        p.title,
+	        p.content,
+	        p.view_cnt,
+	        p.comment_cnt,
+	        p.status,
+	        p.created_at,
+	        p.updated_at,
+	        m.name
+	    FROM tb_post p
+	    JOIN tb_member m ON p.member_id = m.member_id
+	    WHERE p.status = 'ACTIVE'
+	    <choose>
+	        <when test="sortType == 'views'">
+	            ORDER BY p.view_cnt DESC, p.post_id DESC
+	        </when>
+	        <when test="sortType == 'comments'">
+	            ORDER BY p.comment_cnt DESC, p.post_id DESC
+	        </when>
+	        <when test="sortType == 'caseType'">
+	            ORDER BY p.case_type ASC, p.post_id DESC
+	        </when>
+	        <otherwise>
+	            ORDER BY p.post_id DESC
+	        </otherwise>
+	    </choose>
 	</select>
 
 	<select id="detail"
@@ -153,5 +166,5 @@
 		SYSDATE
 		WHERE post_id = #{postId}
 	</update>
-
+	
 </mapper>

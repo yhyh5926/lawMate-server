@@ -59,5 +59,13 @@ public class PollController {
         return ResponseEntity.ok("투표 완료");
     }
     
+    @GetMapping("/poll/{pollId}/check/{memberId}")
+    public boolean checkVoted(@PathVariable("pollId") int pollId, @PathVariable("memberId") int memberId){
+
+        int result = dao.checkAlreadyVoted(pollId, memberId);
+
+        return result > 0;
+    }
+    
     
 }
