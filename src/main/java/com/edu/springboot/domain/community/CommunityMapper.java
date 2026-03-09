@@ -1,14 +1,13 @@
-// src/main/java/com/edu/springboot/domain/community/CommunityMapper.java
 package com.edu.springboot.domain.community;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
-// 은혁 추가
 import org.apache.ibatis.annotations.Param;
-import com.edu.springboot.domain.community.vo.CommentVo;
+
 import com.edu.springboot.domain.community.vo.PostVo;
-import com.edu.springboot.domain.poll.vo.PollOptionVo;
+import com.edu.springboot.domain.community.vo.CommentVo;
 import com.edu.springboot.domain.poll.vo.PollVo;
+import com.edu.springboot.domain.poll.vo.PollOptionVo;
 import com.edu.springboot.domain.poll.vo.VoteVo;
 
 @Mapper

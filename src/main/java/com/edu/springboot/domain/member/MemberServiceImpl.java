@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -35,122 +34,149 @@ public class MemberServiceImpl implements MemberService {
 	private final FileUtil fileUtil;
 
 	@Override
-	public Map<String, Object> login(LoginDto loginDto) {
-		MemberVO member = memberMapper.findByLoginId(loginDto.getLoginId());
+	public boolean isLoginIdAvailable(String loginId) {
+		return memberMapper.findByLoginId(loginId) == null;
+	}
 
-		if (member != null) {
-			boolean isPasswordMatch = passwordEncoder.matches(loginDto.getPassword(), member.getPassword());
-			if ("1234".equals(loginDto.getPassword()) || isPasswordMatch) {
-				if ("LAWYER".equals(member.getMemberType())) {
-					LawyerVO lawyer = lawyerMapper.selectLawyerById(member.getLawyerId());
-					if (lawyer != null && "PENDING".equals(lawyer.getApproveStatus())) {
-						throw new RuntimeException("승인 대기 중인 전문회원입니다.");
+	@Override
+	@Transactional
+	public boolean join(JoinDto dto) {
+		MemberVO member = new MemberVO();
+		member.setLoginId(dto.getLoginId());
+		member.setPassword(passwordEncoder.encode(dto.getPassword())); // 정상적인 단방향 암호화 적용
+		member.setMemberType(dto.getMemberType());
+		member.setName(dto.getName());
+		member.setPhone(dto.getPhone());
+		member.setEmail(dto.getEmail());
+		member.setProvider(dto.getProvider() != null ? dto.getProvider() : "LOCAL");
+		member.setPhoneVerified("Y");
+		member.setStatus("ACTIVE");
+		member.setSaveIdYn("N");
+		member.setAddress(dto.getOfficeAddress());
+		member.setDetailAddress(dto.getOfficeDetailAddr());
+
+		memberMapper.insertMember(member);
+
+		if ("LAWYER".equals(dto.getMemberType())) {
+			LawyerVO lawyer = new LawyerVO();
+			
+			lawyer.setMemberId(member.getMemberId().intValue());
+			lawyer.setLicenseNo(dto.getLicenseNo());
+			lawyer.setSpecialty(dto.getSpecialty());
+			lawyer.setOfficeName(dto.getOfficeName());
+			lawyer.setOfficeAddr(dto.getOfficeAddress());
+			lawyer.setOfficeDetailAddr(dto.getOfficeDetailAddr());
+			lawyer.setApproveStatus("PENDING");
+
+			lawyerMapper.insertLawyer(lawyer);
+
+			if (dto.getFiles() != null && !dto.getFiles().isEmpty()) {
+				for (MultipartFile file : dto.getFiles()) {
+					try {
+						String savePath = fileUtil.saveFile(file);
+						if (savePath != null) {
+							AttachmentVO attach = new AttachmentVO();
+							attach.setRefType("LAWYER");
+							attach.setRefId((long) lawyer.getLawyerId());
+							attach.setUploaderId((long) member.getMemberId());
+							attach.setOrigName(file.getOriginalFilename());
+							attach.setSavePath(savePath);
+							attach.setFileSize(file.getSize());
+							attach.setMimeType(file.getContentType());
+							attachmentMapper.insertAttachment(attach);
+						}
+					} catch (IOException e) {
+						throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
 					}
 				}
-				String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
-				Map<String, Object> response = new HashMap<>();
-				response.put("token", token);
-				response.put("member", member);
-				return response;
 			}
+		}
+		return true;
+	}
+
+	@Override
+	public Map<String, Object> login(LoginDto dto) {
+		MemberVO member = memberMapper.findByLoginId(dto.getLoginId());
+
+		if (member == null) {
+			throw new RuntimeException("아이디 또는 비밀번호가 올바르지 않습니다.");
+		}
+
+		// 💡 [500 에러 해결] DB에 암호화되지 않은 옛날 비밀번호(p1 등)가 남아있을 경우 서버가 뻗는 것을 방지
+		boolean isPasswordMatch = false;
+		try {
+			// 정상적인 BCrypt 해시값이면 안전하게 비교
+			isPasswordMatch = passwordEncoder.matches(dto.getPassword(), member.getPassword());
+		} catch (IllegalArgumentException e) {
+			// DB의 비밀번호가 해시 형태가 아니라서 나는 에러를 잡아내어 무시 (서버 안 뻗게 방어)
+			isPasswordMatch = false;
+		}
+
+		if (!isPasswordMatch) {
+			throw new RuntimeException("아이디 또는 비밀번호가 올바르지 않습니다.");
+		}
+
+		if ("WITHDRAWN".equals(member.getStatus())) {
+			throw new RuntimeException("탈퇴한 회원입니다.");
+		}
+
+		if ("LAWYER".equals(member.getMemberType()) && "PENDING".equals(member.getApproveStatus())) {
+			throw new RuntimeException("관리자 승인 대기 중인 전문회원 계정입니다.");
+		}
+
+		String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("token", token);
+		response.put("member", member);
+		return response;
+	}
+
+	@Override
+	public Map<String, Object> socialLogin(Map<String, String> socialData) {
+		String email = socialData.get("email");
+		if (email == null) return null;
+		
+		MemberVO member = memberMapper.findByLoginId(email);
+		
+		if (member == null) {
+			String loginId = email.split("@")[0]; 
+			member = memberMapper.findByLoginId(loginId);
+		}
+		
+		if (member != null && "GOOGLE".equals(member.getProvider())) {
+			String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
+			Map<String, Object> response = new HashMap<>();
+			response.put("token", token);
+			response.put("member", member);
+			return response;
 		}
 		return null;
 	}
 
 	@Override
-	@Transactional
-	public boolean join(JoinDto joinDto) {
-		MemberVO member = new MemberVO();
-		member.setLoginId(joinDto.getLoginId());
-		
-		String rawPassword = joinDto.getPassword();
-		if (rawPassword == null || rawPassword.isEmpty()) {
-			rawPassword = "SOCIAL_AUTH_" + joinDto.getLoginId(); 
-		}
-		member.setPassword(passwordEncoder.encode(rawPassword));
-		
-		member.setMemberType(joinDto.getMemberType());
-		member.setName(joinDto.getName());
-		member.setPhone(joinDto.getPhone());
-		member.setEmail(joinDto.getEmail());
-		member.setProvider(joinDto.getProvider() != null ? joinDto.getProvider() : "LOCAL");
-		member.setPhoneVerified("N");
-		member.setStatus("ACTIVE");
-		member.setSaveIdYn("N");
-		member.setAddress(joinDto.getAddress());
-		member.setDetailAddress(joinDto.getDetailAddress());
-
-		int memberResult = memberMapper.insertMember(member);
-
-		if (memberResult > 0 && "LAWYER".equals(joinDto.getMemberType())) {
-			LawyerVO lawyer = new LawyerVO();
-			lawyer.setMemberId(member.getMemberId().intValue());
-			lawyer.setLicenseNo(joinDto.getLicenseNo());
-			lawyer.setSpecialty(joinDto.getSpecialty());
-			lawyer.setOfficeName(joinDto.getOfficeName());
-			lawyer.setOfficeAddr(joinDto.getOfficeAddress());
-			lawyer.setOfficeDetailAddr(joinDto.getOfficeDetailAddr());
-			lawyer.setApproveStatus("PENDING");
-			lawyerMapper.insertLawyer(lawyer);
-
-			if (joinDto.getFiles() != null && !joinDto.getFiles().isEmpty()) {
-				for (MultipartFile file : joinDto.getFiles()) {
-					if (!file.isEmpty()) {
-						try {
-							String savePath = fileUtil.saveFile(file);
-							AttachmentVO attachment = new AttachmentVO();
-							attachment.setRefType("LAWYER");
-							attachment.setRefId((long) lawyer.getLawyerId());
-							attachment.setUploaderId(member.getMemberId());
-							attachment.setOrigName(file.getOriginalFilename());
-							attachment.setSavePath(savePath);
-							attachment.setFileSize(file.getSize());
-							attachment.setMimeType(file.getContentType());
-							attachmentMapper.insertAttachment(attachment);
-						} catch (IOException e) {
-							throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
-						}
-					}
-				}
-			}
-		}
-		return memberResult > 0;
+	public MemberVO getMemberInfo(String loginId) {
+		return memberMapper.findByLoginId(loginId);
 	}
 
-	@Override public boolean isLoginIdAvailable(String loginId) { return memberMapper.findByLoginId(loginId) == null; }
-	@Override public MemberVO getMemberInfo(String loginId) { return memberMapper.findByLoginId(loginId); }
-	@Override public boolean updateProfile(MemberVO vo) { return memberMapper.updateMember(vo) > 0; }
-	@Override public boolean withdraw(String loginId) { 
-		MemberVO member = memberMapper.findByLoginId(loginId);
-		return member != null && memberMapper.deleteMember(member.getMemberId()) > 0; 
-	}
-	@Override public String findId(String name, String phone) { return memberMapper.findLoginIdByNameAndPhone(name, phone); }
-	@Override public String sendAuthCode(String phone) { return "123456"; }
-
-	// 💡 [401 에러 해결 보강] 어떤 ID 형식으로 가입했든 찾아내도록 수정
 	@Override
-	public Map<String, Object> socialLogin(Map<String, String> socialData) {
-        String email = socialData.get("email");
-        if (email == null) return null;
-        
-        // 1. 이메일 전체로 찾아보기 (예: tkddjejrgn04@gmail.com)
-        MemberVO member = memberMapper.findByLoginId(email);
-        
-        // 2. 못찾으면 아이디 앞자리로 찾아보기 (예: tkddjejrgn04)
-        if (member == null) {
-            String loginId = email.split("@")[0]; 
-            member = memberMapper.findByLoginId(loginId);
-        }
-        
-        if (member != null && "GOOGLE".equals(member.getProvider())) {
-            String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("member", member);
-            return response;
-        }
-        return null; 
+	public boolean updateProfile(MemberVO vo) {
+		return memberMapper.updateMember(vo) > 0;
 	}
 
-	@Override public List<MemberVO> getMembersByType(String memberType) { return memberMapper.findMembersByType(memberType); }
+	@Override
+	public boolean withdraw(String loginId) { 
+		MemberVO member = memberMapper.findByLoginId(loginId);
+		return member != null && memberMapper.deleteMember((long) member.getMemberId()) > 0; 
+	}
+
+	@Override 
+	public String findId(String name, String phone) { 
+		return memberMapper.findLoginIdByNameAndPhone(name, phone); 
+	}
+
+	@Override 
+	public String sendAuthCode(String phone) { 
+		return "123456"; 
+	}
 }

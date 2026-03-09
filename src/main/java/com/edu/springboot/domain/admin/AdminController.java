@@ -1,7 +1,3 @@
-/**
- * 파일위치: src/main/java/com/edu/springboot/domain/admin/AdminController.java
- * 기능전체: 관리자 전용 기능 통합 컨트롤러 (회원, 승인, 사건, 커뮤니티, 신고, 통계 API)
- */
 package com.edu.springboot.domain.admin;
 
 import java.util.Map;
@@ -43,7 +39,7 @@ public class AdminController {
 		System.out.println("✅ [domain/admin] 관리자 컨트롤러가 가동되었습니다.");
 	}
 
-	@GetMapping("/stats.do")
+	@GetMapping("/stats")
 	public ResponseEntity<?> getDashboardStats() {
 		int totalPersonal = adminMapper.countTotalPersonalMembers();
 		int totalLawyer = adminMapper.countTotalLawyerMembers();
@@ -57,12 +53,12 @@ public class AdminController {
 				dailyUsers, "cases", dailyCases));
 	}
 
-	@GetMapping("/member/list.do")
+	@GetMapping("/member/list")
 	public ResponseEntity<?> getMemberList() {
 		return ResponseEntity.ok(Map.of("data", memberMapper.selectAllMembers()));
 	}
 
-	@PostMapping("/member/delete.do")
+	@PostMapping("/member/delete")
 	public ResponseEntity<?> suspendMember(@RequestBody Map<String, Long> payload) {
 		try {
 			Long memberId = payload.get("memberId");
@@ -73,23 +69,23 @@ public class AdminController {
 		}
 	}
 
-	@GetMapping("/lawyer/approve.do")
+	@GetMapping("/lawyer/approve")
 	public ResponseEntity<?> getPendingLawyers() {
 		return ResponseEntity.ok(Map.of("data", lawyerMapper.findPendingLawyers()));
 	}
 
-	@PostMapping("/lawyer/approve.do")
+	@PostMapping("/lawyer/approve")
 	public ResponseEntity<?> approveLawyer(@RequestBody LawyerVO lawyerVO) {
 		lawyerMapper.updateApproveStatus(lawyerVO);
 		return ResponseEntity.ok(Map.of("message", "전문회원 승인 상태가 업데이트 되었습니다."));
 	}
 
-	@GetMapping("/case/list.do")
+	@GetMapping("/case/list")
 	public ResponseEntity<?> getAllCases() {
 		return ResponseEntity.ok(Map.of("data", caseService.getAllCasesForAdmin()));
 	}
 
-	@GetMapping("/board/list.do")
+	@GetMapping("/board/list")
 	public ResponseEntity<?> getBoardList() {
 		List<PostVo> posts = communityMapper.list();
 		List<QuestionVO> questions = questionMapper.selectAllQuestions();
@@ -97,7 +93,7 @@ public class AdminController {
 		return ResponseEntity.ok(Map.of("data", Map.of("posts", posts, "questions", questions)));
 	}
 
-	@PostMapping("/board/delete.do")
+	@PostMapping("/board/delete")
 	public ResponseEntity<?> deleteBoardItem(@RequestBody Map<String, Object> payload) {
 		try {
 			String type = payload.get("type").toString();
@@ -114,17 +110,19 @@ public class AdminController {
 		}
 	}
 
-	@GetMapping("/report/list.do")
+	// 💡 [수정] DB 직접 조회 코드로 교체 완료!
+	@GetMapping("/report/list")
 	public ResponseEntity<?> getReportList() {
-		return ResponseEntity.ok(Map.of("data", reportService.getAllReports()));
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllReports()));
 	}
 
-	@GetMapping("/report/detail.do")
+	// 💡 [수정] DB 직접 조회 코드로 교체 완료!
+	@GetMapping("/report/detail")
 	public ResponseEntity<?> getReportDetail(@RequestParam("reportId") Long reportId) {
-		return ResponseEntity.ok(Map.of("data", reportService.getReportDetail(reportId)));
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectReportDetail(reportId)));
 	}
 
-	@PostMapping("/report/process.do")
+	@PostMapping("/report/process")
 	public ResponseEntity<?> processSanction(@RequestBody Map<String, Object> payload) {
 		try {
 			ReportVO rVO = new ReportVO();
@@ -148,5 +146,17 @@ public class AdminController {
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body(Map.of("success", false, "error", e.getMessage()));
 		}
+	}
+
+	// 💡 [추가] 결제 데이터 직접 조회 API
+	@GetMapping("/payment/list")
+	public ResponseEntity<?> getPaymentList() {
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllPayments()));
+	}
+
+	// 💡 [추가] 정산 데이터 직접 조회 API
+	@GetMapping("/settlement/list")
+	public ResponseEntity<?> getSettlementList() {
+		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllSettlements()));
 	}
 }

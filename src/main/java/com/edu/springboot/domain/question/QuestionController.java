@@ -4,8 +4,11 @@ import com.edu.springboot.domain.question.vo.QuestionVO;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,26 +20,72 @@ public class QuestionController {
 
 	@PostConstruct
 	public void init() {
-		System.out.println("✅ [domain/question] 법률 질문 컨트롤러가 /api/question 경로로 활성화되었습니다.");
+		System.out.println("✅ [domain/question] 법률 질문 컨트롤러가 활성화되었습니다.");
 	}
 
-	@PostMapping("/write.do")
+	// 1. 새 질문 등록
+	@PostMapping("/write")
 	public ResponseEntity<?> writeQuestion(@RequestBody QuestionVO questionVO) {
 		int result = questionMapper.insertQuestion(questionVO);
 		return ResponseEntity.ok(Map.of("success", result > 0));
 	}
 
-	@GetMapping("/list.do")
-	public ResponseEntity<?> getQuestionList() {
-		return ResponseEntity.ok(Map.of("data", questionMapper.selectAllQuestions()));
+	/**
+	 * 2. 질문 목록 조회 (검색 및 페이지네이션 반영)
+	 * 
+	 * @param page:     현재 페이지 (1부터 시작)
+	 * @param size:     한 페이지당 게시물 수
+	 * @param caseType: 사건 유형 필터
+	 * @param title:    제목 검색어
+	 */
+	@GetMapping("/list")
+	public ResponseEntity<?> getQuestionList(@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "size", defaultValue = "10") int size,
+			@RequestParam(value = "caseType", required = false) String caseType,
+			@RequestParam(value = "title", required = false) String title) {
+
+		// MyBatis 페이징 처리를 위한 시작 위치 계산 (offset)
+		int offset = (page - 1) * size;
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("offset", offset);
+		params.put("size", size);
+		params.put("caseType", caseType);
+		params.put("title", title);
+
+		// 검색 조건에 맞는 데이터 리스트와 전체 개수 조회
+		List<QuestionVO> list = questionMapper.selectQuestionsWithPaging(params);
+		int totalCount = questionMapper.selectQuestionCount(params);
+
+		return ResponseEntity.ok(Map.of("data", list, "totalCount", totalCount, "currentPage", page, "totalPages",
+				(int) Math.ceil((double) totalCount / size)));
+	}
+
+	// 3. 질문 상세 조회
+	@GetMapping("/detail")
+	public ResponseEntity<?> getQuestionDetail(@RequestParam("questionId") Long questionId) {
+		return ResponseEntity.ok(Map.of("data", questionMapper.selectQuestionById(questionId)));
 	}
 
 	/**
-	 * 💡 수정 포인트: @RequestParam에 명시적으로 "questionId"를 지정했습니다. 이를 통해 컴파일러 파라미터 정보가 없어도
-	 * 정확히 매핑됩니다.
+	 * 4. 변호사 답변 채택
 	 */
-	@GetMapping("/detail.do")
-	public ResponseEntity<?> getQuestionDetail(@RequestParam("questionId") Long questionId) {
-		return ResponseEntity.ok(Map.of("data", questionMapper.selectQuestionById(questionId)));
+	@Transactional
+	@PostMapping("/adopt")
+	public ResponseEntity<?> adoptAnswer(@RequestBody Map<String, Object> params) {
+		// Map에서 값을 꺼낼 때 타입 안정성을 위해 체크 필요
+		Long questionId = Long.valueOf(params.get("questionId").toString());
+		Long lawyerId = Long.valueOf(params.get("lawyerId").toString());
+		Long memberId = Long.valueOf(params.get("memberId").toString());
+		Long answerId = Long.valueOf(params.get("answerId").toString());
+
+		int qResult = questionMapper.updateQuestionAdoption(questionId, lawyerId, memberId);
+		int aResult = questionMapper.updateAnswerAdoption(answerId);
+
+		if (qResult > 0 && aResult > 0) {
+			return ResponseEntity.ok(Map.of("success", true, "message", "채택이 완료되었습니다."));
+		} else {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "채택에 실패했습니다."));
+		}
 	}
 }

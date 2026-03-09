@@ -22,13 +22,13 @@ public class CaseController {
     }
 
     // 내 사건 목록 조회
-    @GetMapping("/list.do")
+    @GetMapping("/list")
     public ResponseEntity<?> getMyCaseList(@RequestParam Long memberId) {
         return ResponseEntity.ok(caseService.getCaseListByMember(memberId));
     }
 
     // 사건 상세 조회
-    @GetMapping("/detail.do")
+    @GetMapping("/detail")
     public ResponseEntity<?> getCaseDetail(@RequestParam Long caseId) {
         return ResponseEntity.ok(caseService.getCaseDetail(caseId));
     }

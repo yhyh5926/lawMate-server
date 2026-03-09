@@ -1,75 +1,124 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-	namespace="com.edu.springboot.domain.question.QuestionMapper">
+<mapper namespace="com.edu.springboot.domain.question.QuestionMapper">
 
-	<resultMap id="questionDetailMap"
-		type="com.edu.springboot.domain.question.vo.QuestionVO">
-		<id property="questionId" column="QUESTION_ID" />
-		<result property="memberId" column="MEMBER_ID" />
-		<result property="caseId" column="CASE_ID" />
-		<result property="title" column="TITLE" />
-		<result property="content" column="CONTENT" />
-		<result property="caseType" column="CASE_TYPE" />
-		<result property="assignedLawyer" column="ASSIGNED_LAWYER" />
-		<result property="status" column="STATUS" />
-		<result property="createdAt" column="CREATED_AT" />
-		<result property="updatedAt" column="UPDATED_AT" />
+    <resultMap id="questionListMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
+        <id property="questionId" column="QUESTION_ID" />
+        <result property="memberId" column="MEMBER_ID" />
+        <result property="memberName" column="MEMBER_NAME" />
+        <result property="title" column="TITLE" />
+        <result property="caseType" column="CASE_TYPE" />
+        <result property="status" column="STATUS" />
+        <result property="createdAt" column="CREATED_AT" />
+        <result property="answerCount" column="ANSWER_COUNT" />
+    </resultMap>
 
-		<collection property="answers"
-			ofType="com.edu.springboot.domain.answer.vo.AnswerVO">
-			<id property="answerId" column="ANSWER_ID" />
-			<result property="content" column="ANSWER_CONTENT" />
-			<result property="createdAt" column="ANSWER_CREATED_AT" />
-			<result property="lawyerId" column="LAWYER_ID" />
-			<result property="lawyerName" column="LAWYER_NAME" />
-			<result property="isAdopted" column="IS_ADOPTED" />
-		</collection>
-	</resultMap>
+    <resultMap id="questionDetailMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
+        <id property="questionId" column="QUESTION_ID" />
+        <result property="memberId" column="MEMBER_ID" />
+        <result property="memberName" column="MEMBER_NAME" />
+        <result property="caseId" column="CASE_ID" />
+        <result property="title" column="TITLE" />
+        <result property="content" column="CONTENT" />
+        <result property="caseType" column="CASE_TYPE" />
+        <result property="assignedLawyer" column="ASSIGNED_LAWYER" />
+        <result property="status" column="STATUS" />
+        <result property="createdAt" column="CREATED_AT" />
+        <result property="updatedAt" column="UPDATED_AT" />
+        <collection property="answers" ofType="com.edu.springboot.domain.answer.vo.AnswerVO">
+            <id property="answerId" column="ANSWER_ID" />
+            <result property="content" column="ANSWER_CONTENT" />
+            <result property="createdAt" column="ANSWER_CREATED_AT" />
+            <result property="lawyerId" column="LAWYER_ID" />
+            <result property="isAdopted" column="IS_ADOPTED" />
+            <result property="lawyerName" column="LAWYER_NAME" />
+        </collection>
+    </resultMap>
 
-	<insert id="insertQuestion"
-		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
-		<selectKey keyProperty="questionId" resultType="long"
-			order="BEFORE">
-			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
-		</selectKey>
-		INSERT INTO TB_QUESTION (
-		QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT, CASE_TYPE, STATUS, CREATED_AT,
-		UPDATED_AT
-		)
-		VALUES (
-		#{questionId}, #{memberId}, #{caseId}, #{title}, #{content}, #{caseType}, 'OPEN',
-		SYSDATE, SYSDATE
-		)
-	</insert>
+    <insert id="insertQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+        <selectKey keyProperty="questionId" resultType="long" order="BEFORE">
+            SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO TB_QUESTION (
+            QUESTION_ID, MEMBER_ID, TITLE, CONTENT, CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
+        ) VALUES (
+            #{questionId}, #{memberId}, #{title}, #{content}, #{caseType}, 'OPEN', SYSDATE, SYSDATE
+        )
+    </insert>
 
-	<select id="selectAllQuestions"
-		resultType="com.edu.springboot.domain.question.vo.QuestionVO">
-		SELECT * FROM TB_QUESTION ORDER BY CREATED_AT DESC
-	</select>
+    <select id="selectQuestionsWithPaging" resultMap="questionListMap" parameterType="map">
+        SELECT q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
+               q.TITLE, q.CASE_TYPE, q.STATUS, q.CREATED_AT,
+               (SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as ANSWER_COUNT
+        FROM TB_QUESTION q
+        LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+        <where>
+            <if test="caseType != null and caseType != ''">
+                AND q.CASE_TYPE = #{caseType}
+            </if>
+            <if test="title != null and title != ''">
+                AND q.TITLE LIKE '%' || #{title} || '%'
+            </if>
+        </where>
+        ORDER BY q.CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
 
-	<select id="selectQuestionById" resultMap="questionDetailMap">
-		SELECT
-		q.QUESTION_ID, q.MEMBER_ID, q.CASE_ID, q.TITLE, q.CONTENT,
-		q.CASE_TYPE, q.ASSIGNED_LAWYER, q.STATUS, q.CREATED_AT, q.UPDATED_AT,
-		a.ANSWER_ID,
-		a.CONTENT as ANSWER_CONTENT,
-		a.CREATED_AT as ANSWER_CREATED_AT,
-		a.LAWYER_ID,
-		a.IS_ADOPTED,
-		m.NAME as LAWYER_NAME
-		FROM TB_QUESTION q
-		LEFT OUTER JOIN TB_ANSWER a ON q.QUESTION_ID = a.QUESTION_ID
-		LEFT OUTER JOIN TB_LAWYER l ON a.LAWYER_ID = l.LAWYER_ID
-		LEFT OUTER JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
-		WHERE q.QUESTION_ID = #{questionId}
-		ORDER BY a.CREATED_AT DESC
-	</select>
+    <select id="selectQuestionCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_QUESTION q
+        <where>
+            <if test="caseType != null and caseType != ''">
+                AND q.CASE_TYPE = #{caseType}
+            </if>
+            <if test="title != null and title != ''">
+                AND q.TITLE LIKE '%' || #{title} || '%'
+            </if>
+        </where>
+    </select>
 
-	<update id="updateQuestionStatus">
-		UPDATE TB_QUESTION
-		SET STATUS = #{status}, UPDATED_AT = SYSDATE
-		WHERE QUESTION_ID = #{questionId}
-	</update>
+    <select id="selectQuestionById" resultMap="questionDetailMap">
+        SELECT
+            q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
+            q.CASE_ID, q.TITLE, q.CONTENT, q.CASE_TYPE, q.ASSIGNED_LAWYER,
+            q.STATUS, q.CREATED_AT, q.UPDATED_AT,
+            a.ANSWER_ID, a.CONTENT as ANSWER_CONTENT, a.CREATED_AT as ANSWER_CREATED_AT,
+            a.LAWYER_ID, a.IS_ADOPTED, m.NAME as LAWYER_NAME
+        FROM TB_QUESTION q
+        LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+        LEFT OUTER JOIN TB_ANSWER a ON q.QUESTION_ID = a.QUESTION_ID
+        LEFT OUTER JOIN TB_LAWYER l ON a.LAWYER_ID = l.LAWYER_ID
+        LEFT OUTER JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
+        WHERE q.QUESTION_ID = #{questionId}
+        ORDER BY a.IS_ADOPTED DESC, a.CREATED_AT ASC
+    </select>
+
+    <update id="updateQuestionAdoption">
+        UPDATE TB_QUESTION
+        SET STATUS = 'ADOPTED', ASSIGNED_LAWYER = #{lawyerId}, UPDATED_AT = SYSDATE
+        WHERE QUESTION_ID = #{questionId} AND MEMBER_ID = #{memberId}
+    </update>
+
+    <update id="updateAnswerAdoption">
+        UPDATE TB_ANSWER
+        SET IS_ADOPTED = 'Y'
+        WHERE ANSWER_ID = #{answerId}
+    </update>
+
+    <select id="selectAllQuestions" resultMap="questionListMap">
+        SELECT
+            q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
+            q.TITLE, q.CASE_TYPE, q.STATUS, q.CREATED_AT,
+            (SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as ANSWER_COUNT
+        FROM TB_QUESTION q
+        LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+        ORDER BY q.CREATED_AT DESC
+    </select>
+
+    <update id="updateQuestionStatus">
+        UPDATE TB_QUESTION
+        SET STATUS = #{status}, UPDATED_AT = SYSDATE
+        WHERE QUESTION_ID = #{questionId}
+    </update>
 
 </mapper>
