@@ -33,19 +33,23 @@ public class PrecedentController {
 	}
 
 	/**
-	 * 💡 3. 유사 판례 추천 조회 (추가됨)
+	 * 💡 3. 유사 판례 추천 조회 (수정됨) * @param caseType 현재 판례의 카테고리 (필수)
 	 * 
-	 * @param caseType  현재 판례의 카테고리
-	 * @param keyword   유사도 측정을 위한 핵심 키워드
-	 * @param excludeId 현재 보고 있는 판례 ID (추천에서 제외)
+	 * @param keyword   유사도 측정을 위한 핵심 키워드 (선택)
+	 * @param excludeId 추천에서 제외할 ID (선택 - 질문 작성 시에는 null 가능)
 	 * @param limit     가져올 개수 (기본값 4)
 	 */
 	@GetMapping("/related")
 	public List<PrecedentVO> related(@RequestParam("caseType") String caseType,
 			@RequestParam(value = "keyword", required = false) String keyword,
-			@RequestParam("excludeId") Long excludeId, @RequestParam(value = "limit", defaultValue = "4") int limit) {
+			// 💡 required = false를 추가하여 필수가 아니게 변경합니다.
+			@RequestParam(value = "excludeId", required = false) Long excludeId,
+			@RequestParam(value = "limit", defaultValue = "4") int limit) {
 
-		// 서비스 계층에서 유사 판례 리스트를 가져와 반환
-		return precedentService.selectRelated(caseType, keyword, excludeId, limit);
+		// 만약 excludeId가 null이면 서비스나 매퍼에서 오류가 나지 않도록
+		// 0 또는 시스템이 인식 가능한 더미 값으로 처리하거나, 그대로 보냅니다.
+		long finalExcludeId = (excludeId == null) ? 0L : excludeId;
+
+		return precedentService.selectRelated(caseType, keyword, finalExcludeId, limit);
 	}
 }
