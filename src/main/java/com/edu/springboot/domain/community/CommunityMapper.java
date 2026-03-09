@@ -18,6 +18,8 @@ public interface CommunityMapper {
 	public PostVo detail(int postId);
 	public List<CommentVo> commentList(int postId);
 	public void increaseViewCnt(@Param("postId") int postId);
+	public void insertPost(PostVo post);
+	public void updatePost(PostVo post);
 
 	// [은혁 추가] 관리자 게시글 상태 업데이트 (삭제 처리용)
 	public int updatePostStatus(@Param("postId") int postId, @Param("status") String status);

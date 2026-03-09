@@ -35,23 +35,70 @@
 	    </choose>
 	</select>
 
-    <select id="detail" resultType="com.edu.springboot.domain.community.vo.PostVo" parameterType="int">
-        SELECT
-            p.post_id,
-            p.member_id,
-            p.case_type,
-            p.title,
-            p.content,
-            p.view_cnt,
-            p.comment_cnt,
-            p.status,
-            p.created_at,
-            p.updated_at,
-            m.name
-        FROM tb_post p
-        JOIN tb_member m ON p.member_id = m.member_id
-        WHERE p.post_id = #{postId}
-    </select>
+	<select id="detail"
+	    resultType="com.edu.springboot.domain.community.vo.PostVo"
+	    parameterType="int">
+	    SELECT
+	        p.post_id,
+	        p.member_id,
+	        p.case_type,
+	        p.title,
+	        p.content,
+	        p.view_cnt,
+	        p.comment_cnt,
+	        p.status,
+	        p.created_at,
+	        p.updated_at,
+	        m.name
+	    FROM tb_post p
+	    JOIN tb_member m ON p.member_id = m.member_id
+	    WHERE p.post_id = #{postId}
+	      AND p.status = 'ACTIVE'
+	</select>
+    
+    <insert id="insertPost"
+    parameterType="com.edu.springboot.domain.community.vo.PostVo">
+
+	    <selectKey keyProperty="postId" resultType="int" order="BEFORE">
+	        SELECT SEQ_POST.NEXTVAL FROM DUAL
+	    </selectKey>
+	
+	    INSERT INTO tb_post
+	    (
+	        post_id,
+	        member_id,
+	        case_type,
+	        title,
+	        content,
+	        view_cnt,
+	        comment_cnt,
+	        status,
+	        created_at
+	    )
+	    VALUES
+	    (
+	        #{postId},
+	        #{memberId},
+	        #{caseType},
+	        #{title},
+	        #{content},
+	        0,
+	        0,
+	        'ACTIVE',
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="updatePost"
+    parameterType="com.edu.springboot.domain.community.vo.PostVo">
+	    UPDATE tb_post
+	    SET case_type = #{caseType},
+	        title = #{title},
+	        content = #{content},
+	        updated_at = SYSDATE
+	    WHERE post_id = #{postId}
+	      AND status = 'ACTIVE'
+	</update>
 
     <select id="commentList" resultType="com.edu.springboot.domain.community.vo.CommentVo" parameterType="int">
         SELECT
