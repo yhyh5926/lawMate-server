@@ -7,7 +7,7 @@ public class CommentVo {
 	private int commentId;
 	private int postId;
 	private int memberId;
-	private int parentId;
+	private Integer parentId; // 부모 댓글 null떄문에 int말고 다른것
 	private String content;
 	private String status;
 	private String createdAt;
