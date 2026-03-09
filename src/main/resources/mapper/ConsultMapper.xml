@@ -40,13 +40,17 @@
 
     <!-- ── 단건 조회 ──────────────────────────────────────── -->
     <select id="selectConsultByNo" resultMap="consultRM">
-        SELECT c.CONSULT_ID, c.MEMBER_ID, c.LAWYER_ID, c.CASE_ID,
-               TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD') AS CONSULT_DATE,
-               c.DURATION_MIN, c.NOTE, c.STATUS,
-               c.CREATED_AT, c.UPDATED_AT
-        FROM   TB_CONSULT c
-        WHERE  c.CONSULT_ID = #{consultId}
-    </select>
+	    SELECT c.CONSULT_ID, c.MEMBER_ID, c.LAWYER_ID, c.CASE_ID,
+	           TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD"T"HH24:MI:SS') AS CONSULT_DATE,
+	           c.DURATION_MIN, c.NOTE, c.STATUS,
+	           c.CREATED_AT, c.UPDATED_AT,
+	           m.NAME        AS LAWYER_NAME,
+	           l.CONSULT_FEE AS CONSULT_FEE
+	    FROM   TB_CONSULT c
+	    JOIN   TB_LAWYER  l ON l.LAWYER_ID  = c.LAWYER_ID
+	    JOIN   TB_MEMBER  m ON m.MEMBER_ID  = l.MEMBER_ID
+	    WHERE  c.CONSULT_ID = #{consultId}
+	</select>
 
     <!-- ── 회원 전체 목록 ─────────────────────────────────── -->
     <select id="selectConsultListByMember" resultMap="consultRM">
