@@ -23,11 +23,57 @@ public class QuestionController {
 		System.out.println("✅ [domain/question] 법률 질문 컨트롤러가 활성화되었습니다.");
 	}
 
-	// 1. 새 질문 등록
+	// 등록
 	@PostMapping("/write")
 	public ResponseEntity<?> writeQuestion(@RequestBody QuestionVO questionVO) {
 		int result = questionMapper.insertQuestion(questionVO);
 		return ResponseEntity.ok(Map.of("success", result > 0));
+	}
+
+	// 수정
+	@Transactional
+	@PutMapping("/update")
+	public ResponseEntity<?> updateQuestion(@RequestBody QuestionVO questionVO) {
+		// 이미 채택된 질문인지 체크하는 로직이 필요할 경우 추가
+		// QuestionVO existingQuestion =
+		// questionMapper.selectQuestionById(questionVO.getQuestionId());
+		// if ("ADOPTED".equals(existingQuestion.getStatus())) {
+		// return ResponseEntity.status(400).body(Map.of("success", false, "message",
+		// "채택된 질문은 수정할 수 없습니다."));
+		// }
+
+		int result = questionMapper.updateQuestion(questionVO);
+
+		if (result > 0) {
+			return ResponseEntity.ok(Map.of("success", true, "message", "수정되었습니다."));
+		} else {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "수정에 실패했습니다."));
+		}
+	}
+
+	//삭제
+	@Transactional
+	@DeleteMapping("/delete")
+	public ResponseEntity<?> deleteQuestion(@RequestParam("questionId") Long questionId) {
+		// 상세 조회를 통해 답변 존재 여부 확인 (Mapper에서 처리 가능)
+		QuestionVO question = questionMapper.selectQuestionById(questionId);
+
+		if (question == null) {
+			return ResponseEntity.status(404).body(Map.of("success", false, "message", "존재하지 않는 질문입니다."));
+		}
+
+		// 답변이 이미 달린 경우 삭제 방지 (프론트엔드에서도 체크하지만 서버에서도 한 번 더 체크)
+		if (question.getAnswers() != null && !question.getAnswers().isEmpty()) {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "이미 답변이 달린 질문은 삭제할 수 없습니다."));
+		}
+
+		int result = questionMapper.deleteQuestion(questionId);
+
+		if (result > 0) {
+			return ResponseEntity.ok(Map.of("success", true, "message", "삭제되었습니다."));
+		} else {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "삭제에 실패했습니다."));
+		}
 	}
 
 	/**
