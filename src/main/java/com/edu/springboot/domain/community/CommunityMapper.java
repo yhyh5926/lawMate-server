@@ -13,7 +13,7 @@ import com.edu.springboot.domain.poll.vo.VoteVo;
 @Mapper
 public interface CommunityMapper {
 	
-	// 게시물 리스트
+	// 게시물
 	public List<PostVo> list(@Param("sortType") String sortType);
 	public PostVo detail(int postId);
 	public List<CommentVo> commentList(int postId);
@@ -24,16 +24,30 @@ public interface CommunityMapper {
 	// [은혁 추가] 관리자 게시글 상태 업데이트 (삭제 처리용)
 	public int updatePostStatus(@Param("postId") int postId, @Param("status") String status);
 	
+	//투표 게시글 관련
 	public List<PollVo> pollList();
     public PollVo pollDetail(int pollId);
     public List<PollOptionVo> optionList(int pollId);
     int checkAlreadyVoted(
     	    @Param("pollId") int pollId,
     	    @Param("memberId") int memberId
-    	);
+    );
     public void insertVote(VoteVo vote);
     void increaseVoteCnt(
     	    @Param("pollId") int pollId,
     	    @Param("optionId") int optionId
-    	);
+    );
+    
+    //  게시물 좋아요 관련
+    public int checkPostLike(@Param("postId") int postId, @Param("memberId") int memberId);
+
+    public void insertPostLike(@Param("postId") int postId, @Param("memberId") int memberId);
+
+    public void deletePostLike(@Param("postId") int postId, @Param("memberId") int memberId);
+
+    public void increaseLikeCnt(@Param("postId") int postId);
+
+    public void decreaseLikeCnt(@Param("postId") int postId);
+
+    public List<PostVo> topLikedPosts();
 }

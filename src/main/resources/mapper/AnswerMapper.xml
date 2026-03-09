@@ -21,4 +21,16 @@
 		)
 	</insert>
 
+	<update id="updateAnswer">
+		UPDATE TB_ANSWER
+		SET content = #{content},
+		updated_at =
+		CURRENT_TIMESTAMP
+		WHERE answer_id = #{answerId}
+	</update>
+
+	<delete id="deleteAnswer">
+		DELETE FROM TB_ANSWER
+		WHERE answer_id = #{answerId}
+	</delete>
 </mapper>

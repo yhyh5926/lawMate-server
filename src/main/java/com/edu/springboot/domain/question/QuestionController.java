@@ -30,21 +30,66 @@ public class QuestionController {
 		return ResponseEntity.ok(Map.of("success", result > 0));
 	}
 
-	/**
-	 * 2. 질문 목록 조회 (검색 및 페이지네이션 반영)
-	 * 
-	 * @param page:     현재 페이지 (1부터 시작)
-	 * @param size:     한 페이지당 게시물 수
-	 * @param caseType: 사건 유형 필터
-	 * @param title:    제목 검색어
-	 */
+	// 2. 질문 수정 (PathVariable 적용)
+	@Transactional
+	@PutMapping("/update/{questionId}")
+	public ResponseEntity<?> updateQuestion(@PathVariable("questionId") Long questionId,
+			@RequestBody QuestionVO questionVO) {
+
+		// 경로의 ID를 VO 객체에 명시적으로 설정
+		questionVO.setQuestionId(questionId);
+
+		// 수정 전 상태 체크 (채택된 질문 수정 불가)
+		QuestionVO existingQuestion = questionMapper.selectQuestionById(questionId);
+		if (existingQuestion == null) {
+			return ResponseEntity.status(404).body(Map.of("success", false, "message", "존재하지 않는 질문입니다."));
+		}
+
+		if ("ADOPTED".equals(existingQuestion.getStatus())) {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "이미 채택된 질문은 수정할 수 없습니다."));
+		}
+
+		int result = questionMapper.updateQuestion(questionVO);
+
+		if (result > 0) {
+			return ResponseEntity.ok(Map.of("success", true, "message", "수정되었습니다."));
+		} else {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "수정에 실패했습니다."));
+		}
+	}
+
+	// 3. 질문 삭제 (PathVariable 적용)
+	@Transactional
+	@DeleteMapping("/delete/{questionId}")
+	public ResponseEntity<?> deleteQuestion(@PathVariable("questionId") Long questionId) {
+
+		QuestionVO question = questionMapper.selectQuestionById(questionId);
+
+		if (question == null) {
+			return ResponseEntity.status(404).body(Map.of("success", false, "message", "존재하지 않는 질문입니다."));
+		}
+
+		// 답변이 이미 달린 경우 삭제 방지
+		if (question.getAnswers() != null && !question.getAnswers().isEmpty()) {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "이미 답변이 달린 질문은 삭제할 수 없습니다."));
+		}
+
+		int result = questionMapper.deleteQuestion(questionId);
+
+		if (result > 0) {
+			return ResponseEntity.ok(Map.of("success", true, "message", "삭제되었습니다."));
+		} else {
+			return ResponseEntity.status(400).body(Map.of("success", false, "message", "삭제에 실패했습니다."));
+		}
+	}
+
+	// 4. 질문 목록 조회 (검색 및 페이지네이션 반영)
 	@GetMapping("/list")
 	public ResponseEntity<?> getQuestionList(@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "size", defaultValue = "10") int size,
 			@RequestParam(value = "caseType", required = false) String caseType,
 			@RequestParam(value = "title", required = false) String title) {
 
-		// MyBatis 페이징 처리를 위한 시작 위치 계산 (offset)
 		int offset = (page - 1) * size;
 
 		Map<String, Object> params = new HashMap<>();
@@ -53,7 +98,6 @@ public class QuestionController {
 		params.put("caseType", caseType);
 		params.put("title", title);
 
-		// 검색 조건에 맞는 데이터 리스트와 전체 개수 조회
 		List<QuestionVO> list = questionMapper.selectQuestionsWithPaging(params);
 		int totalCount = questionMapper.selectQuestionCount(params);
 
@@ -61,19 +105,16 @@ public class QuestionController {
 				(int) Math.ceil((double) totalCount / size)));
 	}
 
-	// 3. 질문 상세 조회
+	// 5. 질문 상세 조회
 	@GetMapping("/detail")
 	public ResponseEntity<?> getQuestionDetail(@RequestParam("questionId") Long questionId) {
 		return ResponseEntity.ok(Map.of("data", questionMapper.selectQuestionById(questionId)));
 	}
 
-	/**
-	 * 4. 변호사 답변 채택
-	 */
+	// 6. 변호사 답변 채택
 	@Transactional
 	@PostMapping("/adopt")
 	public ResponseEntity<?> adoptAnswer(@RequestBody Map<String, Object> params) {
-		// Map에서 값을 꺼낼 때 타입 안정성을 위해 체크 필요
 		Long questionId = Long.valueOf(params.get("questionId").toString());
 		Long lawyerId = Long.valueOf(params.get("lawyerId").toString());
 		Long memberId = Long.valueOf(params.get("memberId").toString());

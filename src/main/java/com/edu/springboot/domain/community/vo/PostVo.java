@@ -15,4 +15,5 @@ public class PostVo {
 	private String createdAt;
 	private String updatedAt;
 	private String name;
+	private int likeCnt;
 }
