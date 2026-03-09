@@ -3,12 +3,11 @@
 <mapper
 	namespace="com.edu.springboot.domain.attachment.AttachmentMapper">
 
-	<insert id="insertAttachment"
-		parameterType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
-		INSERT INTO TB_ATTACHMENT (ATTACH_ID, REF_TYPE, REF_ID, UPLOADER_ID,
-		ORIG_NAME, SAVE_PATH, FILE_SIZE, MIME_TYPE)
-		VALUES (SEQ_ATTACH.NEXTVAL, #{refType}, #{refId}, #{uploaderId},
-		#{origName}, #{savePath}, #{fileSize}, #{mimeType})
+	<insert id="insertAttachment" parameterType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+	    INSERT INTO TB_ATTACHMENT (ATTACH_ID, REF_TYPE, REF_ID, UPLOADER_ID,
+	    ORIG_NAME, SAVE_PATH, FILE_SIZE, MIME_TYPE)
+	    VALUES (SEQ_ATTACH.NEXTVAL, #{refType}, #{refId, jdbcType=NUMERIC}, #{uploaderId, jdbcType=NUMERIC},
+	    #{origName}, #{savePath}, #{fileSize}, #{mimeType})
 	</insert>
 
 	<select id="findAttachmentsByRef"
