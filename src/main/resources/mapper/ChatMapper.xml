@@ -154,4 +154,11 @@
         DELETE FROM TB_CHAT_ROOM WHERE ROOM_ID = #{roomNo}
     </delete>
 
+	<delete id="deleteMsg">
+    	DELETE FROM TB_CHAT_MSG WHERE MSG_ID = #{msgNo}
+	</delete>
+	
+	<update id="updateMsg">
+	    UPDATE TB_CHAT_MSG SET CONTENT = #{content} WHERE MSG_ID = #{msgNo}
+	</update>
 </mapper>

@@ -47,4 +47,8 @@ public interface ChatMapper {
     /** 삭제 */
     int deleteRoom(@Param("roomNo") Long roomNo);
     int deleteMsgsByRoomNo(@Param("roomNo") Long roomNo);
+    
+    
+    void deleteMsg(@Param("msgNo") Long msgNo);
+    void updateMsg(@Param("msgNo") Long msgNo, @Param("content") String content);
 }

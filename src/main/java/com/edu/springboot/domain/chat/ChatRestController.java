@@ -105,5 +105,20 @@ public class ChatRestController {
         chatMapper.deleteRoom(roomNo);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+    
+    @DeleteMapping("/messages/{msgNo}")
+    public ResponseEntity<ApiResponse<Void>> deleteMsg(
+            @PathVariable("msgNo") Long msgNo) {
+        chatMapper.deleteMsg(msgNo);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PutMapping("/messages/{msgNo}")
+    public ResponseEntity<ApiResponse<Void>> updateMsg(
+            @PathVariable("msgNo") Long msgNo,
+            @RequestBody Map<String, String> body) {
+        chatMapper.updateMsg(msgNo, body.get("content"));
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
 
