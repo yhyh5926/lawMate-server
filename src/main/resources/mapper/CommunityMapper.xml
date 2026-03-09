@@ -106,7 +106,41 @@
 	      AND status = 'ACTIVE'
 	</update>
 
-    <select id="commentList" resultType="com.edu.springboot.domain.community.vo.CommentVo" parameterType="int">
+    
+
+    <update id="updatePostStatus">
+        UPDATE tb_post
+        SET status = #{status}, updated_at = SYSDATE
+        WHERE post_id = #{postId}
+    </update>
+	
+	<select id="topLikedPosts"
+    resultType="com.edu.springboot.domain.community.vo.PostVo">
+    SELECT *
+	    FROM (
+	        SELECT
+	            p.post_id,
+	            p.member_id,
+	            p.case_type,
+	            p.title,
+	            p.content,
+	            p.view_cnt,
+	            p.comment_cnt,
+	            p.like_cnt,
+	            p.status,
+	            p.created_at,
+	            p.updated_at,
+	            m.name
+	        FROM tb_post p
+	        JOIN tb_member m ON p.member_id = m.member_id
+	        WHERE p.status = 'ACTIVE'
+	        ORDER BY p.like_cnt DESC, p.post_id DESC
+	    )
+	    WHERE ROWNUM &lt;= 3
+	</select>
+	
+	<!-- 댓글 관련 -->
+	<select id="commentList" resultType="com.edu.springboot.domain.community.vo.CommentVo" parameterType="int">
         SELECT
             c.comment_id,
             c.post_id,
@@ -120,14 +154,70 @@
         FROM tb_comment c
         JOIN tb_member m ON c.member_id = m.member_id
         WHERE c.post_id = #{postId}
-        ORDER BY c.created_at ASC
+	        AND c.status IN ('ACTIVE', 'DELETED')
+	    ORDER BY NVL(c.parent_id, c.comment_id), c.parent_id NULLS FIRST, c.comment_id ASC
     </select>
-
-    <update id="updatePostStatus">
-        UPDATE tb_post
-        SET status = #{status}, updated_at = SYSDATE
-        WHERE post_id = #{postId}
-    </update>
+    
+    <insert id="insertComment"
+    parameterType="com.edu.springboot.domain.community.vo.CommentVo">
+	    <selectKey keyProperty="commentId" resultType="int" order="BEFORE">
+	        SELECT seq_comment.NEXTVAL FROM dual
+	    </selectKey>
+	
+	    INSERT INTO tb_comment (
+	        comment_id,
+	        post_id,
+	        member_id,
+	        parent_id,
+	        content,
+	        status,
+	        created_at
+	    ) VALUES (
+	        #{commentId},
+	        #{postId},
+	        #{memberId},
+	        #{parentId, jdbcType=NUMERIC},
+	        #{content},
+	        'ACTIVE',
+	        SYSDATE
+	    )
+	</insert>
+	
+	<update id="increaseCommentCnt">
+	    UPDATE tb_post
+	    SET comment_cnt = comment_cnt + 1
+	    WHERE post_id = #{postId}
+	</update>
+	
+	<select id="getCommentById"
+    parameterType="int"
+    resultType="com.edu.springboot.domain.community.vo.CommentVo">
+	    SELECT
+	        comment_id,
+	        post_id,
+	        member_id,
+	        parent_id,
+	        content,
+	        status,
+	        created_at,
+	        updated_at
+	    FROM tb_comment
+	    WHERE comment_id = #{commentId}
+	</select>
+	
+	<update id="deleteComment">
+	    UPDATE tb_comment
+	    SET status = 'DELETED',
+	        updated_at = SYSDATE
+	    WHERE comment_id = #{commentId}
+	</update>
+	
+	<update id="decreaseCommentCnt">
+	    UPDATE tb_post
+	    SET comment_cnt = comment_cnt - 1
+	    WHERE post_id = #{postId}
+	      AND comment_cnt &gt; 0
+	</update>
     
     <!-- 게시물 좋아요 관련 -->
 	<select id="checkPostLike" resultType="int">
@@ -170,30 +260,6 @@
 	      AND like_cnt > 0
 	</update>
 	
-	<select id="topLikedPosts"
-    resultType="com.edu.springboot.domain.community.vo.PostVo">
-    SELECT *
-	    FROM (
-	        SELECT
-	            p.post_id,
-	            p.member_id,
-	            p.case_type,
-	            p.title,
-	            p.content,
-	            p.view_cnt,
-	            p.comment_cnt,
-	            p.like_cnt,
-	            p.status,
-	            p.created_at,
-	            p.updated_at,
-	            m.name
-	        FROM tb_post p
-	        JOIN tb_member m ON p.member_id = m.member_id
-	        WHERE p.status = 'ACTIVE'
-	        ORDER BY p.like_cnt DESC, p.post_id DESC
-	    )
-	    WHERE ROWNUM &lt;= 3
-	</select>
 	
 	<!-- 투표 게시물 관련 -->
     <select id="pollList" resultType="com.edu.springboot.domain.poll.vo.PollVo">
