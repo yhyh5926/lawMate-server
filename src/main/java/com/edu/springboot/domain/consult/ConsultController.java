@@ -151,4 +151,46 @@ public class ConsultController {
         consultMapper.deleteConsult(consultId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+    
+    /** 변호사 - 접수된 상담 목록 */
+    @GetMapping("/lawyer")
+    public ResponseEntity<ApiResponse<List<ConsultVO>>> lawyerList(
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        if (lawyerId == null)
+            return ResponseEntity.status(403).body(ApiResponse.fail("변호사 계정이 아닙니다."));
+        List<ConsultVO> list = consultMapper.selectConsultListByLawyer(lawyerId);
+        return ResponseEntity.ok(ApiResponse.success(list));
+    }
+
+    /** 변호사 - 승인 */
+    @PutMapping("/{consultId}/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirm(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        if (!vo.getLawyerId().equals(lawyerId))
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        consultMapper.updateStatus(consultId, "CONFIRMED");
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** 변호사 - 거절 */
+    @PutMapping("/{consultId}/reject")
+    public ResponseEntity<ApiResponse<Void>> reject(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        if (!vo.getLawyerId().equals(lawyerId))
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        consultMapper.updateStatus(consultId, "CANCELLED");
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

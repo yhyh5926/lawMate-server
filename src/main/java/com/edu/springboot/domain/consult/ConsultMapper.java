@@ -36,4 +36,6 @@ public interface ConsultMapper {
     void restoreConsult(Long consultId);
     void deleteConsult(Long consultId);
     void deleteOldCancelledConsults();
+    
+    Long selectLawyerIdByMemberId(Long memberId);
 }

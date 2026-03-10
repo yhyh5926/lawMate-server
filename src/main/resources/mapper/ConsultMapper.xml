@@ -126,4 +126,8 @@
 	     WHERE STATUS = 'CANCELLED'
 	       AND UPDATED_AT &lt; SYSDATE - 7
 	</delete>
+	
+	<select id="selectLawyerIdByMemberId" resultType="long">
+	    SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{memberId}
+	</select>
 </mapper>
