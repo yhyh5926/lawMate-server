@@ -1,4 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="임시"> 
-    </mapper>
+<mapper namespace="com.edu.springboot.domain.review.ReviewMapper">
+
+    <insert id="insertReview" parameterType="com.edu.springboot.domain.review.vo.ReviewVO">
+        INSERT INTO TB_REVIEW (
+            REVIEW_ID,
+            CONSULT_ID,
+            MEMBER_ID,
+            LAWYER_ID,
+            RATING,
+            CONTENT,
+            STATUS,
+            CREATED_AT,
+            UPDATED_AT
+        )
+        SELECT 
+            SEQ_REVIEW.NEXTVAL,
+            #{consultId},
+            #{memberId},
+            #{lawyerId},
+            #{rating},
+            #{content},
+            'ACTIVE',
+            SYSDATE,
+            SYSDATE
+        FROM DUAL
+        WHERE EXISTS (
+            SELECT 1 FROM TB_CONSULT 
+            WHERE CONSULT_ID = #{consultId} 
+              AND STATUS = 'DONE' 
+              AND MEMBER_ID = #{memberId}
+        )
+    </insert>
+
+    <update id="updateReviewStatusToDelete">
+        UPDATE TB_REVIEW
+        SET 
+            STATUS = 'DELETED',
+            UPDATED_AT = SYSDATE
+        WHERE REVIEW_ID = #{reviewId}
+          AND MEMBER_ID = #{memberId} /* 본인 확인 보안 로직 */
+    </update>
+
+    <update id="updateLawyerStats">
+        UPDATE TB_LAWYER
+        SET 
+            AVG_RATING = (
+                SELECT NVL(ROUND(AVG(RATING), 1), 0) 
+                FROM TB_REVIEW 
+                WHERE LAWYER_ID = #{lawyerId} AND STATUS = 'ACTIVE'
+            ),
+            REVIEW_CNT = (
+                SELECT COUNT(*) 
+                FROM TB_REVIEW 
+                WHERE LAWYER_ID = #{lawyerId} AND STATUS = 'ACTIVE'
+            )
+        WHERE LAWYER_ID = #{lawyerId}
+    </update>
+
+    <select id="selectReviewsByLawyer" resultType="com.edu.springboot.domain.review.vo.ReviewVO">
+        SELECT 
+            r.REVIEW_ID,
+            r.MEMBER_ID, /* 프론트엔드에서 본인 글인지 확인하기 위해 추가 */
+            r.RATING,
+            r.CONTENT,
+            r.CREATED_AT,
+            SUBSTR(m.NAME, 1, 1) || '*' || SUBSTR(m.NAME, LENGTH(m.NAME), 1) as REVIEWER_NAME
+        FROM TB_REVIEW r
+        JOIN TB_MEMBER m ON r.MEMBER_ID = m.MEMBER_ID
+        WHERE r.LAWYER_ID = #{lawyerId}
+          AND r.STATUS = 'ACTIVE'
+        ORDER BY r.CREATED_AT DESC
+    </select>
+
+    <select id="selectPendingReviewConsults" resultType="com.edu.springboot.domain.review.vo.ReviewVO">
+        SELECT 
+            c.CONSULT_ID,
+            c.LAWYER_ID,
+            m.NAME as LAWYER_NAME,
+            l.OFFICE_NAME,
+            c.CONSULT_DATE
+        FROM TB_CONSULT c
+        JOIN TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
+        JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
+        WHERE c.MEMBER_ID = #{memberId}
+          AND c.STATUS = 'DONE'
+          AND NOT EXISTS (
+              SELECT 1 FROM TB_REVIEW r 
+              WHERE r.CONSULT_ID = c.CONSULT_ID 
+                AND r.STATUS = 'ACTIVE' /* 삭제된 리뷰는 다시 작성 가능하게 처리 */
+          )
+        ORDER BY c.CONSULT_DATE DESC
+    </select>
+
+</mapper>

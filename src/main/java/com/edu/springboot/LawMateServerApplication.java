@@ -1,6 +1,6 @@
 package com.edu.springboot;
 
-import java.util.List;
+
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import com.edu.springboot.domain.precedent.PrecedentMapper;
-import com.edu.springboot.domain.review.vo.ReviewVO;
 import com.edu.springboot.domain.lawyer.LawyerMapper;
 import com.edu.springboot.domain.lawyer.vo.LawyerVO;
 
@@ -38,14 +37,10 @@ public class LawMateServerApplication {
 				if (detail != null) {
 					System.out.println("✅ [상세조회] 성공: " + detail.getName() + " 변호사");
 
-					List<ReviewVO> reviews = detail.getReviews();
+					int reviewCnt = detail.getReviewCnt();
 
-					if (reviews != null && !reviews.isEmpty()) {
-						System.out.println("⭐⭐⭐⭐⭐ [리뷰 리스트] 매핑 성공 (총 " + reviews.size() + "건)");
-						for (ReviewVO r : reviews) {
-							System.out.printf("   - 작성자: %s | 별점: %d | 내용: %s\n", r.getReviewerName(), r.getRating(),
-									r.getContent());
-						}
+					if (reviewCnt > 0) {
+						System.out.println("⭐⭐⭐⭐⭐ [리뷰 ] :" + reviewCnt + "건)");
 					} else {
 						System.out.println("⚠️ [알림] 리뷰 리스트가 비어있거나 null입니다.");
 						System.out.println("   (DB의 TB_REVIEW에 STATUS='ACTIVE'인 데이터가 있는지 확인하세요.)");

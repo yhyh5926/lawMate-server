@@ -1,8 +1,5 @@
 // src/main/java/com/edu/springboot/domain/lawyer/vo/LawyerVO.java
 package com.edu.springboot.domain.lawyer.vo;
-
-import java.util.List;
-import com.edu.springboot.domain.review.vo.ReviewVO;
 import lombok.Data;
 
 @Data
@@ -37,6 +34,5 @@ public class LawyerVO {
 	private String savePath; // 실제 파일 저장 경로 (/uploads/...)
 	private String origName; // 원본 파일명
 
-	// 4. 1:N 관계 매핑 (MyBatis Collection용)
-	private List<ReviewVO> reviews;
+	
 }
