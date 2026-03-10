@@ -1,4 +1,5 @@
-// src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
+// IntelliJ
+// 파일위치: src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
 package com.edu.springboot.domain.member;
 
 import com.edu.springboot.common.jwt.JwtUtil;
@@ -63,7 +64,7 @@ public class MemberServiceImpl implements MemberService {
 
 		if ("LAWYER".equals(dto.getMemberType())) {
 			LawyerVO lawyer = new LawyerVO();
-			
+
 			lawyer.setMemberId(member.getMemberId().intValue());
 			lawyer.setLicenseNo(dto.getLicenseNo());
 			lawyer.setSpecialty(dto.getSpecialty());
@@ -77,7 +78,8 @@ public class MemberServiceImpl implements MemberService {
 			if (dto.getFiles() != null && !dto.getFiles().isEmpty()) {
 				for (MultipartFile file : dto.getFiles()) {
 					try {
-						String savePath = fileUtil.saveFile(file);
+						// 💡 회원가입 증빙서류는 "member" 폴더로 지정
+						String savePath = fileUtil.saveFile(file, "member");
 						if (savePath != null) {
 							AttachmentVO attach = new AttachmentVO();
 							attach.setRefType("LAWYER");
@@ -140,12 +142,13 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public Map<String, Object> socialLogin(Map<String, String> socialData) {
 		String email = socialData.get("email");
-		if (email == null) return null;
-		
+		if (email == null)
+			return null;
+
 		MemberVO member = memberMapper.findByLoginId(email);
-		
+
 		if (member == null) {
-			String loginId = email.split("@")[0]; 
+			String loginId = email.split("@")[0];
 			member = memberMapper.findByLoginId(loginId);
 		}
 
@@ -153,7 +156,7 @@ public class MemberServiceImpl implements MemberService {
 		if (member != null && ("WITHDRAWN".equals(member.getStatus()) || "ANONYMIZED".equals(member.getStatus()))) {
 			throw new RuntimeException("탈퇴한 회원입니다.");
 		}
-		
+
 		if (member != null && "GOOGLE".equals(member.getProvider())) {
 			String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
 			Map<String, Object> response = new HashMap<>();
@@ -175,19 +178,19 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public boolean withdraw(String loginId) { 
+	public boolean withdraw(String loginId) {
 		MemberVO member = memberMapper.findByLoginId(loginId);
-		return member != null && memberMapper.deleteMember((long) member.getMemberId()) > 0; 
+		return member != null && memberMapper.deleteMember((long) member.getMemberId()) > 0;
 	}
 
-	@Override 
-	public String findId(String name, String phone) { 
-		return memberMapper.findLoginIdByNameAndPhone(name, phone); 
+	@Override
+	public String findId(String name, String phone) {
+		return memberMapper.findLoginIdByNameAndPhone(name, phone);
 	}
 
-	@Override 
-	public String sendAuthCode(String phone) { 
-		return "123456"; 
+	@Override
+	public String sendAuthCode(String phone) {
+		return "123456";
 	}
 
 	// 💡 [추가] 30일 재가입 방어막 로직 구현부
@@ -212,7 +215,8 @@ public class MemberServiceImpl implements MemberService {
 			long diff = System.currentTimeMillis() - member.getWithdrawnAt().getTime();
 			long days = diff / (1000 * 60 * 60 * 24);
 			if (days < 30) {
-				throw new IllegalStateException("탈퇴 후 30일 이내에는 동일한 " + type + "(으)로 재가입할 수 없습니다. (남은 기간: " + (30 - days) + "일)");
+				throw new IllegalStateException(
+						"탈퇴 후 30일 이내에는 동일한 " + type + "(으)로 재가입할 수 없습니다. (남은 기간: " + (30 - days) + "일)");
 			}
 		}
 	}
@@ -224,9 +228,9 @@ public class MemberServiceImpl implements MemberService {
 		return memberMapper.withdrawMember(memberId) > 0;
 	}
 
-    // 💡 [추가] 내가 쓴 글 목록 조회 실제 구현
-    @Override
-    public List<Map<String, Object>> getMyPosts(Long memberId, String type) {
-        return memberMapper.findMyPosts(memberId, type);
-    }
+	// 💡 [추가] 내가 쓴 글 목록 조회 실제 구현
+	@Override
+	public List<Map<String, Object>> getMyPosts(Long memberId, String type) {
+		return memberMapper.findMyPosts(memberId, type);
+	}
 }

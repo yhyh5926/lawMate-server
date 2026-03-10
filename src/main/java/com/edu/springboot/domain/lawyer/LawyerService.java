@@ -1,4 +1,5 @@
-// src/main/java/com/edu/springboot/domain/lawyer/LawyerService.java
+// IntelliJ
+// 파일 위치: src/main/java/com/edu/springboot/domain/lawyer/LawyerService.java
 package com.edu.springboot.domain.lawyer;
 
 import java.util.List;
@@ -43,8 +44,8 @@ public class LawyerService {
 	// 프로필 이미지 실제 저장 및 DB 기록 로직
 	public String updateProfileImage(Long lawyerId, MultipartFile file) {
 		try {
-			// 1. FileUtil을 사용해 로컬 폴더(uploads)에 파일 물리적 저장
-			String savePath = fileUtil.saveFile(file);
+			// 💡 FileUtil을 사용해 로컬 폴더(uploads/lawyer)에 파일 물리적 저장
+			String savePath = fileUtil.saveFile(file, "lawyer");
 			if (savePath == null)
 				return "fail";
 
@@ -58,17 +59,17 @@ public class LawyerService {
 
 			// 4. 새로운 프로필 사진 정보를 TB_ATTACHMENT에 등록
 			AttachmentVO attach = new AttachmentVO();
-			attach.setRefType("LAWYER");
+			attach.setRefType("LAWYER"); // 변호사 프로필 사진 식별
 			attach.setRefId(lawyerId);
-			attach.setUploaderId((long) lawyer.getMemberId()); // DB 필수값 세팅
+			attach.setUploaderId((long) lawyer.getMemberId()); // 업로더 식별
 			attach.setOrigName(file.getOriginalFilename());
 			attach.setSavePath(savePath);
 			attach.setFileSize(file.getSize());
 			attach.setMimeType(file.getContentType());
 
-			attachmentMapper.insertAttachment(attach);
+			int result = attachmentMapper.insertAttachment(attach);
+			return (result > 0) ? savePath : "fail";
 
-			return savePath;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "fail";

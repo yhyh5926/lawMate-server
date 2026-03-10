@@ -1,25 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- 
-  파일위치: src/main/resources/mapper/CaseMapper.xml
-  기능전체: 사건 정보(TB_CASE)와 관련된 모든 SQL 쿼리를 정의합니다.
--->
 <mapper namespace="com.edu.springboot.domain.cases.CaseMapper">
 
-    <select id="selectCasesByMemberId" resultType="com.edu.springboot.domain.cases.vo.CaseVO">
-        SELECT * FROM TB_CASE WHERE MEMBER_ID = #{memberId} ORDER BY CREATED_AT DESC
+    <resultMap id="caseRM" type="com.edu.springboot.domain.cases.vo.CaseVO">
+        <id property="caseId" column="CASE_ID"/>
+        <result property="memberId" column="MEMBER_ID"/>
+        <result property="lawyerId" column="LAWYER_ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="caseType" column="CASE_TYPE"/>
+        <result property="status" column="STATUS"/>
+        <result property="step" column="STEP"/>
+        <result property="createdAt" column="CREATED_AT"/>
+        <result property="updatedAt" column="UPDATED_AT"/>
+    </resultMap>
+
+    <select id="selectCasesByMemberId" resultMap="caseRM">
+        SELECT c.CASE_ID, c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.STATUS, c.STEP,
+               TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+               TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT
+          FROM TB_CASE c
+          LEFT JOIN TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
+         WHERE c.MEMBER_ID = #{memberId}   
+            OR l.MEMBER_ID = #{memberId}   
+         ORDER BY c.CREATED_AT DESC
     </select>
 
-    <select id="selectCaseById" resultType="com.edu.springboot.domain.cases.vo.CaseVO">
-        SELECT * FROM TB_CASE WHERE CASE_ID = #{caseId}
+    <select id="selectCaseById" resultMap="caseRM">
+        SELECT CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE, STATUS, STEP,
+               TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+               TO_CHAR(UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT
+          FROM TB_CASE 
+         WHERE CASE_ID = #{caseId}
     </select>
 
-    <select id="selectAllCases" resultType="com.edu.springboot.domain.cases.vo.CaseVO">
-        SELECT * FROM TB_CASE ORDER BY CREATED_AT DESC
+    <select id="selectAllCases" resultMap="caseRM">
+        SELECT CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE, STATUS, STEP,
+               TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+               TO_CHAR(UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT
+          FROM TB_CASE 
+         ORDER BY CREATED_AT DESC
     </select>
 
     <update id="updateCaseStep">
-        UPDATE TB_CASE SET STEP = #{step}, UPDATED_AT = SYSDATE WHERE CASE_ID = #{caseId}
+        UPDATE TB_CASE 
+           SET STEP = #{step}, 
+               UPDATED_AT = SYSDATE 
+         WHERE CASE_ID = #{caseId}
     </update>
 
 </mapper>
