@@ -44,7 +44,7 @@ public class LawyerService {
 	public String updateProfileImage(Long lawyerId, MultipartFile file) {
 		try {
 			// 1. FileUtil을 사용해 로컬 폴더(uploads)에 파일 물리적 저장
-			String savePath = fileUtil.saveFile(file);
+			String savePath = fileUtil.saveFile(file, "lawyer");
 			if (savePath == null)
 				return "fail";
 
