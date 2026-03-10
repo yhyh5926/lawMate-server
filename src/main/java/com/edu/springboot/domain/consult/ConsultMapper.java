@@ -32,4 +32,8 @@ public interface ConsultMapper {
     /** 상태 변경 */
     int updateStatus(@Param("consultId") Long consultId,
                      @Param("status")    String status);
+    
+    void restoreConsult(Long consultId);
+    void deleteConsult(Long consultId);
+    void deleteOldCancelledConsults();
 }

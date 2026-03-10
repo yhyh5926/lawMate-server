@@ -28,6 +28,8 @@ public class ChatMsgVO {
 
     /** Y: 읽음 / N: 안읽음 */
     private String        readYn;
+    private String deletedYn;
+    private String editedYn;
 
     private LocalDateTime sentAt;
 }
