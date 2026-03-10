@@ -136,7 +136,7 @@ public class MemberServiceImpl implements MemberService {
 		response.put("member", member);
 		return response;
 	}
-
+ 
 	@Override
 	public Map<String, Object> socialLogin(Map<String, String> socialData) {
 		String email = socialData.get("email");
