@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -19,7 +18,7 @@ public class ReviewController {
 	 * 1. 특정 변호사의 리뷰 목록 조회
 	 */
 	@GetMapping("/lawyer/{lawyerId}")
-	public ResponseEntity<List<ReviewVO>> getReviews(@PathVariable int lawyerId) {
+	public ResponseEntity<List<ReviewVO>> getReviews(@PathVariable("lawyerId") int lawyerId) {
 		return ResponseEntity.ok(reviewService.getLawyerReviews(lawyerId));
 	}
 
@@ -27,7 +26,7 @@ public class ReviewController {
 	 * 2. 리뷰 작성 가능한 상담 목록 조회 (마이페이지용)
 	 */
 	@GetMapping("/pending/{memberId}")
-	public ResponseEntity<List<ReviewVO>> getPendingReviews(@PathVariable int memberId) {
+	public ResponseEntity<List<ReviewVO>> getPendingReviews(@PathVariable("memberId") int memberId) {
 		return ResponseEntity.ok(reviewService.getMyPendingReviews(memberId));
 	}
 
@@ -44,13 +43,11 @@ public class ReviewController {
 	}
 
 	/**
-	 * 💡 4. 리뷰 삭제 삭제 시 본인 확인(memberId)과 통계 갱신(lawyerId)이 필요하므로
-	 * 
-	 * @RequestParam이나 맵으로 필요한 정보를 받습니다.
+	 * 4. 리뷰 삭제 삭제 시 본인 확인(memberId)과 통계 갱신(lawyerId)이 필요합니다.
 	 */
 	@DeleteMapping("/{reviewId}")
-	public ResponseEntity<?> deleteReview(@PathVariable int reviewId, @RequestParam int memberId,
-			@RequestParam int lawyerId) {
+	public ResponseEntity<?> deleteReview(@PathVariable("reviewId") int reviewId,
+			@RequestParam("memberId") int memberId, @RequestParam("lawyerId") int lawyerId) {
 
 		boolean isDeleted = reviewService.removeReview(reviewId, memberId, lawyerId);
 
