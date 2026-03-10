@@ -11,34 +11,45 @@ import java.util.UUID;
 @Component
 public class FileUtil {
 
-	// 기본 저장 경로
-	private final String BASE_DIR = System.getProperty("user.dir") + "/uploads/";
+	// 로컬 프로젝트 폴더 경로를 루트로 설정
+	private final String ROOT_DIR = System.getProperty("user.dir");
 
-	// 💡 [수정] 폴더명(subDir)을 매개변수로 받아 동적으로 경로를 설정하도록 오버로딩
-	public String saveFile(MultipartFile file, String subDir) throws IOException {
-		if (file == null || file.isEmpty())
+	/**
+	 * 💡 [수정] 파일을 특정 도메인 폴더에 저장합니다.
+	 * 
+	 * @param file    업로드된 파일
+	 * @param refType 저장할 폴더명 (예: "lawyer", "member")
+	 * @return DB에 저장될 웹 접근 경로 (/uploads/폴더명/파일명)
+	 */
+	public String saveFile(MultipartFile file, String refType) throws IOException {
+		if (file == null || file.isEmpty()) {
 			return null;
+		}
 
-		// 예: /uploads/member/ 또는 /uploads/lawyer/
-		String targetDir = BASE_DIR + subDir + "/";
-		File directory = new File(targetDir);
+		// 1. 하위 폴더 경로 설정 (/uploads/lawyer/ 등)
+		String subDir = "/uploads/" + refType.toLowerCase() + "/";
+		String absoluteDirPath = ROOT_DIR + subDir;
+
+		// 2. 디렉토리 생성 (없으면 만들기)
+		File directory = new File(absoluteDirPath);
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
 
-		// 파일명 중복 방지를 위한 UUID 적용
+		// 3. 파일명 중복 방지를 위한 UUID 적용
 		String originalFilename = file.getOriginalFilename();
 		String saveFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-		String savePath = targetDir + saveFilename;
 
-		File dest = new File(savePath);
+		// 4. 물리적 파일 저장 위치에 파일 전송
+		String fullPath = absoluteDirPath + saveFilename;
+		File dest = new File(fullPath);
 		file.transferTo(dest);
 
-		// DB에 저장될 웹 접근 경로 (예: /uploads/member/파일명.jpg)
-		return "/uploads/" + subDir + "/" + saveFilename;
+		// 5. DB에 저장될 상대 경로 리턴 (예: /uploads/member/파일명.jpg)
+		return subDir + saveFilename;
 	}
 
-	// 기존 코드와의 호환성을 위한 기본 메서드 (기본은 member 폴더로 지정)
+
 	public String saveFile(MultipartFile file) throws IOException {
 		return saveFile(file, "member");
 	}

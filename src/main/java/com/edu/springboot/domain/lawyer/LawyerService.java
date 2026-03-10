@@ -44,7 +44,7 @@ public class LawyerService {
 	// 프로필 이미지 실제 저장 및 DB 기록 로직
 	public String updateProfileImage(Long lawyerId, MultipartFile file) {
 		try {
-			// 💡 FileUtil을 사용해 로컬 폴더(uploads/lawyer)에 파일 물리적 저장
+			// 1. 💡 FileUtil을 사용해 로컬 폴더(uploads/lawyer)에 파일 물리적 저장
 			String savePath = fileUtil.saveFile(file, "lawyer");
 			if (savePath == null)
 				return "fail";

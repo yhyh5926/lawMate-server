@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -121,5 +122,75 @@ public class ConsultController {
     // ── 헬퍼 ────────────────────────────────────────────────
     private Long getMemberId(String bearer) {
         return jwtUtil.getMemberNo(bearer.replace("Bearer ", ""));
+    }
+    
+    /** 복구 */
+    @PutMapping("/{consultId}/restore")
+    public ResponseEntity<ApiResponse<Void>> restore(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        if (!vo.getMemberId().equals(memberId))
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        consultMapper.restoreConsult(consultId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** 즉시 삭제 */
+    @DeleteMapping("/{consultId}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        if (!vo.getMemberId().equals(memberId))
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        consultMapper.deleteConsult(consultId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+    
+    /** 변호사 - 접수된 상담 목록 */
+    @GetMapping("/lawyer")
+    public ResponseEntity<ApiResponse<List<ConsultVO>>> lawyerList(
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        if (lawyerId == null)
+            return ResponseEntity.status(403).body(ApiResponse.fail("변호사 계정이 아닙니다."));
+        List<ConsultVO> list = consultMapper.selectConsultListByLawyer(lawyerId);
+        return ResponseEntity.ok(ApiResponse.success(list));
+    }
+
+    /** 변호사 - 승인 */
+    @PutMapping("/{consultId}/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirm(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        if (!vo.getLawyerId().equals(lawyerId))
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        consultMapper.updateStatus(consultId, "CONFIRMED");
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** 변호사 - 거절 */
+    @PutMapping("/{consultId}/reject")
+    public ResponseEntity<ApiResponse<Void>> reject(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        if (!vo.getLawyerId().equals(lawyerId))
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        consultMapper.updateStatus(consultId, "CANCELLED");
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
