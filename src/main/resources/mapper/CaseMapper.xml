@@ -15,36 +15,69 @@
 		<result property="createdAt" column="CREATED_AT" />
 		<result property="updatedAt" column="UPDATED_AT" />
 		<result property="closedAt" column="CLOSED_AT" />
+		<result property="clientName" column="clientName" />
+		<result property="lawyerName" column="lawyerName" />
 	</resultMap>
 
 	<select id="selectCasesByMemberId" resultMap="caseRM">
-		SELECT c.CASE_ID, c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.STEP,
-		c.DESCRIPTION, c.EXPERT_OPINION,
+		SELECT c.CASE_ID,
+		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.STEP,
+		c.DESCRIPTION,
+		c.EXPERT_OPINION,
+		m1.NAME AS clientName,
+		m2.NAME AS lawyerName,
 		TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
 		TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT
-		FROM TB_CASE c
-		LEFT JOIN TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
+		FROM
+		TB_CASE c
+		LEFT JOIN TB_MEMBER m1 ON c.MEMBER_ID = m1.MEMBER_ID
+		LEFT JOIN
+		TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
+		LEFT JOIN TB_MEMBER m2 ON
+		l.MEMBER_ID = m2.MEMBER_ID
 		WHERE c.MEMBER_ID = #{memberId}
-		OR l.MEMBER_ID = #{memberId}
+		OR
+		l.MEMBER_ID = #{memberId}
 		ORDER BY c.CREATED_AT DESC
 	</select>
 
 	<select id="selectCaseById" resultMap="caseRM">
-		SELECT CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE, DESCRIPTION, STEP,
-		EXPERT_OPINION,
-		TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
-		TO_CHAR(UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
-		TO_CHAR(CLOSED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CLOSED_AT
+		SELECT c.CASE_ID,
+		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.DESCRIPTION, c.STEP,
+		c.EXPERT_OPINION,
+		m1.NAME AS clientName,
+		m2.NAME AS lawyerName,
+		TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+		TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
+		TO_CHAR(c.CLOSED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CLOSED_AT
 		FROM TB_CASE
-		WHERE CASE_ID = #{caseId}
+		c
+		LEFT JOIN TB_MEMBER m1 ON c.MEMBER_ID = m1.MEMBER_ID
+		LEFT JOIN
+		TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
+		LEFT JOIN TB_MEMBER m2 ON
+		l.MEMBER_ID = m2.MEMBER_ID
+		WHERE c.CASE_ID = #{caseId}
 	</select>
 
 	<select id="selectAllCases" resultMap="caseRM">
-		SELECT CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE, STEP,
-		TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
-		TO_CHAR(UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT
-		FROM TB_CASE
-		ORDER BY CREATED_AT DESC
+		SELECT c.CASE_ID,
+		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.STEP,
+		m1.NAME AS
+		clientName,
+		m2.NAME AS lawyerName,
+		TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD
+		HH24:MI:SS') AS CREATED_AT,
+		TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD
+		HH24:MI:SS') AS UPDATED_AT
+		FROM TB_CASE c
+		LEFT JOIN TB_MEMBER m1 ON
+		c.MEMBER_ID = m1.MEMBER_ID
+		LEFT JOIN TB_LAWYER l ON c.LAWYER_ID =
+		l.LAWYER_ID
+		LEFT JOIN TB_MEMBER m2 ON l.MEMBER_ID = m2.MEMBER_ID
+		ORDER
+		BY c.CREATED_AT DESC
 	</select>
 
 	<update id="updateCaseStep">
@@ -60,10 +93,11 @@
 		SET DESCRIPTION = #{description},
 		EXPERT_OPINION = #{expertOpinion},
 		UPDATED_AT = SYSDATE
-		WHERE CASE_ID = #{caseId}
+		WHERE CASE_ID =
+		#{caseId}
 	</update>
 
-	<insert id="insertCase"
+	<insert id="insertManualCase"
 		parameterType="com.edu.springboot.domain.cases.vo.CaseVO">
 		<selectKey keyProperty="caseId" resultType="long"
 			order="BEFORE">
@@ -73,7 +107,29 @@
 		CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE, DESCRIPTION, STEP,
 		CREATED_AT, UPDATED_AT
 		) VALUES (
-		#{caseId}, #{memberId}, #{lawyerId}, #{title}, #{caseType}, #{description},
+		#{caseId},
+		#{memberId},
+		(SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{lawyerId}),
+		#{title},
+		#{caseType},
+		#{description},
+		'RECEIVED', SYSDATE, SYSDATE
+		)
+	</insert>
+
+	<insert id="insertCase"
+		parameterType="com.edu.springboot.domain.cases.vo.CaseVO">
+		<selectKey keyProperty="caseId" resultType="long"
+			order="BEFORE">
+			SELECT SEQ_CASE.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TB_CASE (
+		CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE,
+		DESCRIPTION, STEP, CREATED_AT,
+		UPDATED_AT
+		) VALUES (
+		#{caseId},
+		#{memberId}, #{lawyerId}, #{title}, #{caseType}, #{description},
 		'RECEIVED', SYSDATE, SYSDATE
 		)
 	</insert>

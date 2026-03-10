@@ -28,9 +28,8 @@ public class CaseService {
 	public CaseVO getCaseDetail(Long caseId) {
 		CaseVO caseDetail = caseMapper.selectCaseById(caseId);
 		if (caseDetail != null) {
-			// 💡 파일 목록을 TB_ATTACHMENT 테이블에서 가져와 VO에 세팅
 			List<AttachmentVO> files = attachmentMapper.findAttachmentsByRef("CASE", caseId);
-			caseDetail.setFiles(files); // CaseVO.java 에 private List<AttachmentVO> files; 필드 필요
+			caseDetail.setFiles(files);
 		}
 		return caseDetail;
 	}
@@ -43,28 +42,25 @@ public class CaseService {
 	// 💡 수동 사건 등록
 	@Transactional
 	public void createCaseManual(CaseVO caseVO) {
-		caseMapper.insertCase(caseVO);
+		// 💡 [수정] 부모 키 변환 로직이 포함된 insertManualCase 호출
+		caseMapper.insertManualCase(caseVO);
 	}
 
-	// 💡 내용 수정 및 파일 첨부 동시 처리
 	@Transactional
 	public void updateCaseInfoWithFiles(CaseVO caseVO, List<MultipartFile> files) {
-		// 1. 텍스트 정보(내용, 코멘트) 업데이트
 		caseMapper.updateCaseInfo(caseVO);
 
-		// 2. 파일이 존재할 경우 서버 물리 디렉토리에 저장 후 DB 기록
 		if (files != null && !files.isEmpty()) {
 			for (MultipartFile file : files) {
 				if (file.isEmpty())
 					continue;
 				try {
-					// FileUtil을 통해 uploads/case/ 폴더에 저장한다고 가정
 					String savePath = fileUtil.saveFile(file, "case");
 					if (savePath != null) {
 						AttachmentVO attach = new AttachmentVO();
 						attach.setRefType("CASE");
 						attach.setRefId(caseVO.getCaseId());
-						attach.setUploaderId(1L); // 테스트용 (실제로는 세션 유저 ID)
+						attach.setUploaderId(1L);
 						attach.setOrigName(file.getOriginalFilename());
 						attach.setSavePath(savePath);
 						attach.setFileSize(file.getSize());
@@ -79,7 +75,6 @@ public class CaseService {
 		}
 	}
 
-	// 💡 [에러 해결] 관리자 컨트롤러(AdminController)에서 호출하는 전체 사건 조회 로직 복구
 	public List<CaseVO> getAllCasesForAdmin() {
 		return caseMapper.selectAllCases();
 	}

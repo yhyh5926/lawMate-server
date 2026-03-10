@@ -23,9 +23,12 @@ public interface CaseMapper {
     // 플랫폼 전체 사건 목록 조회 (관리자용)
     List<CaseVO> selectAllCases();
     
-    // 💡 [에러 해결] 내용 수정 및 코멘트 추가 메서드 선언
+    // 💡 내용 수정 및 코멘트 추가 메서드 선언
     int updateCaseInfo(CaseVO caseVO);
     
-    // 💡 [에러 해결] 새로운 사건 직접 등록 메서드 선언
+    // 💡 [에러 해결용] 새로운 사건 직접 등록 메서드 선언
+    int insertManualCase(CaseVO caseVO);
+
+    // 💡 기존 자동 등록 메서드 유지
     int insertCase(CaseVO caseVO);
 }
