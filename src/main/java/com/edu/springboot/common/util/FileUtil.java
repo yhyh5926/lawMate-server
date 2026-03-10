@@ -10,8 +10,13 @@ import java.util.UUID;
 @Component
 public class FileUtil {
 
+<<<<<<< HEAD
 	// 로컬 폴더에 저장할 기본 루트 경로
 	private final String ROOT_DIR = System.getProperty("user.dir");
+=======
+    // 로컬 폴더에 저장할 기본 경로 (원하시는 경로로 수정 가능)
+    private final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/lawyer/";
+>>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 
 	/**
 	 * 파일을 특정 도메인 폴더에 저장합니다.
@@ -38,6 +43,7 @@ public class FileUtil {
 		String originalFilename = file.getOriginalFilename();
 		String saveFilename = UUID.randomUUID().toString() + "_" + originalFilename;
 
+<<<<<<< HEAD
 		// 💡 4. 물리적 파일 저장 위치
 		String fullPath = absoluteDirPath + saveFilename;
 
@@ -47,4 +53,8 @@ public class FileUtil {
 		// 💡 5. DB에 저장될 상대 경로 리턴
 		return subDir + saveFilename;
 	}
+=======
+        return "/uploads/lawyer/" + saveFilename; // DB에 저장될 웹 접근 경로
+    }
+>>>>>>> branch 'main' of https://github.com/yhyh5926/lawMate-server.git
 }

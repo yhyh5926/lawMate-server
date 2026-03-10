@@ -108,4 +108,22 @@
          WHERE CONSULT_ID = #{consultId}
     </update>
 
+	<!-- 복구 -->
+	<update id="restoreConsult">
+	    UPDATE TB_CONSULT
+	       SET STATUS = 'PENDING', UPDATED_AT = SYSDATE
+	     WHERE CONSULT_ID = #{consultId}
+	</update>
+	
+	<!-- 즉시 삭제 -->
+	<delete id="deleteConsult">
+	    DELETE FROM TB_CONSULT WHERE CONSULT_ID = #{consultId}
+	</delete>
+	
+	<!-- 7일 지난 취소 건 자동 삭제 (스케줄러용) -->
+	<delete id="deleteOldCancelledConsults">
+	    DELETE FROM TB_CONSULT
+	     WHERE STATUS = 'CANCELLED'
+	       AND UPDATED_AT &lt; SYSDATE - 7
+	</delete>
 </mapper>

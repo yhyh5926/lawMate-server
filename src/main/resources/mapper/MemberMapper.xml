@@ -2,94 +2,184 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.edu.springboot.domain.member.MemberMapper">
 
-    <resultMap id="MemberResultMap" type="com.edu.springboot.domain.member.vo.MemberVO">
-        <id property="memberId" column="MEMBER_ID" />
-        <result property="loginId" column="LOGIN_ID" />
-        <result property="password" column="PASSWORD" />
-        <result property="memberType" column="MEMBER_TYPE" />
-        <result property="name" column="NAME" />
-        <result property="phone" column="PHONE" />
-        <result property="email" column="EMAIL" />
-        <result property="provider" column="PROVIDER" />
-        <result property="phoneVerified" column="PHONE_VERIFIED" />
-        <result property="status" column="STATUS" />
-        <result property="saveIdYn" column="SAVE_ID_YN" />
-        <result property="address" column="ADDRESS" />
-        <result property="detailAddress" column="DETAIL_ADDR" />
-        <result property="createdAt" column="CREATED_AT" />
-        <result property="updatedAt" column="UPDATED_AT" />
+	<resultMap id="MemberResultMap"
+		type="com.edu.springboot.domain.member.vo.MemberVO">
+		<id property="memberId" column="MEMBER_ID" />
+		<result property="loginId" column="LOGIN_ID" />
+		<result property="password" column="PASSWORD" />
+		<result property="memberType" column="MEMBER_TYPE" />
+		<result property="name" column="NAME" />
+		<result property="phone" column="PHONE" />
+		<result property="email" column="EMAIL" />
+		<result property="provider" column="PROVIDER" />
+		<result property="phoneVerified" column="PHONE_VERIFIED" />
+		<result property="status" column="STATUS" />
+		<result property="saveIdYn" column="SAVE_ID_YN" />
+		<result property="address" column="ADDRESS" />
+		<result property="detailAddress" column="DETAIL_ADDR" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="updatedAt" column="UPDATED_AT" />
+		<result property="withdrawnAt" column="WITHDRAWN_AT" />
+		<result property="lawyerId" column="LAWYER_ID" />
+		<result property="licenseNo" column="LICENSE_NO" />
+		<result property="specialty" column="SPECIALTY" />
+		<result property="officeName" column="OFFICE_NAME" />
+		<result property="approveStatus" column="APPROVE_STATUS" />
+	</resultMap>
 
-        <result property="lawyerId" column="LAWYER_ID" />
-        <result property="licenseNo" column="LICENSE_NO" />
-        <result property="specialty" column="SPECIALTY" />
-        <result property="officeName" column="OFFICE_NAME" />
-        <result property="approveStatus" column="APPROVE_STATUS" />
-    </resultMap>
+	<select id="findByLoginId" resultMap="MemberResultMap">
+		SELECT m.*, l.LAWYER_ID,
+		l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME,
+		l.APPROVE_STATUS
+		FROM
+		TB_MEMBER m
+		LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		WHERE m.LOGIN_ID = #{loginId}
+	</select>
 
-    <select id="findByLoginId" resultMap="MemberResultMap">
-        SELECT m.*, l.LAWYER_ID, l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME, l.APPROVE_STATUS
-        FROM TB_MEMBER m
-        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        WHERE m.LOGIN_ID = #{loginId}
-    </select>
+	<select id="findByEmail" resultMap="MemberResultMap">
+		SELECT m.*, l.LAWYER_ID,
+		l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME,
+		l.APPROVE_STATUS
+		FROM
+		TB_MEMBER m
+		LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		WHERE m.EMAIL = #{email}
+	</select>
 
-    <insert id="insertMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
-        <selectKey keyProperty="memberId" resultType="long" order="BEFORE">
-            SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
-        </selectKey>
-        INSERT INTO TB_MEMBER (
-            MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE, NAME, PHONE, EMAIL, 
-            PROVIDER, PHONE_VERIFIED, STATUS, SAVE_ID_YN, ADDRESS, DETAIL_ADDR, CREATED_AT, UPDATED_AT
-        )
-        VALUES (
-            #{memberId}, 
-            #{loginId, jdbcType=VARCHAR}, 
-            #{password, jdbcType=VARCHAR}, 
-            #{memberType, jdbcType=VARCHAR}, 
-            #{name, jdbcType=VARCHAR}, 
-            #{phone, jdbcType=VARCHAR}, 
-            #{email, jdbcType=VARCHAR},
-            #{provider, jdbcType=VARCHAR}, 
-            #{phoneVerified, jdbcType=VARCHAR}, 
-            #{status, jdbcType=VARCHAR}, 
-            #{saveIdYn, jdbcType=VARCHAR}, 
-            #{address, jdbcType=VARCHAR},
-            #{detailAddress, jdbcType=VARCHAR},
-            SYSDATE, 
-            SYSDATE
-        )
-    </insert>
+	<insert id="insertMember"
+		parameterType="com.edu.springboot.domain.member.vo.MemberVO">
+		<selectKey keyProperty="memberId" resultType="long"
+			order="BEFORE">
+			SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TB_MEMBER (
+		MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE,
+		NAME, PHONE, EMAIL,
+		PROVIDER, PHONE_VERIFIED, STATUS, SAVE_ID_YN,
+		ADDRESS, DETAIL_ADDR, CREATED_AT,
+		UPDATED_AT
+		)
+		VALUES (
+		#{memberId},
+		#{loginId, jdbcType=VARCHAR},
+		#{password, jdbcType=VARCHAR},
+		#{memberType, jdbcType=VARCHAR},
+		#{name, jdbcType=VARCHAR},
+		#{phone,
+		jdbcType=VARCHAR},
+		#{email, jdbcType=VARCHAR},
+		#{provider,
+		jdbcType=VARCHAR},
+		#{phoneVerified, jdbcType=VARCHAR},
+		#{status,
+		jdbcType=VARCHAR},
+		#{saveIdYn, jdbcType=VARCHAR},
+		#{address,
+		jdbcType=VARCHAR},
+		#{detailAddress, jdbcType=VARCHAR},
+		SYSDATE,
+		SYSDATE
+		)
+	</insert>
 
-    <update id="updateMember" parameterType="com.edu.springboot.domain.member.vo.MemberVO">
-        UPDATE TB_MEMBER 
-        SET NAME = #{name}, PHONE = #{phone}, EMAIL = #{email}, 
-            ADDRESS = #{address}, DETAIL_ADDR = #{detailAddress}, UPDATED_AT = SYSDATE
-        WHERE LOGIN_ID = #{loginId}
-    </update>
+	<update id="updateMember"
+		parameterType="com.edu.springboot.domain.member.vo.MemberVO">
+		UPDATE TB_MEMBER
+		SET NAME = #{name}, PHONE = #{phone},
+		EMAIL = #{email},
+		ADDRESS = #{address}, DETAIL_ADDR = #{detailAddress},
+		UPDATED_AT = SYSDATE
+		WHERE LOGIN_ID = #{loginId}
+	</update>
 
-    <update id="deleteMember">
-        UPDATE TB_MEMBER SET STATUS = 'WITHDRAWN', UPDATED_AT = SYSDATE WHERE MEMBER_ID = #{memberId}
-    </update>
+	<update id="deleteMember">
+		UPDATE TB_MEMBER SET STATUS = 'WITHDRAWN', UPDATED_AT
+		= SYSDATE WHERE
+		MEMBER_ID = #{memberId}
+	</update>
 
-    <select id="findLoginIdByNameAndPhone" resultType="string">
-        SELECT LOGIN_ID FROM TB_MEMBER WHERE NAME = #{name} AND PHONE = #{phone} AND STATUS != 'WITHDRAWN'
-    </select>
+	<update id="withdrawMember">
+		UPDATE TB_MEMBER
+		SET STATUS = 'WITHDRAWN',
+		WITHDRAWN_AT = SYSDATE, UPDATED_AT = SYSDATE
+		WHERE LOGIN_ID =
+		#{loginId}
+	</update>
 
-    <update id="updatePassword">
-        UPDATE TB_MEMBER SET PASSWORD = #{newPassword}, UPDATED_AT = SYSDATE WHERE LOGIN_ID = #{loginId}
-    </update>
+	<select id="findLoginIdByNameAndPhone" resultType="string">
+		SELECT
+		LOGIN_ID FROM TB_MEMBER WHERE NAME = #{name} AND PHONE = #{phone} AND
+		STATUS != 'WITHDRAWN'
+	</select>
 
-    <select id="selectAllMembers" resultMap="MemberResultMap">
-        SELECT m.*, l.LAWYER_ID FROM TB_MEMBER m
-        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        ORDER BY m.CREATED_AT DESC
-    </select>
+	<update id="updatePassword">
+		UPDATE TB_MEMBER SET PASSWORD = #{newPassword},
+		UPDATED_AT = SYSDATE WHERE
+		LOGIN_ID = #{loginId}
+	</update>
 
-    <select id="findMembersByType" resultMap="MemberResultMap">
-        SELECT m.*, l.LAWYER_ID FROM TB_MEMBER m
-        LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
-        WHERE m.MEMBER_TYPE = #{memberType} 
-        ORDER BY m.CREATED_AT DESC
-    </select>
+	<select id="selectAllMembers" resultMap="MemberResultMap">
+		SELECT m.*, l.LAWYER_ID
+		FROM TB_MEMBER m
+		LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID =
+		l.MEMBER_ID
+		ORDER BY m.CREATED_AT DESC
+	</select>
 
+	<select id="findMembersByType" resultMap="MemberResultMap">
+		SELECT m.*, l.LAWYER_ID
+		FROM TB_MEMBER m
+		LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID =
+		l.MEMBER_ID
+		WHERE m.MEMBER_TYPE = #{memberType}
+		ORDER BY m.CREATED_AT
+		DESC
+	</select>
+
+	<select id="findWithdrawnMembersForAnonymization"
+		resultMap="MemberResultMap">
+		SELECT * FROM TB_MEMBER
+		WHERE STATUS = 'WITHDRAWN' AND
+		WITHDRAWN_AT &lt;= SYSDATE - 30
+	</select>
+
+	<update id="anonymizeMember"
+		parameterType="com.edu.springboot.domain.member.vo.MemberVO">
+		UPDATE TB_MEMBER
+		SET LOGIN_ID = #{loginId},
+		EMAIL =
+		#{email},
+		NAME = '알수없음',
+		PHONE = '000-0000-0000',
+		PASSWORD = NULL,
+		ADDRESS = NULL,
+		DETAIL_ADDR = NULL,
+		PROVIDER = NULL,
+		STATUS =
+		'ANONYMIZED',
+		UPDATED_AT = SYSDATE
+		WHERE MEMBER_ID = #{memberId}
+	</update>
+	<select id="findMyPosts" resultType="map">
+		SELECT
+		p.post_id AS "id",
+		p.title AS "title",
+		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS "date",
+		(SELECT COUNT(*) FROM TB_REPLY r WHERE r.ref_post_id = p.post_id) AS
+		"commentCount",
+		CASE
+		WHEN p.case_type = 'QUESTION' THEN '답변완료'
+		WHEN p.case_type = 'MOCK' THEN '판결완료'
+		ELSE '일반'
+		END AS "status"
+		FROM TB_POST p
+		WHERE p.MEMBER_ID = #{memberId}
+		<choose>
+			<when test="type == 'question'"> AND p.case_type = 'QUESTION' </when>
+			<when test="type == 'community'"> AND p.case_type = 'COMMUNITY' </when>
+			<when test="type == 'mockTrial'"> AND p.case_type = 'MOCK' </when>
+		</choose>
+		ORDER BY p.post_id DESC
+	</select>
 </mapper>

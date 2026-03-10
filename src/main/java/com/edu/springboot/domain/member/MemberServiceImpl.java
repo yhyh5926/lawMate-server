@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -41,6 +42,9 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	@Transactional
 	public boolean join(JoinDto dto) {
+		// 💡 [추가] 가입 전 30일 재가입 방어막 로직 실행
+		validateSignup(dto.getLoginId(), dto.getEmail());
+
 		MemberVO member = new MemberVO();
 		member.setLoginId(dto.getLoginId());
 		member.setPassword(passwordEncoder.encode(dto.getPassword())); // 정상적인 단방향 암호화 적용
@@ -116,7 +120,8 @@ public class MemberServiceImpl implements MemberService {
 			throw new RuntimeException("아이디 또는 비밀번호가 올바르지 않습니다.");
 		}
 
-		if ("WITHDRAWN".equals(member.getStatus())) {
+		// 💡 [추가] 탈퇴 및 비식별화 회원 로그인 차단 완벽 적용
+		if ("WITHDRAWN".equals(member.getStatus()) || "ANONYMIZED".equals(member.getStatus())) {
 			throw new RuntimeException("탈퇴한 회원입니다.");
 		}
 
@@ -142,6 +147,11 @@ public class MemberServiceImpl implements MemberService {
 		if (member == null) {
 			String loginId = email.split("@")[0]; 
 			member = memberMapper.findByLoginId(loginId);
+		}
+
+		// 💡 [추가] 소셜 로그인 시에도 탈퇴/비식별화 상태면 차단
+		if (member != null && ("WITHDRAWN".equals(member.getStatus()) || "ANONYMIZED".equals(member.getStatus()))) {
+			throw new RuntimeException("탈퇴한 회원입니다.");
 		}
 		
 		if (member != null && "GOOGLE".equals(member.getProvider())) {
@@ -179,4 +189,44 @@ public class MemberServiceImpl implements MemberService {
 	public String sendAuthCode(String phone) { 
 		return "123456"; 
 	}
+
+	// 💡 [추가] 30일 재가입 방어막 로직 구현부
+	@Override
+	public void validateSignup(String loginId, String email) {
+		MemberVO existingById = memberMapper.findByLoginId(loginId);
+		if (existingById != null) {
+			checkWithdrawnStatus(existingById, "아이디");
+		}
+
+		MemberVO existingByEmail = memberMapper.findByEmail(email);
+		if (existingByEmail != null) {
+			checkWithdrawnStatus(existingByEmail, "이메일");
+		}
+	}
+
+	private void checkWithdrawnStatus(MemberVO member, String type) {
+		if ("ACTIVE".equals(member.getStatus())) {
+			throw new IllegalStateException("이미 사용 중인 " + type + "입니다.");
+		}
+		if ("WITHDRAWN".equals(member.getStatus()) && member.getWithdrawnAt() != null) {
+			long diff = System.currentTimeMillis() - member.getWithdrawnAt().getTime();
+			long days = diff / (1000 * 60 * 60 * 24);
+			if (days < 30) {
+				throw new IllegalStateException("탈퇴 후 30일 이내에는 동일한 " + type + "(으)로 재가입할 수 없습니다. (남은 기간: " + (30 - days) + "일)");
+			}
+		}
+	}
+
+	// 💡 [추가] 프론트엔드 연동을 위한 탈퇴 처리
+	@Override
+	@Transactional
+	public boolean withdrawMember(Long memberId) {
+		return memberMapper.withdrawMember(memberId) > 0;
+	}
+
+    // 💡 [추가] 내가 쓴 글 목록 조회 실제 구현
+    @Override
+    public List<Map<String, Object>> getMyPosts(Long memberId, String type) {
+        return memberMapper.findMyPosts(memberId, type);
+    }
 }
