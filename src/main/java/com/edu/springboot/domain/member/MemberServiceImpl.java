@@ -77,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
 			if (dto.getFiles() != null && !dto.getFiles().isEmpty()) {
 				for (MultipartFile file : dto.getFiles()) {
 					try {
-						String savePath = fileUtil.saveFile(file);
+						String savePath = fileUtil.saveFile(file, "lawyer");
 						if (savePath != null) {
 							AttachmentVO attach = new AttachmentVO();
 							attach.setRefType("LAWYER");
