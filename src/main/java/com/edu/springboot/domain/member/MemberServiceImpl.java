@@ -1,4 +1,5 @@
-// src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
+// IntelliJ
+// 파일위치: src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
 package com.edu.springboot.domain.member;
 
 import com.edu.springboot.common.jwt.JwtUtil;
@@ -77,6 +78,7 @@ public class MemberServiceImpl implements MemberService {
 			if (dto.getFiles() != null && !dto.getFiles().isEmpty()) {
 				for (MultipartFile file : dto.getFiles()) {
 					try {
+						// 💡 회원가입 증빙서류는 "lawyer" 폴더로 지정하여 저장
 						String savePath = fileUtil.saveFile(file, "lawyer");
 						if (savePath != null) {
 							AttachmentVO attach = new AttachmentVO();
@@ -136,7 +138,7 @@ public class MemberServiceImpl implements MemberService {
 		response.put("member", member);
 		return response;
 	}
- 
+
 	@Override
 	public Map<String, Object> socialLogin(Map<String, String> socialData) {
 		String email = socialData.get("email");

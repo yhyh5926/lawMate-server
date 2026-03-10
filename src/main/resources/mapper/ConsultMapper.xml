@@ -4,7 +4,6 @@
 
 <mapper namespace="com.edu.springboot.domain.consult.ConsultMapper">
 
-    <!-- ── ResultMap ──────────────────────────────────────── -->
     <resultMap id="consultRM" type="com.edu.springboot.domain.consult.vo.ConsultVO">
         <id     property="consultId"   column="CONSULT_ID"/>
         <result property="memberId"    column="MEMBER_ID"/>
@@ -16,13 +15,11 @@
         <result property="status"      column="STATUS"/>
         <result property="createdAt"   column="CREATED_AT"/>
         <result property="updatedAt"   column="UPDATED_AT"/>
-        <!-- JOIN -->
         <result property="lawyerName"  column="LAWYER_NAME"/>
         <result property="memberName"  column="MEMBER_NAME"/>
         <result property="consultFee"  column="CONSULT_FEE"/>
     </resultMap>
 
-    <!-- ── 예약 생성 ──────────────────────────────────────── -->
     <insert id="insertConsult" parameterType="com.edu.springboot.domain.consult.vo.ConsultVO">
         <selectKey keyProperty="consultId" resultType="long" order="BEFORE">
             SELECT SEQ_CONSULT.NEXTVAL FROM DUAL
@@ -38,12 +35,12 @@
              'PENDING', SYSDATE, SYSDATE)
     </insert>
 
-    <!-- ── 단건 조회 ──────────────────────────────────────── -->
     <select id="selectConsultByNo" resultMap="consultRM">
 	    SELECT c.CONSULT_ID, c.MEMBER_ID, c.LAWYER_ID, c.CASE_ID,
 	           TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD"T"HH24:MI:SS') AS CONSULT_DATE,
 	           c.DURATION_MIN, c.NOTE, c.STATUS,
-	           c.CREATED_AT, c.UPDATED_AT,
+	           TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+	           TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
 	           m.NAME        AS LAWYER_NAME,
 	           l.CONSULT_FEE AS CONSULT_FEE
 	    FROM   TB_CONSULT c
@@ -52,12 +49,12 @@
 	    WHERE  c.CONSULT_ID = #{consultId}
 	</select>
 
-    <!-- ── 회원 전체 목록 ─────────────────────────────────── -->
     <select id="selectConsultListByMember" resultMap="consultRM">
         SELECT c.CONSULT_ID, c.MEMBER_ID, c.LAWYER_ID, c.CASE_ID,
                TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD') AS CONSULT_DATE,
                c.DURATION_MIN, c.NOTE, c.STATUS,
-               c.CREATED_AT, c.UPDATED_AT,
+               TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+               TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
                m.NAME AS LAWYER_NAME
         FROM   TB_CONSULT c
         JOIN   TB_LAWYER l  ON l.LAWYER_ID  = c.LAWYER_ID
@@ -66,12 +63,12 @@
         ORDER BY c.CREATED_AT DESC
     </select>
 
-    <!-- ── 회원 상태 필터 목록 ───────────────────────────── -->
     <select id="selectConsultListByMemberAndStatus" resultMap="consultRM">
         SELECT c.CONSULT_ID, c.MEMBER_ID, c.LAWYER_ID, c.CASE_ID,
                TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD') AS CONSULT_DATE,
                c.DURATION_MIN, c.NOTE, c.STATUS,
-               c.CREATED_AT, c.UPDATED_AT,
+               TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+               TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
                m.NAME AS LAWYER_NAME
         FROM   TB_CONSULT c
         JOIN   TB_LAWYER l  ON l.LAWYER_ID  = c.LAWYER_ID
@@ -81,18 +78,19 @@
         ORDER BY c.CREATED_AT DESC
     </select>
 
-    <!-- ── 변호사 예약 목록 ───────────────────────────────── -->
     <select id="selectConsultListByLawyer" resultMap="consultRM">
         SELECT c.CONSULT_ID, c.MEMBER_ID, c.LAWYER_ID, c.CASE_ID,
                TO_CHAR(c.CONSULT_DATE, 'YYYY-MM-DD') AS CONSULT_DATE,
                c.DURATION_MIN, c.NOTE, c.STATUS,
-               c.CREATED_AT, c.UPDATED_AT
+               TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+               TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
+               m.NAME AS MEMBER_NAME
         FROM   TB_CONSULT c
+        JOIN   TB_MEMBER m ON m.MEMBER_ID = c.MEMBER_ID
         WHERE  c.LAWYER_ID = #{lawyerId}
         ORDER BY c.CONSULT_DATE DESC
     </select>
 
-    <!-- ── 예약된 날짜 목록 (가용시간 계산용) ──────────────── -->
     <select id="selectBookedDates" resultType="string">
         SELECT TO_CHAR(CONSULT_DATE, 'YYYY-MM-DD')
           FROM TB_CONSULT
@@ -100,7 +98,6 @@
            AND STATUS IN ('PENDING', 'CONFIRMED')
     </select>
 
-    <!-- ── 상태 변경 ──────────────────────────────────────── -->
     <update id="updateStatus">
         UPDATE TB_CONSULT
            SET STATUS     = #{status},

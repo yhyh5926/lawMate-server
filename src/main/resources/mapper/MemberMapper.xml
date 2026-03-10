@@ -161,25 +161,44 @@
 		UPDATED_AT = SYSDATE
 		WHERE MEMBER_ID = #{memberId}
 	</update>
+
 	<select id="findMyPosts" resultType="map">
-		SELECT
-		p.post_id AS "id",
-		p.title AS "title",
-		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS "date",
-		(SELECT COUNT(*) FROM TB_REPLY r WHERE r.ref_post_id = p.post_id) AS
-		"commentCount",
-		CASE
-		WHEN p.case_type = 'QUESTION' THEN '답변완료'
-		WHEN p.case_type = 'MOCK' THEN '판결완료'
-		ELSE '일반'
-		END AS "status"
-		FROM TB_POST p
-		WHERE p.MEMBER_ID = #{memberId}
 		<choose>
-			<when test="type == 'question'"> AND p.case_type = 'QUESTION' </when>
-			<when test="type == 'community'"> AND p.case_type = 'COMMUNITY' </when>
-			<when test="type == 'mockTrial'"> AND p.case_type = 'MOCK' </when>
+			<when test="type == 'question'">
+				SELECT
+				QUESTION_ID AS "id",
+				TITLE AS "title",
+				TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS "date",
+				0 AS "commentCount",
+				CASE WHEN STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END AS "status"
+				FROM
+				TB_QUESTION
+				WHERE MEMBER_ID = #{memberId}
+				ORDER BY QUESTION_ID DESC
+			</when>
+
+			<otherwise>
+				SELECT
+				p.post_id AS "id",
+				p.title AS "title",
+				TO_CHAR(p.created_at, 'YYYY-MM-DD') AS "date",
+				(SELECT COUNT(*) FROM TB_REPLY r WHERE r.ref_post_id = p.post_id) AS
+				"commentCount",
+				CASE WHEN p.case_type = 'MOCK' THEN '판결완료' ELSE '일반' END AS "status"
+				FROM TB_POST p
+				WHERE p.MEMBER_ID = #{memberId}
+				AND (p.STATUS IS NULL
+				OR p.STATUS != 'DELETED')
+				<choose>
+					<when test="type == 'community'">
+						AND (p.case_type != 'MOCK' OR p.case_type IS NULL)
+					</when>
+					<when test="type == 'mockTrial'">
+						AND p.case_type = 'MOCK'
+					</when>
+				</choose>
+				ORDER BY p.post_id DESC
+			</otherwise>
 		</choose>
-		ORDER BY p.post_id DESC
 	</select>
 </mapper>

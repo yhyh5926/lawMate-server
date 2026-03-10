@@ -1,7 +1,6 @@
-/**
- * 파일위치: src/main/java/com/edu/springboot/domain/cases/CaseController.java
- * 기능전체: 사건 등록, 목록 조회, 상태 변경 등 사건 관리와 관련된 HTTP 요청을 처리합니다.
- */
+// IntelliJ 또는 Eclipse (백엔드)
+// 파일위치: src/main/java/com/edu/springboot/domain/cases/CaseController.java
+
 package com.edu.springboot.domain.cases;
 
 import jakarta.annotation.PostConstruct;
@@ -14,22 +13,22 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CaseController {
 
-    private final CaseService caseService;
+	private final CaseService caseService;
 
-    @PostConstruct
-    public void init() {
-        System.out.println("✅ [domain/cases] 사건 관리 모듈이 활성화되었습니다.");
-    }
+	@PostConstruct
+	public void init() {
+		System.out.println("✅ [domain/cases] 사건 관리 모듈이 활성화되었습니다.");
+	}
 
-    // 내 사건 목록 조회
-    @GetMapping("/list")
-    public ResponseEntity<?> getMyCaseList(@RequestParam Long memberId) {
-        return ResponseEntity.ok(caseService.getCaseListByMember(memberId));
-    }
+	// 내 사건 목록 조회
+	@GetMapping("/list")
+	public ResponseEntity<?> getMyCaseList(@RequestParam("memberId") Long memberId) {
+		return ResponseEntity.ok(caseService.getCaseListByMember(memberId));
+	}
 
-    // 사건 상세 조회
-    @GetMapping("/detail")
-    public ResponseEntity<?> getCaseDetail(@RequestParam Long caseId) {
-        return ResponseEntity.ok(caseService.getCaseDetail(caseId));
-    }
+	// 사건 상세 조회
+	@GetMapping("/detail")
+	public ResponseEntity<?> getCaseDetail(@RequestParam("caseId") Long caseId) {
+		return ResponseEntity.ok(caseService.getCaseDetail(caseId));
+	}
 }
