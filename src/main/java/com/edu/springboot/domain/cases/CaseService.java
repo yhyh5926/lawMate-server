@@ -78,4 +78,9 @@ public class CaseService {
 			}
 		}
 	}
+
+	// 💡 [에러 해결] 관리자 컨트롤러(AdminController)에서 호출하는 전체 사건 조회 로직 복구
+	public List<CaseVO> getAllCasesForAdmin() {
+		return caseMapper.selectAllCases();
+	}
 }
