@@ -8,26 +8,44 @@ import java.util.Map;
 
 @Mapper
 public interface QuestionMapper {
-	int insertQuestion(QuestionVO questionVO);
-	int updateQuestion(QuestionVO questionVO);
-	int deleteQuestion(Long questionId);
-	QuestionVO selectQuestionById(Long questionId);
-	List<QuestionVO> selectQuestionsWithPaging(Map<String, Object> params);
-	int selectQuestionCount(Map<String, Object> params);
 
-		
-	// 질문 채택 업데이트 (상태를 'ADOPTED'로 변경하고 채택 변호사 지정)
-	int updateQuestionAdoption(@Param("questionId") Long questionId, @Param("lawyerId") Long lawyerId,
-			@Param("memberId") Long memberId);
+    /** 1. 질문 등록 */
+    int insertQuestion(QuestionVO questionVO);
 
-	// 답변 채택 업데이트 (답변의 상태를 채택됨으로 변경)
-	int updateAnswerAdoption(Long answerId);
+    /** 2. 질문 수정 (내용, 제목 등) */
+    int updateQuestion(QuestionVO questionVO);
 
-	// [관리자용]
-	// 전체 질문 목록 조회
-	List<QuestionVO> selectAllQuestions();
+    /** 3. 질문 삭제 */
+    int deleteQuestion(Long questionId);
 
-	// 질문 상태 변경 (게시글 숨김/삭제 처리용)
-	int updateQuestionStatus(@Param("questionId") Long questionId, @Param("status") String status);
+    /** 4. 질문 상세 조회 (첨부파일 포함) */
+    QuestionVO selectQuestionById(Long questionId);
 
+    /** 5. 질문 목록 조회 (페이징/검색) */
+    List<QuestionVO> selectQuestionsWithPaging(Map<String, Object> params);
+
+    /** 6. 전체 질문 개수 조회 (페이징용) */
+    int selectQuestionCount(Map<String, Object> params);
+
+    /** * 7. 질문 상태 및 담당 변호사 업데이트 (채택 시 사용) 
+     * XML의 <if test="lawyerId != null"> 로직과 매칭됩니다.
+     */
+    int updateQuestionStatus(
+        @Param("questionId") Long questionId, 
+        @Param("status") String status, 
+        @Param("lawyerId") Long lawyerId
+    );
+
+    /** [관리자용] 전체 질문 목록 조회 */
+    List<QuestionVO> selectAllQuestions();
+
+    /** * 기존에 있던 updateQuestionAdoption은 
+     * 위 updateQuestionStatus(..., "ADOPTED", lawyerId)로 통합하여 사용 가능하므로 
+     * 유지하거나 필요에 따라 제거하셔도 됩니다.
+     */
+    int updateQuestionAdoption(
+        @Param("questionId") Long questionId, 
+        @Param("lawyerId") Long lawyerId,
+        @Param("memberId") Long memberId
+    );
 }

@@ -10,19 +10,20 @@
             a.CONTENT as content,
             a.IS_ADOPTED as isAdopted,
             a.CREATED_AT as createdAt,
+            a.ADOPTED_AT as adoptedAt,
             a.UPDATED_AT as updatedAt,
             
-            /* 회원 및 변호사 상세 정보 */
-            m.MEMBER_ID as memberId,        -- 💡 추가: 프로필 이동용 ID
-            m.NAME as lawyerName,           -- 변호사 이름
-            l.OFFICE_NAME as officeName,    -- 사무소 명
-            l.SPECIALTY as specialty,       -- 전문 분야
+            /* 💡 핵심 수정: 변호사의 MEMBER_ID를 가져와야 프론트에서 본인 확인 가능 */
+            m.MEMBER_ID as memberId,
+            m.NAME as lawyerName,
+            l.OFFICE_NAME as officeName,
+            l.SPECIALTY as specialty,
             
             /* 변호사 활동 지표 */
-            l.ADOPT_CNT as adoptCnt,        -- 물리 컬럼 활용
+            l.ADOPT_CNT as adoptCnt,
             (SELECT COUNT(*) 
              FROM TB_ANSWER 
-             WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt, -- 총 답변 수 계산
+             WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt,
             
             /* 프로필 이미지 */
             att.SAVE_PATH as lawyerProfile
@@ -37,6 +38,17 @@
         ORDER BY a.IS_ADOPTED DESC, a.CREATED_AT ASC
     </select>
 
+    <select id="selectAnswerById" parameterType="long" resultType="com.edu.springboot.domain.answer.vo.AnswerVO">
+        SELECT 
+            a.ANSWER_ID as answerId,
+            a.QUESTION_ID as questionId,
+            a.IS_ADOPTED as isAdopted,
+            l.MEMBER_ID as memberId  /* 💡 삭제 권한 체크를 위해 memberId 추가 */
+        FROM TB_ANSWER a
+        JOIN TB_LAWYER l ON a.LAWYER_ID = l.LAWYER_ID
+        WHERE a.ANSWER_ID = #{answerId}
+    </select>
+
     <insert id="insertAnswer" parameterType="com.edu.springboot.domain.answer.vo.AnswerVO">
         INSERT INTO TB_ANSWER (
             ANSWER_ID,
@@ -44,34 +56,37 @@
             LAWYER_ID,
             CONTENT,
             IS_ADOPTED,
-            CREATED_AT
+            CREATED_AT,
+            UPDATED_AT
         ) VALUES (
             SEQ_ANSWER.NEXTVAL,
             #{questionId},
             #{lawyerId},
             #{content},
             'N',
+            SYSDATE,
             SYSDATE
         )
     </insert>
 
-    <update id="adoptAnswer">
-        UPDATE TB_ANSWER
-        SET IS_ADOPTED = 'Y',
-            UPDATED_AT = SYSDATE
-        WHERE ANSWER_ID = #{answerId}
-    </update>
-
-    <update id="updateAnswer">
+    <update id="updateAnswer" parameterType="com.edu.springboot.domain.answer.vo.AnswerVO">
         UPDATE TB_ANSWER
         SET CONTENT = #{content},
             UPDATED_AT = SYSDATE
         WHERE ANSWER_ID = #{answerId}
     </update>
 
-    <delete id="deleteAnswer">
+    <delete id="deleteAnswer" parameterType="long">
         DELETE FROM TB_ANSWER
         WHERE ANSWER_ID = #{answerId}
     </delete>
+
+    <update id="updateAdoptStatus">
+        UPDATE TB_ANSWER
+        SET IS_ADOPTED = 'Y',
+            ADOPTED_AT = SYSDATE,
+            UPDATED_AT = SYSDATE
+        WHERE ANSWER_ID = #{answerId}
+    </update>
 
 </mapper>
