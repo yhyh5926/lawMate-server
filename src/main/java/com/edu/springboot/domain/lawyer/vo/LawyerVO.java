@@ -1,8 +1,8 @@
 package com.edu.springboot.domain.lawyer.vo;
 
-import com.edu.springboot.domain.review.vo.ReviewVO; // ReviewVO 위치 확인 필요
+import com.edu.springboot.domain.review.vo.ReviewVO;
 import lombok.Data;
-import java.util.List; // 💡 List 사용을 위해 반드시 필요함
+import java.util.List;
 
 @Data
 public class LawyerVO {
@@ -26,10 +26,11 @@ public class LawyerVO {
 	private double avgRating;
 	private int reviewCnt;
 
-	// 변호사 승인 상태 (PENDING, APPROVED, REJECTED)
-	private String approveStatus;
+	// 💡 [추가] 채택 관련 통계 컬럼
+	private int adoptCnt; // 누적 채택 수
+	private int answerCnt; // 전체 답변 수
 
-	// 가입일(신청일) 필드
+	private String approveStatus;
 	private String createdAt;
 
 	// 3. TB_ATTACHMENT 컬럼 (이미지/첨부파일 연결)
@@ -37,10 +38,17 @@ public class LawyerVO {
 	private String savePath;
 	private String origName;
 
-	// 💡 관리자 승인 페이지에서 다중 증빙서류를 받기 위한 리스트
 	private List<String> filePaths;
 
-	// 4. 1:N 관계 매핑 (MyBatis Collection용)
-	// 상세 페이지에서 한 번에 조인해서 가져올 경우 사용
+	// 4. 1:N 관계 매핑
 	private List<ReviewVO> reviews;
+
+	// 💡 [추가] 응답 시 채택률을 실시간으로 계산해서 넘겨주는 Getter
+	// 프론트엔드에서 'lawyer.adoptRate'로 바로 접근 가능합니다.
+	public double getAdoptRate() {
+		if (this.answerCnt == 0)
+			return 0.0;
+		double rate = ((double) this.adoptCnt / this.answerCnt) * 100;
+		return Math.round(rate * 10.0) / 10.0; // 소수점 첫째 자리까지 반올림
+	}
 }

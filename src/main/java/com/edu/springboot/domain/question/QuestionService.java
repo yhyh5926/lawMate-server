@@ -54,14 +54,16 @@ public class QuestionService {
 	}
 
 	/**
-	 * 3. 질문 삭제 (답변 유무 확인)
+	 * 3. 질문 삭제 (답변 유무 확인) 💡 수정 포인트: question.getAnswers() 대신 answerCount 필드 사용
 	 */
 	@Transactional
 	public String deleteQuestion(Long questionId) {
 		QuestionVO question = questionMapper.selectQuestionById(questionId);
 		if (question == null)
 			return "NOT_FOUND";
-		if (question.getAnswers() != null && !question.getAnswers().isEmpty())
+
+		// 💡 리스트를 조회하지 않고, DB에서 서브쿼리로 가져온 개수만 확인합니다.
+		if (question.getAnswerCount() > 0)
 			return "HAS_ANSWERS";
 
 		attachmentMapper.deleteAttachmentsByRef("QUESTION", questionId);
@@ -98,7 +100,6 @@ public class QuestionService {
 				continue;
 
 			try {
-				// fileUtil.saveFile에서 IOException이 발생할 수 있으므로 try로 감쌉니다.
 				String savePath = fileUtil.saveFile(file, "question");
 
 				if (savePath != null) {
@@ -113,10 +114,11 @@ public class QuestionService {
 
 					attachmentMapper.insertAttachment(attach);
 				}
-			} catch (Exception e) { // IOException을 포함한 예외 처리
+			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException("파일 저장 중 오류가 발생했습니다: " + file.getOriginalFilename());
 			}
 		}
 	}
+
 }

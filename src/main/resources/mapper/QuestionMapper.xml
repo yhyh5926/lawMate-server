@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper
-	namespace="com.edu.springboot.domain.question.QuestionMapper">
+<mapper namespace="com.edu.springboot.domain.question.QuestionMapper">
 
-	<resultMap id="questionListMap"
-		type="com.edu.springboot.domain.question.vo.QuestionVO">
+	<resultMap id="questionListMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
 		<id property="questionId" column="QUESTION_ID" />
 		<result property="memberId" column="MEMBER_ID" />
 		<result property="memberName" column="MEMBER_NAME" />
@@ -16,8 +14,7 @@
 		<result property="fileCount" column="FILE_COUNT" />
 	</resultMap>
 
-	<resultMap id="questionDetailMap"
-		type="com.edu.springboot.domain.question.vo.QuestionVO">
+	<resultMap id="questionDetailMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
 		<id property="questionId" column="QUESTION_ID" />
 		<result property="memberId" column="MEMBER_ID" />
 		<result property="memberName" column="MEMBER_NAME" />
@@ -30,22 +27,7 @@
 		<result property="createdAt" column="CREATED_AT" />
 		<result property="updatedAt" column="UPDATED_AT" />
 
-		<collection property="answers"
-			ofType="com.edu.springboot.domain.answer.vo.AnswerVO">
-			<id property="answerId" column="ANSWER_ID" />
-			<result property="content" column="ANSWER_CONTENT" />
-			<result property="createdAt" column="ANSWER_CREATED_AT" />
-			<result property="lawyerId" column="LAWYER_ID" />
-			<result property="isAdopted" column="IS_ADOPTED" />
-
-			<result property="lawyerName" column="LAWYER_NAME" />
-			<result property="officeName" column="OFFICE_NAME" />
-			<result property="specialty" column="SPECIALTY" />
-			<result property="lawyerProfile" column="LAWYER_PROFILE" />
-		</collection>
-
-		<collection property="files"
-			ofType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+		<collection property="files" ofType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
 			<id property="attachId" column="ATTACH_ID" />
 			<result property="origName" column="ORIG_NAME" />
 			<result property="savePath" column="SAVE_PATH" />
@@ -54,23 +36,19 @@
 		</collection>
 	</resultMap>
 
-	<select id="selectQuestionsWithPaging"
-		resultMap="questionListMap" parameterType="map">
-		SELECT q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
-		q.TITLE,
-		q.CASE_TYPE, q.STATUS, q.CREATED_AT,
-		(SELECT COUNT(*) FROM TB_ANSWER
-		WHERE QUESTION_ID = q.QUESTION_ID) as
-		ANSWER_COUNT,
-		(SELECT COUNT(*)
-		FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND
-		REF_TYPE
-		=
-		'QUESTION') as FILE_COUNT
+	<select id="selectQuestionsWithPaging" resultMap="questionListMap" parameterType="map">
+		SELECT 
+            q.QUESTION_ID, 
+            q.MEMBER_ID, 
+            qm.NAME as MEMBER_NAME,
+		    q.TITLE,
+		    q.CASE_TYPE, 
+            q.STATUS, 
+            q.CREATED_AT,
+		    (SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as ANSWER_COUNT,
+		    (SELECT COUNT(*) FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE = 'QUESTION') as FILE_COUNT
 		FROM TB_QUESTION q
-		LEFT JOIN
-		TB_MEMBER qm ON
-		q.MEMBER_ID = qm.MEMBER_ID
+		LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
 		<where>
 			<if test="caseType != null and caseType != ''">
 				AND q.CASE_TYPE = #{caseType}
@@ -80,72 +58,64 @@
 			</if>
 		</where>
 		ORDER BY q.CREATED_AT DESC
-		OFFSET #{offset} ROWS FETCH NEXT #{size}
-		ROWS ONLY
+		OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
 	</select>
 
-	<insert id="insertQuestion"
-		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
-		<selectKey keyProperty="questionId" resultType="long"
-			order="BEFORE">
+	<select id="selectQuestionById" resultMap="questionDetailMap">
+		SELECT
+            q.QUESTION_ID,
+            q.MEMBER_ID,
+            qm.NAME as MEMBER_NAME,
+            q.CASE_ID,
+            q.TITLE,
+            q.CONTENT,
+            q.CASE_TYPE,
+            q.ASSIGNED_LAWYER,
+            q.STATUS,
+            q.CREATED_AT,
+            q.UPDATED_AT,
+    
+            /* 질문 첨부파일 정보 */
+            att.ATTACH_ID,
+            att.ORIG_NAME,
+            att.SAVE_PATH,
+            att.FILE_SIZE,
+            att.MIME_TYPE
+		FROM TB_QUESTION q
+		LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+		LEFT OUTER JOIN TB_ATTACHMENT att ON q.QUESTION_ID = att.REF_ID AND att.REF_TYPE = 'QUESTION'
+		WHERE q.QUESTION_ID = #{questionId}
+	</select>
+
+	<insert id="insertQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+		<selectKey keyProperty="questionId" resultType="long" order="BEFORE">
 			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO TB_QUESTION (
-		QUESTION_ID, MEMBER_ID, TITLE, CONTENT,
-		CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
+		    QUESTION_ID, MEMBER_ID, TITLE, CONTENT,
+		    CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
 		) VALUES (
-		#{questionId},
-		#{memberId}, #{title}, #{content}, #{caseType}, 'OPEN', SYSDATE,
-		SYSDATE
+		    #{questionId}, #{memberId}, #{title}, #{content}, #{caseType}, 'OPEN', SYSDATE, SYSDATE
 		)
 	</insert>
 
-	<update id="updateQuestion"
-		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+	<update id="updateQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
 		UPDATE TB_QUESTION
 		SET
-		TITLE = #{title},
-		CONTENT =
-		#{content},
-		CASE_TYPE = #{caseType},
-		UPDATED_at = SYSDATE
-		WHERE
-		QUESTION_ID = #{questionId}
-		AND STATUS != 'ADOPTED'
+		    TITLE = #{title},
+		    CONTENT = #{content},
+		    CASE_TYPE = #{caseType},
+		    UPDATED_AT = SYSDATE
+		WHERE QUESTION_ID = #{questionId}
+		  AND STATUS != 'ADOPTED'
 	</update>
 
 	<delete id="deleteQuestion" parameterType="long">
-		DELETE FROM
-		TB_QUESTION
+		DELETE FROM TB_QUESTION
 		WHERE QUESTION_ID = #{questionId}
 	</delete>
 
-
-	<select id="selectAllQuestions" resultMap="questionListMap">
-		SELECT
-		q.QUESTION_ID,
-		q.MEMBER_ID, qm.NAME as MEMBER_NAME,
-		q.TITLE, q.CASE_TYPE, q.STATUS,
-		q.CREATED_AT,
-		(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID =
-		q.QUESTION_ID) as
-		ANSWER_COUNT,
-
-		(SELECT COUNT(*)
-		FROM TB_ATTACHMENT WHERE
-		REF_ID = q.QUESTION_ID AND REF_TYPE
-		=
-		'QUESTION') as FILE_COUNT
-		FROM
-		TB_QUESTION q
-		LEFT JOIN TB_MEMBER qm ON
-		q.MEMBER_ID = qm.MEMBER_ID
-		ORDER
-		BY q.CREATED_AT DESC
-	</select>
-
-	<select id="selectQuestionCount" parameterType="map"
-		resultType="int">
+	<select id="selectQuestionCount" parameterType="map" resultType="int">
 		SELECT COUNT(*)
 		FROM TB_QUESTION q
 		<where>
@@ -158,82 +128,19 @@
 		</where>
 	</select>
 
-	<select id="selectQuestionById" resultMap="questionDetailMap">
-		SELECT
-		q.QUESTION_ID,
-		q.MEMBER_ID,
-		qm.NAME as MEMBER_NAME,
-		q.CASE_ID,
-		q.TITLE,
-		q.CONTENT,
-		q.CASE_TYPE,
-		q.ASSIGNED_LAWYER,
-		q.STATUS,
-		q.CREATED_AT,
-		q.UPDATED_AT,
-
-		/* 답변 정보 */
-		a.ANSWER_ID,
-		a.CONTENT as ANSWER_CONTENT,
-		a.CREATED_AT as ANSWER_CREATED_AT,
-		a.LAWYER_ID,
-		a.IS_ADOPTED,
-
-		/* 변호사 상세 정보 */
-		m.NAME as LAWYER_NAME,
-		l.OFFICE_NAME as OFFICE_NAME,
-		l.SPECIALTY as SPECIALTY,
-
-		/* 💡 변호사 프로필 이미지 (TB_ATTACHMENT와 조인) */
-		la.SAVE_PATH as LAWYER_PROFILE,
-
-		/* 질문 첨부파일 정보 (REF_TYPE이 QUESTION인 것) */
-		att.ATTACH_ID,
-		att.ORIG_NAME,
-		att.SAVE_PATH,
-		att.FILE_SIZE,
-		att.MIME_TYPE
-
-		FROM TB_QUESTION q
-		LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
-		LEFT OUTER JOIN TB_ANSWER a ON q.QUESTION_ID = a.QUESTION_ID
-		LEFT OUTER JOIN TB_LAWYER l ON a.LAWYER_ID = l.LAWYER_ID
-		LEFT OUTER JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
-
-		/* 💡 변호사 프로필 사진 조인: TB_ATTACHMENT에서 REF_TYPE이 'LAWYER'인 데이터 */
-		LEFT OUTER JOIN TB_ATTACHMENT la ON l.LAWYER_ID = la.REF_ID AND
-		la.REF_TYPE = 'LAWYER'
-
-		/* 질문 게시글의 첨부파일 조인 */
-		LEFT OUTER JOIN TB_ATTACHMENT att ON q.QUESTION_ID = att.REF_ID AND
-		att.REF_TYPE = 'QUESTION'
-
-		WHERE q.QUESTION_ID = #{questionId}
-		ORDER BY a.IS_ADOPTED DESC, a.CREATED_AT ASC
-	</select>
-
 	<update id="updateQuestionAdoption">
 		UPDATE TB_QUESTION
 		SET STATUS = 'ADOPTED',
-		ASSIGNED_LAWYER = #{lawyerId}, UPDATED_AT =
-		SYSDATE
-		WHERE QUESTION_ID =
-		#{questionId} AND MEMBER_ID = #{memberId}
+		    ASSIGNED_LAWYER = #{lawyerId}, 
+            UPDATED_AT = SYSDATE
+		WHERE QUESTION_ID = #{questionId} 
+          AND MEMBER_ID = #{memberId}
 	</update>
-
-	<update id="updateAnswerAdoption">
-		UPDATE TB_ANSWER
-		SET IS_ADOPTED = 'Y'
-		WHERE ANSWER_ID =
-		#{answerId}
-	</update>
-
-
 
 	<update id="updateQuestionStatus">
 		UPDATE TB_QUESTION
-		SET STATUS = #{status}, UPDATED_AT
-		= SYSDATE
+		SET STATUS = #{status}, 
+            UPDATED_AT = SYSDATE
 		WHERE QUESTION_ID = #{questionId}
 	</update>
 

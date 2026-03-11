@@ -4,6 +4,9 @@ import com.edu.springboot.domain.answer.vo.AnswerVO;
 import com.edu.springboot.domain.question.QuestionMapper;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnswerService {
 
 	private final AnswerMapper answerMapper;
-	private final QuestionMapper questionMapper;
+
+	/**
+	 * 0. 특정 질문의 답변 목록 조회 QuestionAnswerList 컴포넌트에서 호출하는 핵심 로직
+	 */
+	public List<AnswerVO> getAnswersByQuestionId(Long questionId) {
+		return answerMapper.selectAnswersByQuestionId(questionId);
+	}
 
 	/**
 	 * 1. 답변 등록 XML에서 서브쿼리로 개수를 계산하므로, 저장만으로 목록에 자동 반영됩니다.
@@ -37,8 +46,13 @@ public class AnswerService {
 	 * 3. 답변 삭제 채택된 답변인 경우 삭제를 막는 로직 등을 추가하기에 적합한 위치입니다.
 	 */
 	@Transactional
-	public boolean removeAnswer(int answerId) {
-		// (옵션) 만약 채택된 답변은 삭제 불가능하게 하려면 여기서 상태 체크 로직 추가
+	public boolean removeAnswer(Long answerId) {
+		// 💡 [검증] 채택된 답변은 삭제할 수 없도록 방어 로직 추가
+		AnswerVO answer = answerMapper.selectAnswerById(answerId);
+		if (answer != null && "Y".equals(answer.getIsAdopted())) {
+			throw new IllegalStateException("채택된 답변은 삭제할 수 없습니다.");
+		}
+
 		int result = answerMapper.deleteAnswer(answerId);
 		return result > 0;
 	}
