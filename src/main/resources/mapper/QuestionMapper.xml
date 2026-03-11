@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.edu.springboot.domain.question.QuestionMapper">
+<mapper
+	namespace="com.edu.springboot.domain.question.QuestionMapper">
 
-	<resultMap id="questionListMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
+	<resultMap id="questionListMap"
+		type="com.edu.springboot.domain.question.vo.QuestionVO">
 		<id property="questionId" column="QUESTION_ID" />
 		<result property="memberId" column="MEMBER_ID" />
 		<result property="memberName" column="MEMBER_NAME" />
@@ -14,7 +16,8 @@
 		<result property="fileCount" column="FILE_COUNT" />
 	</resultMap>
 
-	<resultMap id="questionDetailMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
+	<resultMap id="questionDetailMap"
+		type="com.edu.springboot.domain.question.vo.QuestionVO">
 		<id property="questionId" column="QUESTION_ID" />
 		<result property="memberId" column="MEMBER_ID" />
 		<result property="memberName" column="MEMBER_NAME" />
@@ -27,7 +30,8 @@
 		<result property="createdAt" column="CREATED_AT" />
 		<result property="updatedAt" column="UPDATED_AT" />
 
-		<collection property="files" ofType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+		<collection property="files"
+			ofType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
 			<id property="attachId" column="ATTACH_ID" />
 			<result property="origName" column="ORIG_NAME" />
 			<result property="savePath" column="SAVE_PATH" />
@@ -36,19 +40,26 @@
 		</collection>
 	</resultMap>
 
-	<select id="selectQuestionsWithPaging" resultMap="questionListMap" parameterType="map">
-		SELECT 
-            q.QUESTION_ID, 
-            q.MEMBER_ID, 
-            qm.NAME as MEMBER_NAME,
-		    q.TITLE,
-		    q.CASE_TYPE, 
-            q.STATUS, 
-            q.CREATED_AT,
-		    (SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as ANSWER_COUNT,
-		    (SELECT COUNT(*) FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE = 'QUESTION') as FILE_COUNT
+	<select id="selectQuestionsWithPaging"
+		resultMap="questionListMap" parameterType="map">
+		SELECT
+		q.QUESTION_ID,
+		q.MEMBER_ID,
+		qm.NAME as MEMBER_NAME,
+		q.TITLE,
+		q.CASE_TYPE,
+		q.STATUS,
+		q.CREATED_AT,
+		(SELECT COUNT(*) FROM TB_ANSWER
+		WHERE QUESTION_ID = q.QUESTION_ID) as
+		ANSWER_COUNT,
+		(SELECT COUNT(*)
+		FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE
+		=
+		'QUESTION') as FILE_COUNT
 		FROM TB_QUESTION q
-		LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+		LEFT JOIN TB_MEMBER qm ON
+		q.MEMBER_ID = qm.MEMBER_ID
 		<where>
 			<if test="caseType != null and caseType != ''">
 				AND q.CASE_TYPE = #{caseType}
@@ -58,64 +69,81 @@
 			</if>
 		</where>
 		ORDER BY q.CREATED_AT DESC
-		OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+		OFFSET #{offset} ROWS FETCH NEXT #{size}
+		ROWS ONLY
 	</select>
 
 	<select id="selectQuestionById" resultMap="questionDetailMap">
 		SELECT
-            q.QUESTION_ID,
-            q.MEMBER_ID,
-            qm.NAME as MEMBER_NAME,
-            q.CASE_ID,
-            q.TITLE,
-            q.CONTENT,
-            q.CASE_TYPE,
-            q.ASSIGNED_LAWYER,
-            q.STATUS,
-            q.CREATED_AT,
-            q.UPDATED_AT,
-    
-            /* 질문 첨부파일 정보 */
-            att.ATTACH_ID,
-            att.ORIG_NAME,
-            att.SAVE_PATH,
-            att.FILE_SIZE,
-            att.MIME_TYPE
+		q.QUESTION_ID,
+		q.MEMBER_ID,
+		qm.NAME as MEMBER_NAME,
+		q.CASE_ID,
+		q.TITLE,
+		q.CONTENT,
+		q.CASE_TYPE,
+		q.ASSIGNED_LAWYER,
+		q.STATUS,
+		q.CREATED_AT,
+		q.UPDATED_AT,
+
+		/* 질문
+		첨부파일 정보 */
+		att.ATTACH_ID,
+		att.ORIG_NAME,
+		att.SAVE_PATH,
+		att.FILE_SIZE,
+		att.MIME_TYPE
 		FROM TB_QUESTION q
-		LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
-		LEFT OUTER JOIN TB_ATTACHMENT att ON q.QUESTION_ID = att.REF_ID AND att.REF_TYPE = 'QUESTION'
-		WHERE q.QUESTION_ID = #{questionId}
+		LEFT OUTER JOIN TB_MEMBER qm ON
+		q.MEMBER_ID =
+		qm.MEMBER_ID
+		LEFT OUTER JOIN TB_ATTACHMENT att ON
+		q.QUESTION_ID =
+		att.REF_ID AND att.REF_TYPE = 'QUESTION'
+		WHERE
+		q.QUESTION_ID =
+		#{questionId}
 	</select>
 
-	<insert id="insertQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
-		<selectKey keyProperty="questionId" resultType="long" order="BEFORE">
+	<insert id="insertQuestion"
+		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+		<selectKey keyProperty="questionId" resultType="long"
+			order="BEFORE">
 			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO TB_QUESTION (
-		    QUESTION_ID, MEMBER_ID, TITLE, CONTENT,
-		    CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
+		QUESTION_ID, MEMBER_ID, TITLE, CONTENT,
+		CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
 		) VALUES (
-		    #{questionId}, #{memberId}, #{title}, #{content}, #{caseType}, 'OPEN', SYSDATE, SYSDATE
+		#{questionId},
+		#{memberId}, #{title}, #{content}, #{caseType}, 'OPEN', SYSDATE,
+		SYSDATE
 		)
 	</insert>
 
-	<update id="updateQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+	<update id="updateQuestion"
+		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
 		UPDATE TB_QUESTION
 		SET
-		    TITLE = #{title},
-		    CONTENT = #{content},
-		    CASE_TYPE = #{caseType},
-		    UPDATED_AT = SYSDATE
-		WHERE QUESTION_ID = #{questionId}
-		  AND STATUS != 'ADOPTED'
+		TITLE = #{title},
+		CONTENT =
+		#{content},
+		CASE_TYPE = #{caseType},
+		UPDATED_AT = SYSDATE
+		WHERE
+		QUESTION_ID = #{questionId}
+		AND STATUS != 'ADOPTED'
 	</update>
 
 	<delete id="deleteQuestion" parameterType="long">
-		DELETE FROM TB_QUESTION
+		DELETE FROM
+		TB_QUESTION
 		WHERE QUESTION_ID = #{questionId}
 	</delete>
 
-	<select id="selectQuestionCount" parameterType="map" resultType="int">
+	<select id="selectQuestionCount" parameterType="map"
+		resultType="int">
 		SELECT COUNT(*)
 		FROM TB_QUESTION q
 		<where>
@@ -131,17 +159,43 @@
 	<update id="updateQuestionAdoption">
 		UPDATE TB_QUESTION
 		SET STATUS = 'ADOPTED',
-		    ASSIGNED_LAWYER = #{lawyerId}, 
-            UPDATED_AT = SYSDATE
-		WHERE QUESTION_ID = #{questionId} 
-          AND MEMBER_ID = #{memberId}
+		ASSIGNED_LAWYER = #{lawyerId},
+		UPDATED_AT = SYSDATE
+		WHERE QUESTION_ID =
+		#{questionId}
+		AND MEMBER_ID = #{memberId}
 	</update>
 
 	<update id="updateQuestionStatus">
 		UPDATE TB_QUESTION
-		SET STATUS = #{status}, 
-            UPDATED_AT = SYSDATE
+		SET STATUS = #{status},
+		UPDATED_AT =
+		SYSDATE
 		WHERE QUESTION_ID = #{questionId}
 	</update>
+	<select id="selectAllQuestions" resultMap="questionListMap">
+		SELECT
+		q.QUESTION_ID,
+		q.MEMBER_ID,
+		qm.NAME as MEMBER_NAME,
+		q.TITLE,
+		q.CASE_TYPE,
+		q.STATUS,
+		q.CREATED_AT,
+		(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
+		ANSWER_COUNT,
+		(SELECT COUNT(*) FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE
+		= 'QUESTION') as FILE_COUNT
+		FROM TB_QUESTION q
+		LEFT JOIN TB_MEMBER qm ON
+		q.MEMBER_ID = qm.MEMBER_ID
+		ORDER BY q.CREATED_AT DESC
+	</select>
 
+	<update id="updateAnswerAdoption">
+		UPDATE TB_ANSWER
+		SET IS_ADOPTED = 'Y',
+		UPDATED_AT = SYSDATE
+		WHERE ANSWER_ID = #{answerId}
+	</update>
 </mapper>

@@ -87,7 +87,7 @@ public class AdminController {
 
 	@GetMapping("/board/list")
 	public ResponseEntity<?> getBoardList() {
-		List<PostVo> posts = communityMapper.list("");
+		List<PostVo> posts = communityMapper.list("", 1, 5);
 		List<QuestionVO> questions = questionMapper.selectAllQuestions();
 
 		return ResponseEntity.ok(Map.of("data", Map.of("posts", posts, "questions", questions)));
