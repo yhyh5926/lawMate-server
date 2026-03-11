@@ -4,33 +4,47 @@
 
 	<select id="list"
     resultType="com.edu.springboot.domain.community.vo.PostVo">
-	    SELECT
-	        p.post_id,
-	        p.member_id,
-	        p.case_type,
-	        p.title,
-	        p.content,
-	        p.view_cnt,
-	        p.comment_cnt,
-	        p.like_cnt,
-	        p.status,
-	        p.created_at,
-	        p.updated_at,
-	        m.name
-	    FROM tb_post p
-	    JOIN tb_member m ON p.member_id = m.member_id
-	    WHERE p.status = 'ACTIVE'
-	    <choose>
-	        <when test="sortType == 'views'">
-	            ORDER BY p.view_cnt DESC, p.post_id DESC
-	        </when>
-	        <when test="sortType == 'comments'">
-	            ORDER BY p.comment_cnt DESC, p.post_id DESC
-	        </when>
-	        <otherwise>
-	            ORDER BY p.post_id DESC
-	        </otherwise>
-	    </choose>
+    SELECT *
+    FROM (
+        SELECT inner_query.*, ROWNUM row_num
+        FROM (
+            SELECT
+                p.post_id,
+                p.member_id,
+                p.case_type,
+                p.title,
+                p.content,
+                p.view_cnt,
+                p.comment_cnt,
+                p.like_cnt,
+                p.status,
+                p.created_at,
+                p.updated_at,
+                m.name
+            FROM tb_post p
+            JOIN tb_member m ON p.member_id = m.member_id
+            WHERE p.status = 'ACTIVE'
+            <choose>
+                <when test="sortType == 'views'">
+                    ORDER BY p.view_cnt DESC, p.post_id DESC
+                </when>
+                <when test="sortType == 'comments'">
+                    ORDER BY p.comment_cnt DESC, p.post_id DESC
+                </when>
+                <otherwise>
+                    ORDER BY p.post_id DESC
+                </otherwise>
+            </choose>
+        ) inner_query
+        WHERE ROWNUM &lt;= #{endRow}
+    )
+    WHERE row_num &gt;= #{startRow}
+</select>
+	
+	<select id="getPostCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM tb_post
+	    WHERE status = 'ACTIVE'
 	</select>
 
 	<select id="detail"
@@ -140,23 +154,26 @@
 	</select>
 	
 	<!-- 댓글 관련 -->
-	<select id="commentList" resultType="com.edu.springboot.domain.community.vo.CommentVo" parameterType="int">
-        SELECT
-            c.comment_id,
-            c.post_id,
-            c.member_id,
-            c.parent_id,
-            c.content,
-            c.status,
-            c.created_at,
-            c.updated_at,
-            m.name
-        FROM tb_comment c
-        JOIN tb_member m ON c.member_id = m.member_id
-        WHERE c.post_id = #{postId}
-	        AND c.status IN ('ACTIVE', 'DELETED')
+	<select id="commentList"
+    resultType="com.edu.springboot.domain.community.vo.CommentVo">
+	    SELECT
+	        c.comment_id,
+	        c.post_id,
+	        c.member_id,
+	        c.parent_id,
+	        c.content,
+	        c.board_type,
+	        c.status,
+	        c.created_at,
+	        c.updated_at,
+	        m.name
+	    FROM tb_comment c
+	    JOIN tb_member m ON c.member_id = m.member_id
+	    WHERE c.post_id = #{postId}
+	      AND c.board_type = #{boardType}
+	      AND c.status IN ('ACTIVE', 'DELETED')
 	    ORDER BY NVL(c.parent_id, c.comment_id), c.parent_id NULLS FIRST, c.comment_id ASC
-    </select>
+	</select>
     
     <insert id="insertComment"
     parameterType="com.edu.springboot.domain.community.vo.CommentVo">
@@ -170,6 +187,7 @@
 	        member_id,
 	        parent_id,
 	        content,
+	        board_type,
 	        status,
 	        created_at
 	    ) VALUES (
@@ -178,6 +196,7 @@
 	        #{memberId},
 	        #{parentId, jdbcType=NUMERIC},
 	        #{content},
+	        #{boardType},
 	        'ACTIVE',
 	        SYSDATE
 	    )
@@ -262,22 +281,48 @@
 	
 	
 	<!-- 투표 게시물 관련 -->
-    <select id="pollList" resultType="com.edu.springboot.domain.poll.vo.PollVo">
-        SELECT
-            p.poll_id,
-            p.post_id,
-            p.member_id,
-            p.title,
-            p.description,
-            p.disclaimer,
-            p.end_date,
-            p.status,
-            p.created_at,
-            m.name
-        FROM tb_poll p
-        JOIN tb_member m ON p.member_id = m.member_id
-        ORDER BY p.poll_id DESC
-    </select>
+    <select id="pollList"
+    resultType="com.edu.springboot.domain.poll.vo.PollVo">
+	    SELECT *
+	    FROM (
+	        SELECT inner_query.*, ROWNUM row_num
+	        FROM (
+	            SELECT
+	                p.poll_id,
+	                p.post_id,
+	                p.member_id,
+	                p.title,
+	                p.description,
+	                p.disclaimer,
+	                p.end_date,
+	                p.status,
+	                p.created_at,
+	                m.name
+	            FROM tb_poll p
+	            JOIN tb_member m ON p.member_id = m.member_id
+	            <choose>
+	                <when test="sortType == 'endDate'">
+	                    ORDER BY p.end_date ASC, p.poll_id DESC
+	                </when>
+	                <when test="sortType == 'status'">
+	                    ORDER BY
+	                        CASE WHEN p.status = 'OPEN' THEN 0 ELSE 1 END,
+	                        p.poll_id DESC
+	                </when>
+	                <otherwise>
+	                    ORDER BY p.poll_id DESC
+	                </otherwise>
+	            </choose>
+	        ) inner_query
+	        WHERE ROWNUM &lt;= #{endRow}
+	    )
+	    WHERE row_num &gt;= #{startRow}
+	</select>
+    
+    <select id="getPollCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM tb_poll
+	</select>
 
     <select id="pollDetail" resultType="com.edu.springboot.domain.poll.vo.PollVo" parameterType="int">
         SELECT
@@ -329,6 +374,12 @@
 		SET vote_cnt = vote_cnt + 1
 		WHERE poll_id = #{pollId}
 		AND option_id = #{optionId}
+	</update>
+	
+	<update id="updatePollStatus">
+	    UPDATE tb_poll
+	    SET status = #{status}
+	    WHERE poll_id = #{pollId}
 	</update>
 
 

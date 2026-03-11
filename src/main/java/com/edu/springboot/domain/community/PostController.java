@@ -1,5 +1,6 @@
 package com.edu.springboot.domain.community;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,9 +25,24 @@ public class PostController {
 	CommunityMapper dao;
 	
 	@GetMapping("/posts")
-	public List<PostVo> postList(
-	        @RequestParam(value = "sortType", defaultValue = "latest") String sortType){
-	    return dao.list(sortType);
+	public Map<String, Object> postList(
+	        @RequestParam(value = "sortType", defaultValue = "latest") String sortType,
+	        @RequestParam(value = "page", defaultValue = "1") int page) {
+
+	    int pageSize = 10;
+	    int startRow = (page - 1) * pageSize + 1;
+	    int endRow = page * pageSize;
+
+	    List<PostVo> posts = dao.list(sortType, startRow, endRow);
+	    int totalCount = dao.getPostCount();
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("posts", posts);
+	    result.put("totalCount", totalCount);
+	    result.put("currentPage", page);
+	    result.put("pageSize", pageSize);
+
+	    return result;
 	}
 	
 	@GetMapping("/detail/{postId}")

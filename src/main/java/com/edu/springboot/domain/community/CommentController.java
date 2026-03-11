@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.edu.springboot.domain.community.vo.CommentVo;
@@ -21,9 +22,10 @@ public class CommentController {
 	CommunityMapper dao;
 	
 	@GetMapping("/comment/list/{postId}")
-	public List<CommentVo> comments(
-			@PathVariable("postId") int postId){
-		return dao.commentList(postId);
+	public List<CommentVo> commentList(
+	        @PathVariable("postId") int postId,
+	        @RequestParam("boardType") String boardType) {
+	    return dao.commentList(postId, boardType);
 	}
 	
 	@PostMapping("/comments")
