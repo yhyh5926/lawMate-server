@@ -2,36 +2,45 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.edu.springboot.domain.review.ReviewMapper">
 
-    <insert id="insertReview" parameterType="com.edu.springboot.domain.review.vo.ReviewVO">
-        INSERT INTO TB_REVIEW (
-            REVIEW_ID,
-            CONSULT_ID,
-            MEMBER_ID,
-            LAWYER_ID,
-            RATING,
-            CONTENT,
-            STATUS,
-            CREATED_AT,
-            UPDATED_AT
-        )
+   <insert id="insertReview" parameterType="com.edu.springboot.domain.review.vo.ReviewVO">
+    MERGE INTO TB_REVIEW r
+    USING (
         SELECT 
-            SEQ_REVIEW.NEXTVAL,
-            #{consultId},
-            #{memberId},
-            #{lawyerId},
-            #{rating},
-            #{content},
-            'ACTIVE',
-            SYSDATE,
-            SYSDATE
+            #{consultId} as CONSULT_ID,
+            #{memberId} as MEMBER_ID,
+            #{lawyerId} as LAWYER_ID,
+            #{rating} as RATING,
+            #{content} as CONTENT
         FROM DUAL
+    ) src
+    ON (r.CONSULT_ID = src.CONSULT_ID) /* 상담 ID가 겹치는지 확인 */
+    
+    /* 1. 이미 데이터가 있다면 (기존에 DELETED였던 경우 포함) */
+    WHEN MATCHED THEN
+        UPDATE SET 
+            r.RATING = src.RATING,
+            r.CONTENT = src.CONTENT,
+            r.STATUS = 'ACTIVE', /* 다시 활성화 */
+            r.UPDATED_AT = SYSDATE
+            
+    /* 2. 데이터가 아예 없다면 새로 생성 */
+    WHEN NOT MATCHED THEN
+        INSERT (
+            REVIEW_ID, CONSULT_ID, MEMBER_ID, LAWYER_ID, 
+            RATING, CONTENT, STATUS, CREATED_AT, UPDATED_AT
+        )
+        VALUES (
+            SEQ_REVIEW.NEXTVAL, src.CONSULT_ID, src.MEMBER_ID, src.LAWYER_ID, 
+            src.RATING, src.CONTENT, 'ACTIVE', SYSDATE, SYSDATE
+        )
+        /* 상담이 완료(DONE)된 경우에만 실행되도록 보호 로직 추가 (필요시) */
         WHERE EXISTS (
             SELECT 1 FROM TB_CONSULT 
             WHERE CONSULT_ID = #{consultId} 
               AND STATUS = 'DONE' 
               AND MEMBER_ID = #{memberId}
         )
-    </insert>
+</insert>
 
     <update id="updateReviewStatusToDelete">
         UPDATE TB_REVIEW

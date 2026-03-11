@@ -36,4 +36,7 @@ public class ConsultVO {
     private String        memberName;
     private String        memberPhone;
     private Long          consultFee;
+    
+    private boolean reviewed;
+    
 }
