@@ -79,7 +79,7 @@
             CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
         ) VALUES (
             SEQ_QUESTION.NEXTVAL,
-            #{memberId}, #{caseId}, #{title}, #{content},
+            #{memberId}, #{caseId, jdbcType=NUMERIC}, #{title}, #{content},
             #{caseType}, 'OPEN', SYSDATE, SYSDATE
         )
     </insert>
