@@ -14,9 +14,13 @@ import com.edu.springboot.domain.poll.vo.VoteVo;
 public interface CommunityMapper {
 	
 	// 게시물
-	public List<PostVo> list(@Param("sortType") String sortType);
+	public List<PostVo> list(
+		    @Param("sortType") String sortType,
+		    @Param("startRow") int startRow,
+		    @Param("endRow") int endRow
+		);
+	public int getPostCount();
 	public PostVo detail(int postId);
-	public List<CommentVo> commentList(int postId);
 	public void increaseViewCnt(@Param("postId") int postId);
 	public void insertPost(PostVo post);
 	public void updatePost(PostVo post);
@@ -25,7 +29,12 @@ public interface CommunityMapper {
 	public int updatePostStatus(@Param("postId") int postId, @Param("status") String status);
 	
 	//투표 게시글 관련
-	public List<PollVo> pollList();
+	public List<PollVo> pollList(
+		    @Param("sortType") String sortType,
+		    @Param("startRow") int startRow,
+		    @Param("endRow") int endRow
+		);
+	public int getPollCount();
     public PollVo pollDetail(int pollId);
     public List<PollOptionVo> optionList(int pollId);
     int checkAlreadyVoted(
@@ -37,6 +46,7 @@ public interface CommunityMapper {
     	    @Param("pollId") int pollId,
     	    @Param("optionId") int optionId
     );
+    int updatePollStatus(@Param("pollId") int pollId, @Param("status") String status);
     
     //  게시물 좋아요 관련
     public int checkPostLike(@Param("postId") int postId, @Param("memberId") int memberId);
@@ -47,6 +57,10 @@ public interface CommunityMapper {
     public List<PostVo> topLikedPosts();
     
     // 댓글 관련
+    public List<CommentVo> commentList(
+    	    @Param("postId") int postId,
+    	    @Param("boardType") String boardType
+    );
     public void insertComment(CommentVo comment);
     public void increaseCommentCnt(@Param("postId") int postId);
     public CommentVo getCommentById(@Param("commentId") int commentId);
