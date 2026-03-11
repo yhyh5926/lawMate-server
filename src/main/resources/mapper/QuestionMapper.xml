@@ -74,13 +74,23 @@
     </select>
 
     <insert id="insertQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+        <selectKey keyProperty="questionId" resultType="long" order="BEFORE">
+            SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
+        </selectKey>
+        
         INSERT INTO TB_QUESTION (
             QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT,
             CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
         ) VALUES (
-            SEQ_QUESTION.NEXTVAL,
-            #{memberId}, #{caseId, jdbcType=NUMERIC}, #{title}, #{content},
-            #{caseType}, 'OPEN', SYSDATE, SYSDATE
+            #{questionId}, 
+            #{memberId}, 
+            #{caseId, jdbcType=NUMERIC}, 
+            #{title}, 
+            #{content},
+            #{caseType}, 
+            'OPEN', 
+            SYSDATE, 
+            SYSDATE
         )
     </insert>
 
@@ -97,7 +107,7 @@
     <delete id="deleteQuestion" parameterType="long">
         DELETE FROM TB_QUESTION
         WHERE QUESTION_ID = #{questionId}
-          AND STATUS = 'OPEN' /* 답변이 달리기 전 혹은 채택 전만 삭제 가능하게 권장 */
+          AND STATUS = 'OPEN'
     </delete>
 
     <update id="updateQuestionStatus">

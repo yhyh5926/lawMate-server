@@ -102,7 +102,7 @@ public class AdminController {
 			if ("POST".equals(type)) {
 				communityMapper.updatePostStatus(id.intValue(), "DELETED");
 			} else if ("QUESTION".equals(type)) {
-				questionMapper.updateQuestionStatus(id, "CLOSED");
+				questionMapper.updateQuestionStatus(id, "CLOSED", null);
 			}
 			return ResponseEntity.ok(Map.of("success", true, "message", "삭제 완료"));
 		} catch (Exception e) {
