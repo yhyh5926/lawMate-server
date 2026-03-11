@@ -24,6 +24,7 @@
             FROM tb_post p
             JOIN tb_member m ON p.member_id = m.member_id
             WHERE p.status = 'ACTIVE'
+            AND p.case_type != 'POLL'
             <choose>
                 <when test="sortType == 'views'">
                     ORDER BY p.view_cnt DESC, p.post_id DESC
@@ -45,6 +46,7 @@
 	    SELECT COUNT(*)
 	    FROM tb_post
 	    WHERE status = 'ACTIVE'
+	    AND case_type != 'POLL'
 	</select>
 
 	<select id="detail"
@@ -300,6 +302,7 @@
 	                m.name
 	            FROM tb_poll p
 	            JOIN tb_member m ON p.member_id = m.member_id
+	            WHERE p.status != 'DELETED'
 	            <choose>
 	                <when test="sortType == 'endDate'">
 	                    ORDER BY p.end_date ASC, p.poll_id DESC
@@ -322,6 +325,7 @@
     <select id="getPollCount" resultType="int">
 	    SELECT COUNT(*)
 	    FROM tb_poll
+	    WHERE status != 'DELETED'
 	</select>
 
     <select id="pollDetail" resultType="com.edu.springboot.domain.poll.vo.PollVo" parameterType="int">
@@ -381,6 +385,103 @@
 	    SET status = #{status}
 	    WHERE poll_id = #{pollId}
 	</update>
+	
+	<insert id="insertPollPost"
+    parameterType="com.edu.springboot.domain.poll.vo.PollVo">
 
+	    <selectKey keyProperty="postId" resultType="int" order="BEFORE">
+	        SELECT SEQ_POST.NEXTVAL FROM dual
+	    </selectKey>
+	
+	    INSERT INTO tb_post (
+	        post_id,
+	        member_id,
+	        case_type,
+	        title,
+	        content,
+	        view_cnt,
+	        comment_cnt,
+	        like_cnt,
+	        status,
+	        created_at
+	    ) VALUES (
+	        #{postId},
+	        #{memberId},
+	        'POLL',
+	        #{title},
+	        #{description},
+	        0,
+	        0,
+	        0,
+	        'ACTIVE',
+	        SYSDATE
+	    )
+	</insert>
+	
+	<insert id="insertPoll"
+    parameterType="com.edu.springboot.domain.poll.vo.PollVo">
+
+	    <selectKey keyProperty="pollId" resultType="int" order="BEFORE">
+	        SELECT SEQ_POLL.NEXTVAL FROM dual
+	    </selectKey>
+	
+	    INSERT INTO tb_poll (
+	        poll_id,
+	        post_id,
+	        member_id,
+	        title,
+	        description,
+	        disclaimer,
+	        end_date,
+	        status,
+	        created_at
+	    ) VALUES (
+	        #{pollId},
+	        #{postId, jdbcType=NUMERIC},
+	        #{memberId},
+	        #{title},
+	        #{description},
+	        #{disclaimer, jdbcType=VARCHAR},
+	        TO_DATE(#{endDate}, 'YYYY-MM-DD'),
+	        'OPEN',
+	        SYSDATE
+	    )
+	</insert>
+		
+	<insert id="insertPollOption">
+	    INSERT INTO tb_poll_option (
+	        option_id,
+	        poll_id,
+	        option_text,
+	        vote_cnt
+	    ) VALUES (
+	        SEQ_POLL_OPTION.NEXTVAL,
+	        #{pollId},
+	        #{optionText},
+	        0
+	    )
+	</insert>
+	
+	<select id="getPollPostId" resultType="int">
+	    SELECT post_id
+	    FROM tb_poll
+	    WHERE poll_id = #{pollId}
+	</select>
+	<update id="updatePoll" parameterType="com.edu.springboot.domain.poll.vo.PollVo">
+    UPDATE tb_poll
+	    SET
+	        title = #{title},
+	        description = #{description},
+	        disclaimer = #{disclaimer, jdbcType=VARCHAR},
+	        end_date = TO_DATE(#{endDate}, 'YYYY-MM-DD')
+	    WHERE poll_id = #{pollId}
+	</update>
+	
+	<update id="closeExpiredPolls">
+	    UPDATE tb_poll
+	    SET status = 'CLOSED'
+	    WHERE status = 'OPEN'
+	      AND end_date &lt; SYSDATE
+	</update>
 
 </mapper>
