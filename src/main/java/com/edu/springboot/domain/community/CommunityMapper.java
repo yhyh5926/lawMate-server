@@ -37,16 +37,23 @@ public interface CommunityMapper {
 	public int getPollCount();
     public PollVo pollDetail(int pollId);
     public List<PollOptionVo> optionList(int pollId);
-    int checkAlreadyVoted(
+    public int checkAlreadyVoted(
     	    @Param("pollId") int pollId,
     	    @Param("memberId") int memberId
     );
+    public void insertPollPost(PollVo poll);
     public void insertVote(VoteVo vote);
-    void increaseVoteCnt(
+    public void increaseVoteCnt(
     	    @Param("pollId") int pollId,
     	    @Param("optionId") int optionId
     );
-    int updatePollStatus(@Param("pollId") int pollId, @Param("status") String status);
+    public int updatePollStatus(@Param("pollId") int pollId, @Param("status") String status);
+    public void insertPoll(PollVo poll);
+    public void insertPollOption(@Param("pollId") int pollId, @Param("optionText") String optionText);
+    public Integer getPollPostId(@Param("pollId") int pollId);
+    public void updatePoll(PollVo poll);
+    public int closeExpiredPolls();
+    
     
     //  게시물 좋아요 관련
     public int checkPostLike(@Param("postId") int postId, @Param("memberId") int memberId);

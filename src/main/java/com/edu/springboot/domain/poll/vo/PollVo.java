@@ -1,11 +1,13 @@
 package com.edu.springboot.domain.poll.vo;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
 public class PollVo {
 	private int pollId;
-	private int postId;
+	private Integer postId;
 	private int memberId;
 	private String title;
 	private String description;
@@ -14,4 +16,5 @@ public class PollVo {
 	private String status;
 	private String createdAt;
 	private String name;
+	private List<String> options;
 }
