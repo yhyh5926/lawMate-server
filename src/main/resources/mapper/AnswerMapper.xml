@@ -11,20 +11,28 @@
             a.IS_ADOPTED as isAdopted,
             a.CREATED_AT as createdAt,
             a.UPDATED_AT as updatedAt,
+            
+            /* 회원 및 변호사 상세 정보 */
+            m.MEMBER_ID as memberId,        -- 💡 추가: 프로필 이동용 ID
             m.NAME as lawyerName,           -- 변호사 이름
             l.OFFICE_NAME as officeName,    -- 사무소 명
-            l.SPECIALty as specialty,       -- 전문 분야
+            l.SPECIALTY as specialty,       -- 전문 분야
             
-            l.ADOPT_CNT as adoptCnt,        /* 💡 물리 컬럼 (존재함) */
+            /* 변호사 활동 지표 */
+            l.ADOPT_CNT as adoptCnt,        -- 물리 컬럼 활용
+            (SELECT COUNT(*) 
+             FROM TB_ANSWER 
+             WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt, -- 총 답변 수 계산
             
-            /* 💡 수정: 존재하지 않는 l.ANSWER_CNT 대신 서브쿼리 사용 */
-            (SELECT COUNT(*) FROM TB_ANSWER WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt,
+            /* 프로필 이미지 */
+            att.SAVE_PATH as lawyerProfile
             
-            att.SAVE_PATH as lawyerProfile  -- 변호사 프로필 사진
         FROM TB_ANSWER a
         JOIN TB_LAWYER l ON a.LAWYER_ID = l.LAWYER_ID
         JOIN TB_MEMBER m ON l.MEMBER_ID = m.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT att ON l.LAWYER_ID = att.REF_ID AND att.REF_TYPE = 'LAWYER'
+        LEFT OUTER JOIN TB_ATTACHMENT att 
+                     ON l.LAWYER_ID = att.REF_ID 
+                    AND att.REF_TYPE = 'LAWYER'
         WHERE a.QUESTION_ID = #{questionId}
         ORDER BY a.IS_ADOPTED DESC, a.CREATED_AT ASC
     </select>
@@ -56,14 +64,14 @@
 
     <update id="updateAnswer">
         UPDATE TB_ANSWER
-        SET content = #{content},
-            updated_at = SYSDATE
-        WHERE answer_id = #{answerId}
+        SET CONTENT = #{content},
+            UPDATED_AT = SYSDATE
+        WHERE ANSWER_ID = #{answerId}
     </update>
 
     <delete id="deleteAnswer">
         DELETE FROM TB_ANSWER
-        WHERE answer_id = #{answerId}
+        WHERE ANSWER_ID = #{answerId}
     </delete>
 
 </mapper>
