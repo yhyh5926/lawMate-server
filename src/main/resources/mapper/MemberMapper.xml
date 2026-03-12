@@ -29,8 +29,7 @@
 
 	<select id="findByLoginId" resultMap="MemberResultMap">
 		SELECT m.*, l.LAWYER_ID,
-		l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME,
-		l.APPROVE_STATUS
+		l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME, l.APPROVE_STATUS
 		FROM
 		TB_MEMBER m
 		LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
@@ -39,8 +38,7 @@
 
 	<select id="findByEmail" resultMap="MemberResultMap">
 		SELECT m.*, l.LAWYER_ID,
-		l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME,
-		l.APPROVE_STATUS
+		l.LICENSE_NO, l.SPECIALTY, l.OFFICE_NAME, l.APPROVE_STATUS
 		FROM
 		TB_MEMBER m
 		LEFT OUTER JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
@@ -57,25 +55,19 @@
 		MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE,
 		NAME, PHONE, EMAIL,
 		PROVIDER, PHONE_VERIFIED, STATUS, SAVE_ID_YN,
-		ADDRESS, DETAIL_ADDR, CREATED_AT,
-		UPDATED_AT
-		)
-		VALUES (
+		ADDRESS, DETAIL_ADDR,
+		CREATED_AT, UPDATED_AT
+		) VALUES (
 		#{memberId},
-		#{loginId, jdbcType=VARCHAR},
-		#{password, jdbcType=VARCHAR},
-		#{memberType, jdbcType=VARCHAR},
-		#{name, jdbcType=VARCHAR},
-		#{phone,jdbcType=VARCHAR},
-		#{email,jdbcType=VARCHAR},
-		#{provider,jdbcType=VARCHAR},
-		#{phoneVerified, jdbcType=VARCHAR},
-		#{status,jdbcType=VARCHAR},
-		#{saveIdYn, jdbcType=VARCHAR},
-		#{address,jdbcType=VARCHAR},
-		#{detailAddress, jdbcType=VARCHAR},
-		SYSDATE,
-		SYSDATE
+		#{loginId, jdbcType=VARCHAR}, #{password, jdbcType=VARCHAR},
+		#{memberType, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{phone,
+		jdbcType=VARCHAR},
+		#{email, jdbcType=VARCHAR}, #{provider,
+		jdbcType=VARCHAR}, #{phoneVerified, jdbcType=VARCHAR},
+		#{status,
+		jdbcType=VARCHAR}, #{saveIdYn, jdbcType=VARCHAR}, #{address,
+		jdbcType=VARCHAR},
+		#{detailAddress, jdbcType=VARCHAR}, SYSDATE, SYSDATE
 		)
 	</insert>
 
@@ -91,8 +83,8 @@
 
 	<update id="deleteMember">
 		UPDATE TB_MEMBER SET STATUS = 'WITHDRAWN', UPDATED_AT
-		= SYSDATE WHERE
-		MEMBER_ID = #{memberId}
+		= SYSDATE
+		WHERE MEMBER_ID = #{memberId}
 	</update>
 
 	<update id="withdrawMember">
@@ -105,14 +97,15 @@
 
 	<select id="findLoginIdByNameAndPhone" resultType="string">
 		SELECT
-		LOGIN_ID FROM TB_MEMBER WHERE NAME = #{name} AND PHONE = #{phone} AND
+		LOGIN_ID FROM TB_MEMBER
+		WHERE NAME = #{name} AND PHONE = #{phone} AND
 		STATUS != 'WITHDRAWN'
 	</select>
 
 	<update id="updatePassword">
 		UPDATE TB_MEMBER SET PASSWORD = #{newPassword},
-		UPDATED_AT = SYSDATE WHERE
-		LOGIN_ID = #{loginId}
+		UPDATED_AT = SYSDATE
+		WHERE LOGIN_ID = #{loginId}
 	</update>
 
 	<select id="selectAllMembers" resultMap="MemberResultMap">
@@ -143,18 +136,12 @@
 	<update id="anonymizeMember"
 		parameterType="com.edu.springboot.domain.member.vo.MemberVO">
 		UPDATE TB_MEMBER
-		SET LOGIN_ID = #{loginId},
-		EMAIL =
-		#{email},
-		NAME = '알수없음',
-		PHONE = '000-0000-0000',
+		SET LOGIN_ID = #{loginId}, EMAIL =
+		#{email}, NAME = '알수없음', PHONE = '000-0000-0000',
 		PASSWORD = NULL,
-		ADDRESS = NULL,
-		DETAIL_ADDR = NULL,
-		PROVIDER = NULL,
+		ADDRESS = NULL, DETAIL_ADDR = NULL, PROVIDER = NULL,
 		STATUS =
-		'ANONYMIZED',
-		UPDATED_AT = SYSDATE
+		'ANONYMIZED', UPDATED_AT = SYSDATE
 		WHERE MEMBER_ID = #{memberId}
 	</update>
 
@@ -162,45 +149,49 @@
 		<choose>
 			<when test="type == 'question'">
 				SELECT
-				QUESTION_ID AS "id",
-				TITLE AS "title",
-				TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS "date",
-				0 AS "commentCount",
-				CASE WHEN STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END AS "status"
+				q.QUESTION_ID as "id",
+				q.TITLE as "title",
+				TO_CHAR(q.CREATED_AT, 'YYYY-MM-DD') as "date",
+				(SELECT COUNT(*) FROM
+				TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as "commentCount",
+				CASE
+				WHEN q.STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END as "status"
 				FROM
-				TB_QUESTION
-				WHERE MEMBER_ID = #{memberId}
-				ORDER BY QUESTION_ID
+				TB_QUESTION q
+				WHERE q.MEMBER_ID = #{memberId}
+				ORDER BY q.QUESTION_ID
 				DESC
+			</when>
+
+			<when test="type == 'mockTrial'">
+				SELECT
+				p.POLL_ID as "id",
+				p.TITLE as "title",
+				TO_CHAR(p.CREATED_AT, 'YYYY-MM-DD') as "date",
+				0 as "commentCount",
+				CASE WHEN p.STATUS = 'CLOSED' THEN '투표종료' ELSE '진행중' END as "status"
+				FROM TB_POLL p
+				WHERE p.MEMBER_ID = #{memberId}
+				ORDER BY p.POLL_ID DESC
 			</when>
 
 			<otherwise>
 				SELECT
-				p.post_id AS "id",
-				p.title AS "title",
-				TO_CHAR(p.created_at,
-				'YYYY-MM-DD') AS "date",
-				(SELECT COUNT(*) FROM TB_REPLY r WHERE
-				r.ref_post_id = p.post_id) AS
-				"commentCount",
-				CASE WHEN p.case_type =
-				'MOCK' THEN '판결완료' ELSE '일반' END AS "status"
+				p.POST_ID as "id",
+				p.TITLE as "title",
+				TO_CHAR(p.CREATED_AT, 'YYYY-MM-DD') as "date",
+				(SELECT COUNT(*) FROM
+				TB_REPLY r WHERE r.ref_post_id = p.post_id) as "commentCount",
+				'작성완료' as "status"
 				FROM TB_POST p
-				WHERE
-				p.MEMBER_ID = #{memberId}
+				WHERE p.MEMBER_ID = #{memberId}
+				AND
+				(p.CASE_TYPE != 'MOCK' OR p.CASE_TYPE IS NULL)
 				AND (p.STATUS IS NULL
-				OR p.STATUS !=
-				'DELETED')
-				<choose>
-					<when test="type == 'community'">
-						AND (p.case_type != 'MOCK' OR p.case_type IS NULL)
-					</when>
-					<when test="type == 'mockTrial'">
-						AND p.case_type = 'MOCK'
-					</when>
-				</choose>
-				ORDER BY p.post_id DESC
+				OR p.STATUS != 'DELETED')
+				ORDER BY p.POST_ID DESC
 			</otherwise>
 		</choose>
 	</select>
+
 </mapper>

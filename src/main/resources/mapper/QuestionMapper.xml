@@ -40,6 +40,26 @@
 		</collection>
 	</resultMap>
 
+	<select id="selectAllQuestions" resultMap="questionListMap">
+		SELECT
+		q.QUESTION_ID,
+		q.MEMBER_ID,
+		qm.NAME as MEMBER_NAME,
+		q.TITLE,
+		q.CASE_TYPE,
+		q.STATUS,
+		q.CREATED_AT,
+		(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID =
+		q.QUESTION_ID) as
+		ANSWER_COUNT,
+		(SELECT COUNT(*) FROM TB_ATTACHMENT
+		WHERE REF_ID = q.QUESTION_ID AND REF_TYPE
+		= 'QUESTION') as FILE_COUNT
+		FROM TB_QUESTION q
+		LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+		ORDER BY q.CREATED_AT DESC
+	</select>
+
 	<select id="selectQuestionsWithPaging"
 		resultMap="questionListMap" parameterType="map">
 		SELECT
@@ -50,12 +70,16 @@
 		q.CASE_TYPE,
 		q.STATUS,
 		q.CREATED_AT,
-		(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
+		(SELECT COUNT(*) FROM TB_ANSWER
+		WHERE QUESTION_ID = q.QUESTION_ID) as
 		ANSWER_COUNT,
-		(SELECT COUNT(*) FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE
-		= 'QUESTION') as FILE_COUNT
+		(SELECT COUNT(*)
+		FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE
+		=
+		'QUESTION') as FILE_COUNT
 		FROM TB_QUESTION q
-		LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+		LEFT JOIN TB_MEMBER qm ON
+		q.MEMBER_ID = qm.MEMBER_ID
 		<where>
 			<if test="caseType != null and caseType != ''">
 				AND q.CASE_TYPE = #{caseType}
@@ -65,20 +89,27 @@
 			</if>
 		</where>
 		ORDER BY q.CREATED_AT DESC
-		OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+		OFFSET #{offset} ROWS FETCH NEXT #{size}
+		ROWS ONLY
 	</select>
 
 	<select id="selectQuestionById" resultMap="questionDetailMap">
 		SELECT
-		q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
-		q.CASE_ID, q.TITLE, q.CONTENT, q.CASE_TYPE,
+		q.QUESTION_ID,
+		q.MEMBER_ID, qm.NAME as MEMBER_NAME,
+		q.CASE_ID, q.TITLE, q.CONTENT,
+		q.CASE_TYPE,
 		q.ASSIGNED_LAWYER, q.STATUS, q.CREATED_AT, q.UPDATED_AT,
-		att.ATTACH_ID, att.ORIG_NAME, att.SAVE_PATH, att.FILE_SIZE, att.MIME_TYPE
+		att.ATTACH_ID, att.ORIG_NAME, att.SAVE_PATH, att.FILE_SIZE,
+		att.MIME_TYPE
 		FROM TB_QUESTION q
-		LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
-		LEFT OUTER JOIN TB_ATTACHMENT att ON q.QUESTION_ID = att.REF_ID AND
+		LEFT OUTER JOIN TB_MEMBER qm ON
+		q.MEMBER_ID = qm.MEMBER_ID
+		LEFT OUTER JOIN TB_ATTACHMENT att ON
+		q.QUESTION_ID = att.REF_ID AND
 		att.REF_TYPE = 'QUESTION'
-		WHERE q.QUESTION_ID = #{questionId}
+		WHERE
+		q.QUESTION_ID = #{questionId}
 	</select>
 
 	<insert id="insertQuestion"
@@ -87,9 +118,9 @@
 			order="BEFORE">
 			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
 		</selectKey>
-
 		INSERT INTO TB_QUESTION (
-		QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT,
+		QUESTION_ID, MEMBER_ID, CASE_ID, TITLE,
+		CONTENT,
 		CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
 		) VALUES (
 		#{questionId},
@@ -108,15 +139,18 @@
 		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
 		UPDATE TB_QUESTION
 		SET TITLE = #{title},
-		CONTENT = #{content},
+		CONTENT =
+		#{content},
 		CASE_TYPE = #{caseType},
 		UPDATED_AT = SYSDATE
-		WHERE QUESTION_ID = #{questionId}
+		WHERE
+		QUESTION_ID = #{questionId}
 		AND STATUS NOT IN ('ADOPTED', 'CLOSED')
 	</update>
 
 	<delete id="deleteQuestion" parameterType="long">
-		DELETE FROM TB_QUESTION
+		DELETE FROM
+		TB_QUESTION
 		WHERE QUESTION_ID = #{questionId}
 		AND STATUS = 'OPEN'
 	</delete>

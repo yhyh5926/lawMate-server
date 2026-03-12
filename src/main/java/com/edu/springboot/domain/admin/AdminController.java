@@ -1,3 +1,6 @@
+// IntelliJ / Eclipse
+// 파일위치: src/main/java/com/edu/springboot/domain/admin/AdminController.java
+
 package com.edu.springboot.domain.admin;
 
 import java.util.Map;
@@ -17,6 +20,7 @@ import com.edu.springboot.domain.community.CommunityMapper;
 import com.edu.springboot.domain.community.vo.PostVo;
 import com.edu.springboot.domain.question.QuestionMapper;
 import com.edu.springboot.domain.question.vo.QuestionVO;
+import com.edu.springboot.domain.poll.vo.PollVo; // 💡 의견조사(Poll) VO 임포트
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -87,10 +91,15 @@ public class AdminController {
 
 	@GetMapping("/board/list")
 	public ResponseEntity<?> getBoardList() {
-		List<PostVo> posts = communityMapper.list("", 1, 5);
+		// 관리자 페이지이므로 데이터를 넉넉하게 500개씩 가져오도록 수정
+		List<PostVo> posts = communityMapper.list("", 1, 500);
 		List<QuestionVO> questions = questionMapper.selectAllQuestions();
+		
+		// 💡 [추가] 커뮤니티 매퍼를 통해 모의판결(의견조사) 목록도 가져옵니다.
+		List<PollVo> polls = communityMapper.pollList("latest", 1, 500);
 
-		return ResponseEntity.ok(Map.of("data", Map.of("posts", posts, "questions", questions)));
+		// 💡 [추가] 프론트엔드로 posts, questions와 함께 polls도 묶어서 보냅니다.
+		return ResponseEntity.ok(Map.of("data", Map.of("posts", posts, "questions", questions, "polls", polls)));
 	}
 
 	@PostMapping("/board/delete")
@@ -103,6 +112,9 @@ public class AdminController {
 				communityMapper.updatePostStatus(id.intValue(), "DELETED");
 			} else if ("QUESTION".equals(type)) {
 				questionMapper.updateQuestionStatus(id, "CLOSED", null);
+			} else if ("POLL".equals(type)) { 
+				// 💡 [추가] 관리자가 모의판결 글도 삭제할 수 있도록 연동
+				communityMapper.updatePollStatus(id.intValue(), "DELETED"); 
 			}
 			return ResponseEntity.ok(Map.of("success", true, "message", "삭제 완료"));
 		} catch (Exception e) {
@@ -110,13 +122,11 @@ public class AdminController {
 		}
 	}
 
-	// 💡 [수정] DB 직접 조회 코드로 교체 완료!
 	@GetMapping("/report/list")
 	public ResponseEntity<?> getReportList() {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllReports()));
 	}
 
-	// 💡 [수정] DB 직접 조회 코드로 교체 완료!
 	@GetMapping("/report/detail")
 	public ResponseEntity<?> getReportDetail(@RequestParam("reportId") Long reportId) {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectReportDetail(reportId)));
@@ -148,13 +158,11 @@ public class AdminController {
 		}
 	}
 
-	// 💡 [추가] 결제 데이터 직접 조회 API
 	@GetMapping("/payment/list")
 	public ResponseEntity<?> getPaymentList() {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllPayments()));
 	}
 
-	// 💡 [추가] 정산 데이터 직접 조회 API
 	@GetMapping("/settlement/list")
 	public ResponseEntity<?> getSettlementList() {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllSettlements()));
