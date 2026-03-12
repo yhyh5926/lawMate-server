@@ -52,16 +52,20 @@
 			SELECT SEQ_MEMBER.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO TB_MEMBER (
-		MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE, NAME, PHONE, EMAIL,
-		PROVIDER, PHONE_VERIFIED, STATUS, SAVE_ID_YN, ADDRESS, DETAIL_ADDR,
+		MEMBER_ID, LOGIN_ID, PASSWORD, MEMBER_TYPE,
+		NAME, PHONE, EMAIL,
+		PROVIDER, PHONE_VERIFIED, STATUS, SAVE_ID_YN,
+		ADDRESS, DETAIL_ADDR,
 		CREATED_AT, UPDATED_AT
 		) VALUES (
-		#{memberId}, #{loginId, jdbcType=VARCHAR}, #{password, jdbcType=VARCHAR},
+		#{memberId},
+		#{loginId, jdbcType=VARCHAR}, #{password, jdbcType=VARCHAR},
 		#{memberType, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{phone,
 		jdbcType=VARCHAR},
-		#{email, jdbcType=VARCHAR}, #{provider, jdbcType=VARCHAR}, #{phoneVerified,
-		jdbcType=VARCHAR},
-		#{status, jdbcType=VARCHAR}, #{saveIdYn, jdbcType=VARCHAR}, #{address,
+		#{email, jdbcType=VARCHAR}, #{provider,
+		jdbcType=VARCHAR}, #{phoneVerified, jdbcType=VARCHAR},
+		#{status,
+		jdbcType=VARCHAR}, #{saveIdYn, jdbcType=VARCHAR}, #{address,
 		jdbcType=VARCHAR},
 		#{detailAddress, jdbcType=VARCHAR}, SYSDATE, SYSDATE
 		)
@@ -148,13 +152,15 @@
 				q.QUESTION_ID as "id",
 				q.TITLE as "title",
 				TO_CHAR(q.CREATED_AT, 'YYYY-MM-DD') as "date",
-				(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
-				"commentCount",
-				CASE WHEN q.STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END as "status"
-				FROM TB_QUESTION q
+				(SELECT COUNT(*) FROM
+				TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as "commentCount",
+				CASE
+				WHEN q.STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END as "status"
+				FROM
+				TB_QUESTION q
 				WHERE q.MEMBER_ID = #{memberId}
-				ORDER BY
-				q.QUESTION_ID DESC
+				ORDER BY q.QUESTION_ID
+				DESC
 			</when>
 
 			<when test="type == 'mockTrial'">
@@ -174,12 +180,15 @@
 				p.POST_ID as "id",
 				p.TITLE as "title",
 				TO_CHAR(p.CREATED_AT, 'YYYY-MM-DD') as "date",
-				p.COMMENT_CNT as "commentCount",
+				(SELECT COUNT(*) FROM
+				TB_REPLY r WHERE r.ref_post_id = p.post_id) as "commentCount",
 				'작성완료' as "status"
 				FROM TB_POST p
 				WHERE p.MEMBER_ID = #{memberId}
-				AND (p.CASE_TYPE != 'POLL' OR p.CASE_TYPE IS NULL)
-				AND p.STATUS = 'ACTIVE'
+				AND
+				(p.CASE_TYPE != 'MOCK' OR p.CASE_TYPE IS NULL)
+				AND (p.STATUS IS NULL
+				OR p.STATUS != 'DELETED')
 				ORDER BY p.POST_ID DESC
 			</otherwise>
 		</choose>

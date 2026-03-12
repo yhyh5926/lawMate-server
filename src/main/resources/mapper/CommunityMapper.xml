@@ -442,7 +442,7 @@
 	        #{title},
 	        #{description},
 	        #{disclaimer, jdbcType=VARCHAR},
-	        TO_DATE(#{endDate}, 'YYYY-MM-DD'),
+	        TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1,
 	        'OPEN',
 	        SYSDATE
 	    )
