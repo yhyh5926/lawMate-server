@@ -173,8 +173,20 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
+	@Transactional
 	public boolean updateProfile(MemberVO vo) {
-		return memberMapper.updateMember(vo) > 0;
+		// 1. 비밀번호 변경 처리
+		if (vo.getPassword() != null && !vo.getPassword().isEmpty()) {
+			vo.setPassword(passwordEncoder.encode(vo.getPassword()));
+		} else {
+			// 비밀번호가 빈 값이면 기존 비밀번호 유지 (쿼리에서 null 처리 방지)
+			vo.setPassword(null);
+		}
+
+		// 2. 일반 회원 정보 업데이트 (TB_MEMBER)
+		int result = memberMapper.updateMember(vo);
+
+		return result > 0;
 	}
 
 	@Override
