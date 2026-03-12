@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/member")
@@ -86,12 +87,19 @@ public class MemberController {
 	}
 
 	// 💡 [추가] 프론트엔드 연동용 회원 탈퇴 API
-	// 프론트 React 코드의 axios 요청 경로를 /api/member/{memberId}/withdraw 로 맞춰주시면 됩니다.
 	@PutMapping("/{memberId}/withdraw")
 	public ResponseEntity<?> withdrawMember(@PathVariable("memberId") Long memberId) {
 		if (memberService.withdrawMember(memberId)) {
 			return ResponseEntity.ok(Map.of("success", true, "message", "회원 탈퇴가 완료되었습니다."));
 		}
 		return ResponseEntity.status(500).body(Map.of("success", false, "message", "탈퇴 처리 중 오류가 발생했습니다."));
+	}
+
+	// 💡 [신규 추가] 내가 쓴 글 목록 조회 API
+	@GetMapping("/posts")
+	public ResponseEntity<?> getMyPosts(@RequestParam("memberId") Long memberId, @RequestParam("type") String type) {
+		// MemberService를 통해 작성글 목록을 가져옴 (findMyPosts로 호출)
+		List<Map<String, Object>> posts = memberService.findMyPosts(memberId, type);
+		return ResponseEntity.ok(posts);
 	}
 }

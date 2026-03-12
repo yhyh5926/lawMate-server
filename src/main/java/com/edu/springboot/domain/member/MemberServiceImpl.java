@@ -1,9 +1,6 @@
-// 파일위치: src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
-// IntelliJ
-// 파일위치: src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
+// src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
 package com.edu.springboot.domain.member;
 
-// import 
 import com.edu.springboot.common.jwt.JwtUtil;
 import com.edu.springboot.common.util.FileUtil;
 import com.edu.springboot.domain.attachment.AttachmentMapper;
@@ -25,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Spring 프레임워크 서비스 계층 선언
 @Service
 @Primary
 @RequiredArgsConstructor
@@ -79,8 +75,8 @@ public class MemberServiceImpl implements MemberService {
 			lawyer.setLicenseNo(dto.getLicenseNo());
 			lawyer.setSpecialty(dto.getSpecialty());
 			lawyer.setOfficeName(dto.getOfficeName());
-			lawyer.setOfficeAddr(dto.getOfficeAddress());
-			lawyer.setOfficeDetailAddr(dto.getOfficeDetailAddr());
+			lawyer.setOfficeAddr(dto.getAddress());
+			lawyer.setOfficeDetailAddr(dto.getDetailAddress());
 //			관리자 승인 대기(PENDING) 상태로 초기 설정
 			lawyer.setApproveStatus("PENDING");
 
@@ -140,20 +136,17 @@ public class MemberServiceImpl implements MemberService {
 		}
 
 //		탈퇴 및 비식별화 회원 로그인 차단 적용
-		if ("WITHDRAWN".equals(member.getStatus()) 
-				|| "ANONYMIZED".equals(member.getStatus())) {
+		if ("WITHDRAWN".equals(member.getStatus()) || "ANONYMIZED".equals(member.getStatus())) {
 			throw new RuntimeException("탈퇴한 회원입니다.");
 		}
 
 //		승인 대기 중인 변호사 회원 접근 차단
-		if ("LAWYER".equals(member.getMemberType()) 
-				&& "PENDING".equals(member.getApproveStatus())) {
+		if ("LAWYER".equals(member.getMemberType()) && "PENDING".equals(member.getApproveStatus())) {
 			throw new RuntimeException("관리자 승인 대기 중인 전문회원 계정입니다.");
 		}
 
 //		모든 검증 통과 시 JWT 토큰 발급
-		String token = jwtUtil.generateToken(member.getLoginId(),
-				member.getMemberType(), member.getMemberId());
+		String token = jwtUtil.generateToken(member.getLoginId(), member.getMemberType(), member.getMemberId());
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("token", token);
@@ -259,9 +252,9 @@ public class MemberServiceImpl implements MemberService {
 		return memberMapper.withdrawMember(memberId) > 0;
 	}
 
-//	내가 쓴 글 목록 조회
+//	💡 [수정] 메서드명을 findMyPosts로 변경하여 서비스 인터페이스와 맞춤
 	@Override
-	public List<Map<String, Object>> getMyPosts(Long memberId, String type) {
+	public List<Map<String, Object>> findMyPosts(Long memberId, String type) {
 		return memberMapper.findMyPosts(memberId, type);
 	}
 }
