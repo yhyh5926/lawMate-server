@@ -1,135 +1,147 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.edu.springboot.domain.question.QuestionMapper">
+<mapper
+	namespace="com.edu.springboot.domain.question.QuestionMapper">
 
-    <resultMap id="questionListMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
-        <id property="questionId" column="QUESTION_ID" />
-        <result property="memberId" column="MEMBER_ID" />
-        <result property="memberName" column="MEMBER_NAME" />
-        <result property="title" column="TITLE" />
-        <result property="caseType" column="CASE_TYPE" />
-        <result property="status" column="STATUS" />
-        <result property="createdAt" column="CREATED_AT" />
-        <result property="answerCount" column="ANSWER_COUNT" />
-        <result property="fileCount" column="FILE_COUNT" />
-    </resultMap>
+	<resultMap id="questionListMap"
+		type="com.edu.springboot.domain.question.vo.QuestionVO">
+		<id property="questionId" column="QUESTION_ID" />
+		<result property="memberId" column="MEMBER_ID" />
+		<result property="memberName" column="MEMBER_NAME" />
+		<result property="title" column="TITLE" />
+		<result property="caseType" column="CASE_TYPE" />
+		<result property="status" column="STATUS" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="answerCount" column="ANSWER_COUNT" />
+		<result property="fileCount" column="FILE_COUNT" />
+	</resultMap>
 
-    <resultMap id="questionDetailMap" type="com.edu.springboot.domain.question.vo.QuestionVO">
-        <id property="questionId" column="QUESTION_ID" />
-        <result property="memberId" column="MEMBER_ID" />
-        <result property="memberName" column="MEMBER_NAME" />
-        <result property="caseId" column="CASE_ID" />
-        <result property="title" column="TITLE" />
-        <result property="content" column="CONTENT" />
-        <result property="caseType" column="CASE_TYPE" />
-        <result property="assignedLawyer" column="ASSIGNED_LAWYER" />
-        <result property="status" column="STATUS" />
-        <result property="createdAt" column="CREATED_AT" />
-        <result property="updatedAt" column="UPDATED_AT" />
+	<resultMap id="questionDetailMap"
+		type="com.edu.springboot.domain.question.vo.QuestionVO">
+		<id property="questionId" column="QUESTION_ID" />
+		<result property="memberId" column="MEMBER_ID" />
+		<result property="memberName" column="MEMBER_NAME" />
+		<result property="caseId" column="CASE_ID" />
+		<result property="title" column="TITLE" />
+		<result property="content" column="CONTENT" />
+		<result property="caseType" column="CASE_TYPE" />
+		<result property="assignedLawyer" column="ASSIGNED_LAWYER" />
+		<result property="status" column="STATUS" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="updatedAt" column="UPDATED_AT" />
 
-        <collection property="files" ofType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
-            <id property="attachId" column="ATTACH_ID" />
-            <result property="origName" column="ORIG_NAME" />
-            <result property="savePath" column="SAVE_PATH" />
-            <result property="fileSize" column="FILE_SIZE" />
-            <result property="mimeType" column="MIME_TYPE" />
-        </collection>
-    </resultMap>
+		<collection property="files"
+			ofType="com.edu.springboot.domain.attachment.vo.AttachmentVO">
+			<id property="attachId" column="ATTACH_ID" />
+			<result property="origName" column="ORIG_NAME" />
+			<result property="savePath" column="SAVE_PATH" />
+			<result property="fileSize" column="FILE_SIZE" />
+			<result property="mimeType" column="MIME_TYPE" />
+		</collection>
+	</resultMap>
 
-    <select id="selectQuestionsWithPaging" resultMap="questionListMap" parameterType="map">
-        SELECT
-            q.QUESTION_ID,
-            q.MEMBER_ID,
-            qm.NAME as MEMBER_NAME,
-            q.TITLE,
-            q.CASE_TYPE,
-            q.STATUS,
-            q.CREATED_AT,
-            (SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as ANSWER_COUNT,
-            (SELECT COUNT(*) FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE = 'QUESTION') as FILE_COUNT
-        FROM TB_QUESTION q
-        LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
-        <where>
-            <if test="caseType != null and caseType != ''">
-                AND q.CASE_TYPE = #{caseType}
-            </if>
-            <if test="title != null and title != ''">
-                AND q.TITLE LIKE '%' || #{title} || '%'
-            </if>
-        </where>
-        ORDER BY q.CREATED_AT DESC
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
-    </select>
+	<select id="selectQuestionsWithPaging"
+		resultMap="questionListMap" parameterType="map">
+		SELECT
+		q.QUESTION_ID,
+		q.MEMBER_ID,
+		qm.NAME as MEMBER_NAME,
+		q.TITLE,
+		q.CASE_TYPE,
+		q.STATUS,
+		q.CREATED_AT,
+		(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
+		ANSWER_COUNT,
+		(SELECT COUNT(*) FROM TB_ATTACHMENT WHERE REF_ID = q.QUESTION_ID AND REF_TYPE
+		= 'QUESTION') as FILE_COUNT
+		FROM TB_QUESTION q
+		LEFT JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+		<where>
+			<if test="caseType != null and caseType != ''">
+				AND q.CASE_TYPE = #{caseType}
+			</if>
+			<if test="title != null and title != ''">
+				AND q.TITLE LIKE '%' || #{title} || '%'
+			</if>
+		</where>
+		ORDER BY q.CREATED_AT DESC
+		OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+	</select>
 
-    <select id="selectQuestionById" resultMap="questionDetailMap">
-        SELECT
-            q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
-            q.CASE_ID, q.TITLE, q.CONTENT, q.CASE_TYPE,
-            q.ASSIGNED_LAWYER, q.STATUS, q.CREATED_AT, q.UPDATED_AT,
-            att.ATTACH_ID, att.ORIG_NAME, att.SAVE_PATH, att.FILE_SIZE, att.MIME_TYPE
-        FROM TB_QUESTION q
-        LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
-        LEFT OUTER JOIN TB_ATTACHMENT att ON q.QUESTION_ID = att.REF_ID AND att.REF_TYPE = 'QUESTION'
-        WHERE q.QUESTION_ID = #{questionId}
-    </select>
+	<select id="selectQuestionById" resultMap="questionDetailMap">
+		SELECT
+		q.QUESTION_ID, q.MEMBER_ID, qm.NAME as MEMBER_NAME,
+		q.CASE_ID, q.TITLE, q.CONTENT, q.CASE_TYPE,
+		q.ASSIGNED_LAWYER, q.STATUS, q.CREATED_AT, q.UPDATED_AT,
+		att.ATTACH_ID, att.ORIG_NAME, att.SAVE_PATH, att.FILE_SIZE, att.MIME_TYPE
+		FROM TB_QUESTION q
+		LEFT OUTER JOIN TB_MEMBER qm ON q.MEMBER_ID = qm.MEMBER_ID
+		LEFT OUTER JOIN TB_ATTACHMENT att ON q.QUESTION_ID = att.REF_ID AND
+		att.REF_TYPE = 'QUESTION'
+		WHERE q.QUESTION_ID = #{questionId}
+	</select>
 
-    <insert id="insertQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
-        <selectKey keyProperty="questionId" resultType="long" order="BEFORE">
-            SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
-        </selectKey>
-        
-        INSERT INTO TB_QUESTION (
-            QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT,
-            CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
-        ) VALUES (
-            #{questionId}, 
-            #{memberId}, 
-            #{caseId, jdbcType=NUMERIC}, 
-            #{title}, 
-            #{content},
-            #{caseType}, 
-            'OPEN', 
-            SYSDATE, 
-            SYSDATE
-        )
-    </insert>
+	<insert id="insertQuestion"
+		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+		<selectKey keyProperty="questionId" resultType="long"
+			order="BEFORE">
+			SELECT SEQ_QUESTION.NEXTVAL FROM DUAL
+		</selectKey>
 
-    <update id="updateQuestion" parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
-        UPDATE TB_QUESTION
-        SET TITLE = #{title},
-            CONTENT = #{content},
-            CASE_TYPE = #{caseType},
-            UPDATED_AT = SYSDATE
-        WHERE QUESTION_ID = #{questionId}
-          AND STATUS NOT IN ('ADOPTED', 'CLOSED')
-    </update>
+		INSERT INTO TB_QUESTION (
+		QUESTION_ID, MEMBER_ID, CASE_ID, TITLE, CONTENT,
+		CASE_TYPE, STATUS, CREATED_AT, UPDATED_AT
+		) VALUES (
+		#{questionId},
+		#{memberId},
+		#{caseId, jdbcType=NUMERIC},
+		#{title},
+		#{content},
+		#{caseType},
+		'OPEN',
+		SYSDATE,
+		SYSDATE
+		)
+	</insert>
 
-    <delete id="deleteQuestion" parameterType="long">
-        DELETE FROM TB_QUESTION
-        WHERE QUESTION_ID = #{questionId}
-          AND STATUS = 'OPEN'
-    </delete>
+	<update id="updateQuestion"
+		parameterType="com.edu.springboot.domain.question.vo.QuestionVO">
+		UPDATE TB_QUESTION
+		SET TITLE = #{title},
+		CONTENT = #{content},
+		CASE_TYPE = #{caseType},
+		UPDATED_AT = SYSDATE
+		WHERE QUESTION_ID = #{questionId}
+		AND STATUS NOT IN ('ADOPTED', 'CLOSED')
+	</update>
 
-    <update id="updateQuestionStatus">
-        UPDATE TB_QUESTION
-        SET STATUS = #{status},
-            <if test="lawyerId != null">
-            ASSIGNED_LAWYER = #{lawyerId},
-            </if>
-            UPDATED_AT = SYSDATE
-        WHERE QUESTION_ID = #{questionId}
-    </update>
+	<delete id="deleteQuestion" parameterType="long">
+		DELETE FROM TB_QUESTION
+		WHERE QUESTION_ID = #{questionId}
+		AND STATUS = 'OPEN'
+	</delete>
 
-    <select id="selectQuestionCount" parameterType="map" resultType="int">
-        SELECT COUNT(*) FROM TB_QUESTION
-        <where>
-            <if test="caseType != null and caseType != ''">
-                AND CASE_TYPE = #{caseType}
-            </if>
-            <if test="title != null and title != ''">
-                AND TITLE LIKE '%' || #{title} || '%'
-            </if>
-        </where>
-    </select>
+	<update id="updateQuestionStatus">
+		UPDATE TB_QUESTION
+		SET STATUS = #{status},
+		<if test="lawyerId != null">
+			ASSIGNED_LAWYER = #{lawyerId},
+		</if>
+		UPDATED_AT = SYSDATE
+		WHERE QUESTION_ID = #{questionId}
+	</update>
+
+	<select id="selectQuestionCount" parameterType="map"
+		resultType="int">
+		SELECT COUNT(*) FROM TB_QUESTION
+		<where>
+			<if test="caseType != null and caseType != ''">
+				AND CASE_TYPE = #{caseType}
+			</if>
+			<if test="title != null and title != ''">
+				AND TITLE LIKE '%' || #{title} || '%'
+			</if>
+		</where>
+	</select>
 
 </mapper>
