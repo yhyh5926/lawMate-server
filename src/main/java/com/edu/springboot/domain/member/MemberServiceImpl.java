@@ -57,8 +57,8 @@ public class MemberServiceImpl implements MemberService {
 		member.setPhoneVerified("Y");
 		member.setStatus("ACTIVE");
 		member.setSaveIdYn("N");
-		member.setAddress(dto.getOfficeAddress());
-		member.setDetailAddress(dto.getOfficeDetailAddr());
+		member.setAddress(dto.getAddress());
+		member.setDetailAddress(dto.getDetailAddress());
 
 		memberMapper.insertMember(member);
 

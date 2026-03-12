@@ -66,17 +66,13 @@
 		#{password, jdbcType=VARCHAR},
 		#{memberType, jdbcType=VARCHAR},
 		#{name, jdbcType=VARCHAR},
-		#{phone,
-		jdbcType=VARCHAR},
-		#{email, jdbcType=VARCHAR},
-		#{provider,
-		jdbcType=VARCHAR},
+		#{phone,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR},
+		#{provider,jdbcType=VARCHAR},
 		#{phoneVerified, jdbcType=VARCHAR},
-		#{status,
-		jdbcType=VARCHAR},
+		#{status,jdbcType=VARCHAR},
 		#{saveIdYn, jdbcType=VARCHAR},
-		#{address,
-		jdbcType=VARCHAR},
+		#{address,jdbcType=VARCHAR},
 		#{detailAddress, jdbcType=VARCHAR},
 		SYSDATE,
 		SYSDATE
@@ -174,21 +170,27 @@
 				FROM
 				TB_QUESTION
 				WHERE MEMBER_ID = #{memberId}
-				ORDER BY QUESTION_ID DESC
+				ORDER BY QUESTION_ID
+				DESC
 			</when>
 
 			<otherwise>
 				SELECT
 				p.post_id AS "id",
 				p.title AS "title",
-				TO_CHAR(p.created_at, 'YYYY-MM-DD') AS "date",
-				(SELECT COUNT(*) FROM TB_REPLY r WHERE r.ref_post_id = p.post_id) AS
+				TO_CHAR(p.created_at,
+				'YYYY-MM-DD') AS "date",
+				(SELECT COUNT(*) FROM TB_REPLY r WHERE
+				r.ref_post_id = p.post_id) AS
 				"commentCount",
-				CASE WHEN p.case_type = 'MOCK' THEN '판결완료' ELSE '일반' END AS "status"
+				CASE WHEN p.case_type =
+				'MOCK' THEN '판결완료' ELSE '일반' END AS "status"
 				FROM TB_POST p
-				WHERE p.MEMBER_ID = #{memberId}
+				WHERE
+				p.MEMBER_ID = #{memberId}
 				AND (p.STATUS IS NULL
-				OR p.STATUS != 'DELETED')
+				OR p.STATUS !=
+				'DELETED')
 				<choose>
 					<when test="type == 'community'">
 						AND (p.case_type != 'MOCK' OR p.case_type IS NULL)
