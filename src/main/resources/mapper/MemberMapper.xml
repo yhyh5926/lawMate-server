@@ -92,8 +92,8 @@
 		UPDATE TB_MEMBER
 		SET STATUS = 'WITHDRAWN',
 		WITHDRAWN_AT = SYSDATE, UPDATED_AT = SYSDATE
-		WHERE LOGIN_ID =
-		#{loginId}
+		WHERE MEMBER_ID =
+		#{memberId}
 	</update>
 
 	<select id="findLoginIdByNameAndPhone" resultType="string">
@@ -156,13 +156,15 @@
 				q.QUESTION_ID as "id",
 				q.TITLE as "title",
 				TO_CHAR(q.CREATED_AT, 'YYYY-MM-DD') as "date",
-				(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
-				"commentCount",
-				CASE WHEN q.STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END as "status"
-				FROM TB_QUESTION q
+				(SELECT COUNT(*) FROM
+				TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as "commentCount",
+				CASE
+				WHEN q.STATUS = 'CLOSED' THEN '답변완료' ELSE '대기중' END as "status"
+				FROM
+				TB_QUESTION q
 				WHERE q.MEMBER_ID = #{memberId}
-				ORDER BY
-				q.QUESTION_ID DESC
+				ORDER BY q.QUESTION_ID
+				DESC
 			</when>
 
 			<when test="type == 'mockTrial'">
@@ -170,10 +172,12 @@
 				p.POLL_ID as "id",
 				p.TITLE as "title",
 				TO_CHAR(p.CREATED_AT, 'YYYY-MM-DD') as "date",
-				(SELECT COUNT(*) FROM TB_REPLY WHERE ref_post_id = p.poll_id) as
-				"commentCount",
-				CASE WHEN p.STATUS = 'CLOSED' THEN '투표종료' ELSE '진행중' END as "status"
-				FROM TB_POLL p
+				(SELECT COUNT(*) FROM
+				TB_COMMENT WHERE POST_ID = p.POLL_ID) as "commentCount",
+				CASE WHEN
+				p.STATUS = 'CLOSED' THEN '투표종료' ELSE '진행중' END as "status"
+				FROM
+				TB_POLL p
 				WHERE p.MEMBER_ID = #{memberId}
 				ORDER BY p.POLL_ID DESC
 			</when>
@@ -183,14 +187,19 @@
 				p.POST_ID as "id",
 				p.TITLE as "title",
 				TO_CHAR(p.CREATED_AT, 'YYYY-MM-DD') as "date",
-				(SELECT COUNT(*) FROM TB_REPLY r WHERE r.ref_post_id = p.post_id) as
-				"commentCount",
-				'작성완료' as "status"
+				(SELECT COUNT(*) FROM
+				TB_COMMENT WHERE POST_ID = p.POST_ID) as "commentCount",
+				'작성완료'
+				as
+				"status"
 				FROM TB_POST p
 				WHERE p.MEMBER_ID = #{memberId}
-				AND (p.CASE_TYPE NOT IN ('MOCK', 'POLL') OR p.CASE_TYPE IS NULL)
-				AND (p.STATUS IS NULL OR p.STATUS != 'DELETED')
-				ORDER BY p.POST_ID DESC
+				AND
+				(p.CASE_TYPE NOT IN ('MOCK', 'POLL') OR p.CASE_TYPE IS NULL)
+				AND
+				(p.STATUS IS NULL OR p.STATUS != 'DELETED')
+				ORDER BY p.POST_ID
+				DESC
 			</otherwise>
 		</choose>
 	</select>

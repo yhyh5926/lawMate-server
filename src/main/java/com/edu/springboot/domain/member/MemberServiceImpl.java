@@ -1,4 +1,4 @@
-// src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
+// 파일위치: src/main/java/com/edu/springboot/domain/member/MemberServiceImpl.java
 package com.edu.springboot.domain.member;
 
 import com.edu.springboot.common.jwt.JwtUtil;
@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Spring 프레임워크 서비스 계층 선언
 @Service
 @Primary
 @RequiredArgsConstructor
@@ -252,7 +253,7 @@ public class MemberServiceImpl implements MemberService {
 		return memberMapper.withdrawMember(memberId) > 0;
 	}
 
-//	💡 [수정] 메서드명을 findMyPosts로 변경하여 서비스 인터페이스와 맞춤
+//	내가 쓴 글 목록 조회
 	@Override
 	public List<Map<String, Object>> findMyPosts(Long memberId, String type) {
 		return memberMapper.findMyPosts(memberId, type);
