@@ -1,6 +1,7 @@
 // src/main/java/com/edu/springboot/domain/member/MypageController.java
 package com.edu.springboot.domain.member;
 
+import com.edu.springboot.domain.member.vo.MemberVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,13 +56,32 @@ public class MypageController {
 			// memberMapper를 직접 쓰지 않고 서비스의 기능을 호출하는 것이 안전합니다.
 			boolean success = memberService.withdraw(loginId);
 			if (success) {
-				return ResponseEntity.ok(Map.of("success", true, "message", "회원 탈퇴 처리가 완료되었습니다."));
-			} else {
-				return ResponseEntity.badRequest().body(Map.of("success", false, "message", "탈퇴 처리에 실패했습니다."));
+				return ResponseEntity.ok(Map.of("success", true, "message", "회원 탈퇴 완료"));
 			}
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "탈퇴 실패"));
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
+			return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류"));
+		}
+	}
+
+	/**
+	 * 4. 회원 정보 수정 API (404 Not Found 에러 해결)
+	 */
+	@PutMapping("/edit")
+	public ResponseEntity<?> editProfile(@RequestBody MemberVO memberVO) {
+		try {
+			boolean success = memberService.updateProfile(memberVO);
+
+			if (success) {
+				return ResponseEntity.ok(Map.of("success", true, "message", "회원 정보가 성공적으로 수정되었습니다."));
+			}
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "회원 정보 수정에 실패했습니다."));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.internalServerError()
+					.body(Map.of("success", false, "message", "서버 처리 중 오류가 발생했습니다."));
 		}
 	}
 }

@@ -17,67 +17,104 @@
 		<result property="closedAt" column="CLOSED_AT" />
 		<result property="clientName" column="clientName" />
 		<result property="lawyerName" column="lawyerName" />
+		<result property="reviewRating" column="reviewRating" />
+		<result property="reviewContent" column="reviewContent" />
+		<result property="reviewDate" column="reviewDate" />
 	</resultMap>
 
 	<select id="selectCasesByMemberId" resultMap="caseRM">
 		SELECT c.CASE_ID,
-		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.STEP,
-		c.DESCRIPTION,
+		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE,
+		c.DESCRIPTION, c.STEP,
 		c.EXPERT_OPINION,
-		m1.NAME AS clientName,
-		m2.NAME AS lawyerName,
-		TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
-		TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT
-		FROM
-		TB_CASE c
-		LEFT JOIN TB_MEMBER m1 ON c.MEMBER_ID = m1.MEMBER_ID
-		LEFT JOIN
-		TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
-		LEFT JOIN TB_MEMBER m2 ON
-		l.MEMBER_ID = m2.MEMBER_ID
-		WHERE c.MEMBER_ID = #{memberId}
-		OR
-		l.MEMBER_ID = #{memberId}
-		ORDER BY c.CREATED_AT DESC
+		c.CREATED_AT,
+		c.UPDATED_AT,
+		c.CLOSED_AT,
+		m.NAME AS
+		clientName,
+		lm.NAME AS lawyerName,
+		r.RATING AS reviewRating,
+		r.CONTENT AS reviewContent,
+		TO_CHAR(r.CREATED_AT, 'YYYY. MM. DD.') AS reviewDate
+		FROM TB_CASE c
+		LEFT JOIN TB_MEMBER m ON
+		c.MEMBER_ID = m.MEMBER_ID
+		LEFT JOIN TB_LAWYER l ON c.LAWYER_ID =
+		l.LAWYER_ID
+		LEFT JOIN TB_MEMBER lm ON l.MEMBER_ID = lm.MEMBER_ID
+		LEFT JOIN (
+		SELECT REVIEW_ID, MEMBER_ID, LAWYER_ID, RATING, CONTENT, CREATED_AT,
+		ROW_NUMBER() OVER(PARTITION BY MEMBER_ID, LAWYER_ID ORDER BY
+		CREATED_AT DESC) as rn
+		FROM TB_REVIEW
+		WHERE STATUS = 'ACTIVE'
+		) r ON r.MEMBER_ID = c.MEMBER_ID AND r.LAWYER_ID = c.LAWYER_ID AND r.rn
+		= 1
+		WHERE c.MEMBER_ID = #{memberId} OR l.MEMBER_ID = #{memberId}
+		ORDER
+		BY c.CREATED_AT DESC
 	</select>
 
 	<select id="selectCaseById" resultMap="caseRM">
 		SELECT c.CASE_ID,
-		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.DESCRIPTION, c.STEP,
+		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE,
+		c.DESCRIPTION, c.STEP,
 		c.EXPERT_OPINION,
-		m1.NAME AS clientName,
-		m2.NAME AS lawyerName,
-		TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
-		TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS UPDATED_AT,
-		TO_CHAR(c.CLOSED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CLOSED_AT
-		FROM TB_CASE
-		c
-		LEFT JOIN TB_MEMBER m1 ON c.MEMBER_ID = m1.MEMBER_ID
-		LEFT JOIN
-		TB_LAWYER l ON c.LAWYER_ID = l.LAWYER_ID
-		LEFT JOIN TB_MEMBER m2 ON
-		l.MEMBER_ID = m2.MEMBER_ID
+		c.CREATED_AT,
+		c.UPDATED_AT,
+		c.CLOSED_AT,
+		m.NAME AS
+		clientName,
+		lm.NAME AS lawyerName,
+		r.RATING AS reviewRating,
+		r.CONTENT AS reviewContent,
+		TO_CHAR(r.CREATED_AT, 'YYYY. MM. DD.') AS reviewDate
+		FROM TB_CASE c
+		LEFT JOIN TB_MEMBER m ON
+		c.MEMBER_ID = m.MEMBER_ID
+		LEFT JOIN TB_LAWYER l ON c.LAWYER_ID =
+		l.LAWYER_ID
+		LEFT JOIN TB_MEMBER lm ON l.MEMBER_ID = lm.MEMBER_ID
+		LEFT JOIN (
+		SELECT REVIEW_ID, MEMBER_ID, LAWYER_ID, RATING, CONTENT, CREATED_AT,
+		ROW_NUMBER() OVER(PARTITION BY MEMBER_ID, LAWYER_ID ORDER BY
+		CREATED_AT DESC) as rn
+		FROM TB_REVIEW
+		WHERE STATUS = 'ACTIVE'
+		) r ON r.MEMBER_ID = c.MEMBER_ID AND r.LAWYER_ID = c.LAWYER_ID AND r.rn
+		= 1
 		WHERE c.CASE_ID = #{caseId}
 	</select>
 
 	<select id="selectAllCases" resultMap="caseRM">
 		SELECT c.CASE_ID,
-		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE, c.STEP,
-		m1.NAME AS
+		c.MEMBER_ID, c.LAWYER_ID, c.TITLE, c.CASE_TYPE,
+		c.DESCRIPTION, c.STEP,
+		c.EXPERT_OPINION,
+		c.CREATED_AT,
+		c.UPDATED_AT,
+		c.CLOSED_AT,
+		m.NAME AS
 		clientName,
-		m2.NAME AS lawyerName,
-		TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD
-		HH24:MI:SS') AS CREATED_AT,
-		TO_CHAR(c.UPDATED_AT, 'YYYY-MM-DD
-		HH24:MI:SS') AS UPDATED_AT
+		lm.NAME AS lawyerName,
+		r.RATING AS reviewRating,
+		r.CONTENT AS reviewContent,
+		TO_CHAR(r.CREATED_AT, 'YYYY. MM. DD.') AS reviewDate
 		FROM TB_CASE c
-		LEFT JOIN TB_MEMBER m1 ON
-		c.MEMBER_ID = m1.MEMBER_ID
+		LEFT JOIN TB_MEMBER m ON
+		c.MEMBER_ID = m.MEMBER_ID
 		LEFT JOIN TB_LAWYER l ON c.LAWYER_ID =
 		l.LAWYER_ID
-		LEFT JOIN TB_MEMBER m2 ON l.MEMBER_ID = m2.MEMBER_ID
-		ORDER
-		BY c.CREATED_AT DESC
+		LEFT JOIN TB_MEMBER lm ON l.MEMBER_ID = lm.MEMBER_ID
+		LEFT JOIN (
+		SELECT REVIEW_ID, MEMBER_ID, LAWYER_ID, RATING, CONTENT, CREATED_AT,
+		ROW_NUMBER() OVER(PARTITION BY MEMBER_ID, LAWYER_ID ORDER BY
+		CREATED_AT DESC) as rn
+		FROM TB_REVIEW
+		WHERE STATUS = 'ACTIVE'
+		) r ON r.MEMBER_ID = c.MEMBER_ID AND r.LAWYER_ID = c.LAWYER_ID AND r.rn
+		= 1
+		ORDER BY c.CREATED_AT DESC
 	</select>
 
 	<update id="updateCaseStep">
@@ -104,16 +141,19 @@
 			SELECT SEQ_CASE.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO TB_CASE (
-		CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE, DESCRIPTION, STEP,
+		CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE,
+		DESCRIPTION, STEP,
 		CREATED_AT, UPDATED_AT
 		) VALUES (
 		#{caseId},
 		#{memberId},
-		(SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{lawyerId}),
+		(SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID =
+		#{lawyerId}),
 		#{title},
 		#{caseType},
 		#{description},
-		'RECEIVED', SYSDATE, SYSDATE
+		'RECEIVED', SYSDATE,
+		SYSDATE
 		)
 	</insert>
 
@@ -125,12 +165,54 @@
 		</selectKey>
 		INSERT INTO TB_CASE (
 		CASE_ID, MEMBER_ID, LAWYER_ID, TITLE, CASE_TYPE,
-		DESCRIPTION, STEP, CREATED_AT,
-		UPDATED_AT
+		DESCRIPTION, STEP,
+		CREATED_AT, UPDATED_AT
 		) VALUES (
 		#{caseId},
-		#{memberId}, #{lawyerId}, #{title}, #{caseType}, #{description},
+		#{memberId},
+		#{lawyerId},
+		#{title},
+		#{caseType},
+		#{description},
 		'RECEIVED', SYSDATE, SYSDATE
+		)
+	</insert>
+
+	<update id="updateConsultCaseId">
+		UPDATE TB_CONSULT
+		SET CASE_ID = #{caseId},
+		STATUS = 'DONE',
+		UPDATED_AT = SYSDATE
+		WHERE CONSULT_ID = #{consultId}
+	</update>
+
+	<select id="selectConsultIdByCaseId" resultType="java.lang.Long">
+		SELECT MAX(CONSULT_ID) FROM TB_CONSULT WHERE CASE_ID = #{caseId}
+	</select>
+
+	<select id="selectFallbackConsultId" resultType="java.lang.Long">
+		SELECT MAX(CONSULT_ID) FROM TB_CONSULT
+		WHERE MEMBER_ID = #{memberId} AND LAWYER_ID = #{lawyerId}
+	</select>
+
+	<insert id="insertCaseReview">
+		INSERT INTO TB_REVIEW (
+		REVIEW_ID, CONSULT_ID, MEMBER_ID, LAWYER_ID,
+		RATING, CONTENT, STATUS, CREATED_AT, UPDATED_AT
+		) VALUES (
+		SEQ_REVIEW.NEXTVAL,
+		<choose>
+			<when test="consultId != null and consultId > 0">#{consultId}</when>
+			<otherwise>NULL</otherwise>
+		</choose>
+		,
+		#{memberId},
+		#{lawyerId},
+		#{rating},
+		#{content},
+		'ACTIVE',
+		SYSDATE,
+		SYSDATE
 		)
 	</insert>
 

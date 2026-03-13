@@ -39,11 +39,18 @@ public class CaseService {
 		caseMapper.updateCaseStep(caseId, step);
 	}
 
-	// 💡 수동 사건 등록
 	@Transactional
 	public void createCaseManual(CaseVO caseVO) {
-		// 💡 [수정] 부모 키 변환 로직이 포함된 insertManualCase 호출
 		caseMapper.insertManualCase(caseVO);
+	}
+
+	@Transactional
+	public void createCaseManual(CaseVO caseVO, Long consultId) {
+		caseMapper.insertManualCase(caseVO);
+
+		if (consultId != null && caseVO.getCaseId() != null) {
+			caseMapper.updateConsultCaseId(consultId, caseVO.getCaseId());
+		}
 	}
 
 	@Transactional
@@ -64,8 +71,6 @@ public class CaseService {
 						attach.setOrigName(file.getOriginalFilename());
 						attach.setSavePath(savePath);
 						attach.setFileSize(file.getSize());
-						attach.setMimeType(file.getContentType());
-
 						attachmentMapper.insertAttachment(attach);
 					}
 				} catch (Exception e) {
@@ -73,6 +78,22 @@ public class CaseService {
 				}
 			}
 		}
+	}
+
+	@Transactional
+	public void submitCaseReview(Long caseId, int rating, String content) {
+		CaseVO caseVO = caseMapper.selectCaseById(caseId);
+		if (caseVO == null)
+			return;
+
+		Long consultId = caseMapper.selectConsultIdByCaseId(caseId);
+
+		if (consultId == null) {
+			consultId = caseMapper.selectFallbackConsultId(caseVO.getMemberId(), caseVO.getLawyerId());
+		}
+
+		caseMapper.insertCaseReview(consultId, caseVO.getMemberId(), caseVO.getLawyerId(), rating, content);
+		// 💡 [에러 원인 제거] TB_LAWYER 테이블 업데이트 로직 삭제 완료
 	}
 
 	public List<CaseVO> getAllCasesForAdmin() {

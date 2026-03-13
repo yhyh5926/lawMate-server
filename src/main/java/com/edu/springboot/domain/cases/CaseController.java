@@ -37,11 +37,10 @@ public class CaseController {
 		return ResponseEntity.ok(caseService.getCaseDetail(caseId));
 	}
 
-	// 💡 3. [수정됨] 사건 진행 상태(STEP) 업데이트 (400 에러 해결을 위해 문자열 직접 수신)
+	// 3. 사건 진행 상태(STEP) 업데이트
 	@PutMapping("/{caseId}/status")
 	public ResponseEntity<?> updateCaseStatus(@PathVariable("caseId") Long caseId,
 			@RequestBody Map<String, String> payload) {
-		// 프론트엔드에서 보낸 문자열 상태값(RECEIVED, IN_PROGRESS 등)을 직접 가져옵니다.
 		String statusKey = payload.get("status");
 		if (statusKey != null) {
 			caseService.updateCaseStep(caseId, statusKey);
@@ -49,7 +48,7 @@ public class CaseController {
 		return ResponseEntity.ok(Map.of("success", true));
 	}
 
-	// 💡 4. [400 에러 해결] 필수 파라미터 체크를 해제(required=false)하여 빈 값이 들어와도 허용합니다.
+	// 4. 파일 및 내용 수정
 	@PutMapping("/{caseId}")
 	public ResponseEntity<?> updateCaseInfo(@PathVariable("caseId") Long caseId,
 			@RequestParam(value = "description", required = false) String description,
@@ -58,7 +57,6 @@ public class CaseController {
 
 		CaseVO caseVO = new CaseVO();
 		caseVO.setCaseId(caseId);
-		// null 방지 처리
 		caseVO.setDescription(description != null ? description : "");
 		caseVO.setExpertOpinion(expertOpinion != null ? expertOpinion : "");
 
@@ -66,19 +64,42 @@ public class CaseController {
 		return ResponseEntity.ok(Map.of("success", true));
 	}
 
-	// 💡 5. 의뢰인 사건 완료 후기 등록
+	// 💡 5. [수정] 의뢰인 사건 완료 후기 등록 - DB 연동 완료
 	@PostMapping("/{caseId}/review")
 	public ResponseEntity<?> submitReview(@PathVariable("caseId") Long caseId,
 			@RequestBody Map<String, Object> payload) {
-		return ResponseEntity.ok(Map.of("success", true));
+		try {
+			int rating = Integer.parseInt(payload.get("rating").toString());
+			String content = payload.get("content").toString();
+			caseService.submitCaseReview(caseId, rating, content);
+			return ResponseEntity.ok(Map.of("success", true));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "리뷰 등록 실패"));
+		}
 	}
 
-	// 💡 6. 변호사가 마이페이지에서 수동으로 사건 등록
+	// 6. 변호사가 마이페이지에서 수동으로 사건 등록 (Consult 연동 포함)
 	@PostMapping("/manual-register")
-	public ResponseEntity<?> createCaseManual(@RequestBody CaseVO caseVO) {
-		// 새로 등록되는 사건이므로 기본 상태를 'RECEIVED(접수)'로 고정
-		caseVO.setStep("RECEIVED");
-		caseService.createCaseManual(caseVO);
-		return ResponseEntity.ok(Map.of("success", true));
+	public ResponseEntity<?> createCaseManual(@RequestBody Map<String, Object> payload) {
+		try {
+			CaseVO caseVO = new CaseVO();
+			caseVO.setLawyerId(Long.valueOf(payload.get("lawyerId").toString()));
+			caseVO.setMemberId(Long.valueOf(payload.get("memberId").toString()));
+			caseVO.setTitle(payload.get("title").toString());
+			caseVO.setCaseType(payload.get("caseType").toString());
+			caseVO.setDescription(payload.get("description").toString());
+
+			Long consultId = null;
+			if (payload.get("consultId") != null && !payload.get("consultId").toString().isEmpty()) {
+				consultId = Long.valueOf(payload.get("consultId").toString());
+			}
+
+			caseService.createCaseManual(caseVO, consultId);
+			return ResponseEntity.ok(Map.of("success", true));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "사건 등록 실패"));
+		}
 	}
 }
