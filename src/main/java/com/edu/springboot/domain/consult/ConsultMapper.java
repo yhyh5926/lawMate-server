@@ -37,5 +37,7 @@ public interface ConsultMapper {
     void deleteConsult(Long consultId);
     void deleteOldCancelledConsults();
     
+    void updateReject(@Param("consultId") Long consultId, @Param("rejectReason") String rejectReason);
+    
     Long selectLawyerIdByMemberId(Long memberId);
 }

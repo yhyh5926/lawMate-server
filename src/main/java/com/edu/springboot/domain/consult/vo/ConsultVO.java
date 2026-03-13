@@ -38,5 +38,6 @@ public class ConsultVO {
     private Long          consultFee;
     
     private boolean reviewed;
+    private String rejectReason;
     
 }

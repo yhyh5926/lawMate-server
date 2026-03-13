@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -183,6 +184,7 @@ public class ConsultController {
     @PutMapping("/{consultId}/reject")
     public ResponseEntity<ApiResponse<Void>> reject(
             @PathVariable("consultId") Long consultId,
+            @RequestBody Map<String, String> body,
             @RequestHeader("Authorization") String bearer) {
         Long memberId = getMemberId(bearer);
         Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
@@ -190,7 +192,8 @@ public class ConsultController {
         if (vo == null) return ResponseEntity.notFound().build();
         if (!vo.getLawyerId().equals(lawyerId))
             return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
-        consultMapper.updateStatus(consultId, "CANCELLED");
+        String reason = body.getOrDefault("rejectReason", "");
+        consultMapper.updateReject(consultId, reason);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
