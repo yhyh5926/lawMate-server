@@ -16,67 +16,72 @@ import java.util.*;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class MainController {
+	private final MainMapper mainMapper;
 
-    private final MainMapper mainMapper;
+	@GetMapping("/main")
+	public MainResponseDTO main() {
+		// 1. 객체 생성
+		MainResponseDTO res = new MainResponseDTO();
 
-    @GetMapping("/main")
-    public MainResponseDTO main() {
-        MainResponseDTO res = new MainResponseDTO();
+		// 2. 최신 공지사항 3건
+		var notices = mainMapper.selectLatestNotices(3);
+		res.setTopNotices(notices);
+		res.setNotices(notices); // 구버전 호환
 
-        // 최신 공지사항 3건
-        var notices = mainMapper.selectLatestNotices(3);
-        res.setTopNotices(notices);
-        // 구버전 호환
-        res.setNotices(notices);
+		// 3. 최근 판례 5건
+		res.setPrecedents(mainMapper.selectRecentPrecedents());
 
-        // today / weekly
-        int todayCaseCount = mainMapper.countTodayCases();
-        int weeklyConsultCount = mainMapper.countWeeklyConsults();
-        // 구버전 호환
-        res.setTodayCaseCount(todayCaseCount);
-        res.setWeeklyConsultCount(weeklyConsultCount);
+		// 4. 최근 등록 변호사 5건
+		res.setLawyers(mainMapper.selectRecentLawyers());
 
-        // 최근 커뮤니티 게시글 5건
-        var recentPosts = mainMapper.selectRecentPosts(5);
-        res.setRecentPosts(recentPosts);
+		// 5. 최근 등록 설문(모의재판) 5건
+		res.setPolls(mainMapper.selectRecentPolls());
 
-        // ===== stats (프론트 기대 형태) =====
-        MainStatsDTO stats = new MainStatsDTO();
-        stats.setTodayCount(todayCaseCount);
-        stats.setWeeklyCount(weeklyConsultCount);
+		// 6.최근 법률 질문 5건 (QuestionMapper 로직 기반)
+		res.setQuestions(mainMapper.selectRecentQuestions());
 
-        // 최근 7일 사건 수 (차트)
-        final int days = 7;
-        final int offsetDays = Math.max(days - 1, 0); // ✅ days-1을 Java에서 계산
-        List<MainSeriesPointDTO> raw = mainMapper.selectDailyCaseCounts(offsetDays);
+		// 7.최근 커뮤니티 게시글 5건
+		var recentPosts = mainMapper.selectRecentPosts(5);
+		res.setRecentPosts(recentPosts);
 
-        // 날짜 누락(0건)을 채워서 차트가 자연스럽게 보이게 함
-        Map<String, Integer> map = new HashMap<>();
-        for (MainSeriesPointDTO p : raw) {
-            if (p != null && p.getDate() != null) {
-                map.put(p.getDate(), p.getCount());
-            }
-        }
+		// 8.  today / weekly
+		int todayCaseCount = mainMapper.countTodayCases();
+		int weeklyConsultCount = mainMapper.countWeeklyConsults();
+		res.setTodayCaseCount(todayCaseCount);
+		res.setWeeklyConsultCount(weeklyConsultCount);
 
-        List<MainSeriesPointDTO> filled = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        for (int i = offsetDays; i >= 0; i--) {
-            LocalDate d = today.minusDays(i);
-            String key = d.toString(); // YYYY-MM-DD
-            MainSeriesPointDTO p = new MainSeriesPointDTO();
-            p.setDate(key);
-            p.setCount(map.getOrDefault(key, 0));
-            filled.add(p);
-        }
-        stats.setSeries(filled);
+		// 9. stats 객체 구성 (프론트 차트용)
+		MainStatsDTO stats = new MainStatsDTO();
+		stats.setTodayCount(todayCaseCount);
+		stats.setWeeklyCount(weeklyConsultCount);
 
-        res.setStats(stats);
-        return res;
-    }
+		// 최근 7일 사건 수 차트 로직 (기존 유지)
+		final int days = 7;
+		final int offsetDays = Math.max(days - 1, 0);
+		List<MainSeriesPointDTO> raw = mainMapper.selectDailyCaseCounts(offsetDays);
 
-    /** 공지 상세: 프론트(mainApi.getNoticeDetail)와 매칭 */
-    @GetMapping("/notices/{id}")
-    public Object noticeDetail(@PathVariable("id") long id) {
-        return mainMapper.selectNoticeDetail(id);
-    }
+		Map<String, Integer> map = new HashMap<>();
+		for (MainSeriesPointDTO p : raw) {
+			if (p != null && p.getDate() != null) {
+				map.put(p.getDate(), p.getCount());
+			}
+		}
+
+		List<MainSeriesPointDTO> filled = new ArrayList<>();
+		LocalDate today = LocalDate.now();
+		for (int i = offsetDays; i >= 0; i--) {
+			LocalDate d = today.minusDays(i);
+			String key = d.toString();
+			MainSeriesPointDTO p = new MainSeriesPointDTO();
+			p.setDate(key);
+			p.setCount(map.getOrDefault(key, 0));
+			filled.add(p);
+		}
+		stats.setSeries(filled);
+
+		res.setStats(stats);
+
+		return res;
+	}
+
 }
