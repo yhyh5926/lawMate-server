@@ -15,9 +15,8 @@ public class FileUtil {
 	private final String ROOT_DIR = System.getProperty("user.dir");
 
 	/**
-	 * 💡 [수정] 파일을 특정 도메인 폴더에 저장합니다.
+	 * 💡 [수정] 파일을 특정 도메인 폴더에 저장합니다. * @param file 업로드된 파일
 	 * 
-	 * @param file    업로드된 파일
 	 * @param refType 저장할 폴더명 (예: "lawyer", "member")
 	 * @return DB에 저장될 웹 접근 경로 (/uploads/폴더명/파일명)
 	 */
@@ -48,7 +47,6 @@ public class FileUtil {
 		// 5. DB에 저장될 상대 경로 리턴 (예: /uploads/member/파일명.jpg)
 		return subDir + saveFilename;
 	}
-
 
 	public String saveFile(MultipartFile file) throws IOException {
 		return saveFile(file, "member");

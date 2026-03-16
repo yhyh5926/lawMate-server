@@ -36,6 +36,11 @@ public class MemberVO {
 	private String licenseNo;
 	private String specialty;
 	private String officeName;
+
+	// 💡 [핵심 해결] Mapper에서 가져온 사무소 주소 데이터를 담기 위한 필드 추가!
+	private String officeAddr;
+	private String officeDetailAddr;
+
 	private String approveStatus; // PENDING, APPROVED, REJECTED
 
 	// 💡 [추가] 탈퇴 일시 (30일 재가입 방지용)

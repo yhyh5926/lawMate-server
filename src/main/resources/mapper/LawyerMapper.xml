@@ -24,23 +24,42 @@
 		<result property="answerCnt" column="answerCnt" />
 	</resultMap>
 
+	<resultMap id="pendingLawyerMap"
+		type="com.edu.springboot.domain.lawyer.vo.LawyerVO" autoMapping="true">
+		<id property="lawyerId" column="LAWYER_ID" />
+		<result property="name" column="NAME" />
+		<result property="loginId" column="LOGIN_ID" />
+		<collection property="filePaths" ofType="string">
+			<result column="SAVE_PATH" />
+		</collection>
+	</resultMap>
+
 	<select id="selectAllLawyers"
 		resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
 		SELECT
-		m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-		l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as
+		m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as
+		email, m.PHONE as phone,
+		l.LAWYER_ID as lawyerId, l.LICENSE_NO as
+		licenseNo, l.SPECIALTY as
 		specialty,
-		l.INTRO as intro, l.OFFICE_NAME as officeName, l.CONSULT_FEE as consultFee,
-		(SELECT NVL(ROUND(AVG(RATING), 1), 0) FROM TB_REVIEW WHERE LAWYER_ID =
-		l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
-		(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS =
+		l.INTRO as intro, l.OFFICE_NAME as
+		officeName, l.CONSULT_FEE as consultFee,
+		(SELECT NVL(ROUND(AVG(RATING),
+		1), 0) FROM TB_REVIEW WHERE LAWYER_ID =
+		l.LAWYER_ID AND STATUS =
+		'ACTIVE') as avgRating,
+		(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID
+		= l.LAWYER_ID AND STATUS =
 		'ACTIVE') as reviewCnt,
 
-		l.ADOPT_CNT as adoptCnt, /* 물리 컬럼 사용 */
-		(SELECT COUNT(*) FROM TB_ANSWER WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt,
+		l.ADOPT_CNT as
+		adoptCnt, /* 물리 컬럼 사용 */
+		(SELECT COUNT(*) FROM TB_ANSWER WHERE
+		LAWYER_ID = l.LAWYER_ID) as answerCnt,
 		/* 실시간 서브쿼리 */
 
-		a.SAVE_PATH as savePath
+		a.SAVE_PATH as
+		savePath
 		FROM TB_MEMBER m
 		INNER JOIN TB_LAWYER l ON m.MEMBER_ID =
 		l.MEMBER_ID
@@ -55,26 +74,35 @@
 	<select id="selectLawyerById" parameterType="long"
 		resultMap="lawyerDetailMap">
 		SELECT
-		m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-		l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as
+		m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as
+		email, m.PHONE as phone,
+		l.LAWYER_ID as lawyerId, l.LICENSE_NO as
+		licenseNo, l.SPECIALTY as
 		specialty,
-		l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
-		l.OFFICE_ADDR as officeAddr, l.OFFICE_DETAIL_ADDR as officeDetailAddr,
+		l.INTRO as intro, l.CAREER as
+		career, l.OFFICE_NAME as officeName,
+		l.OFFICE_ADDR as officeAddr,
+		l.OFFICE_DETAIL_ADDR as officeDetailAddr,
 		l.CONSULT_FEE as consultFee,
 		(SELECT NVL(ROUND(AVG(RATING), 1), 0) FROM TB_REVIEW WHERE LAWYER_ID =
 		l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
-		(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS =
-		'ACTIVE') as reviewCnt,
+		(SELECT COUNT(*) FROM
+		TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS =
+		'ACTIVE') as
+		reviewCnt,
 
 		l.ADOPT_CNT as adoptCnt, /* 물리 컬럼 사용 */
-		(SELECT COUNT(*) FROM TB_ANSWER WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt,
+		(SELECT COUNT(*) FROM
+		TB_ANSWER WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt,
 		/* 실시간 서브쿼리 */
 
 		a.SAVE_PATH as savePath
 		FROM TB_MEMBER m
-		INNER JOIN TB_LAWYER l ON m.MEMBER_ID =
+		INNER JOIN TB_LAWYER l ON
+		m.MEMBER_ID =
 		l.MEMBER_ID
-		LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID
+		LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID
+		= a.REF_ID
 		AND a.REF_TYPE = 'LAWYER'
 		WHERE l.LAWYER_ID = #{lawyerId}
 	</select>
@@ -82,21 +110,31 @@
 	<select id="selectLawyerByMemberId" parameterType="long"
 		resultMap="lawyerDetailMap">
 		SELECT
-		m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as email, m.PHONE as phone,
-		l.LAWYER_ID as lawyerId, l.LICENSE_NO as licenseNo, l.SPECIALTY as
+		m.MEMBER_ID as memberId, m.NAME as name, m.EMAIL as
+		email, m.PHONE as phone,
+		l.LAWYER_ID as lawyerId, l.LICENSE_NO as
+		licenseNo, l.SPECIALTY as
 		specialty,
-		l.INTRO as intro, l.CAREER as career, l.OFFICE_NAME as officeName,
-		l.OFFICE_ADDR as officeAddr, l.CONSULT_FEE as consultFee,
-		(SELECT NVL(ROUND(AVG(RATING), 1), 0) FROM TB_REVIEW WHERE LAWYER_ID =
-		l.LAWYER_ID AND STATUS = 'ACTIVE') as avgRating,
-		(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID = l.LAWYER_ID AND STATUS =
+		l.INTRO as intro, l.CAREER as
+		career, l.OFFICE_NAME as officeName,
+		l.OFFICE_ADDR as officeAddr,
+		l.CONSULT_FEE as consultFee,
+		(SELECT NVL(ROUND(AVG(RATING), 1), 0) FROM
+		TB_REVIEW WHERE LAWYER_ID =
+		l.LAWYER_ID AND STATUS = 'ACTIVE') as
+		avgRating,
+		(SELECT COUNT(*) FROM TB_REVIEW WHERE LAWYER_ID =
+		l.LAWYER_ID AND STATUS =
 		'ACTIVE') as reviewCnt,
 
-		l.ADOPT_CNT as adoptCnt, /* 물리 컬럼 사용 */
-		(SELECT COUNT(*) FROM TB_ANSWER WHERE LAWYER_ID = l.LAWYER_ID) as answerCnt,
+		l.ADOPT_CNT as
+		adoptCnt, /* 물리 컬럼 사용 */
+		(SELECT COUNT(*) FROM TB_ANSWER WHERE
+		LAWYER_ID = l.LAWYER_ID) as answerCnt,
 		/* 실시간 서브쿼리 */
 
-		a.SAVE_PATH as savePath
+		a.SAVE_PATH as
+		savePath
 		FROM TB_MEMBER m
 		INNER JOIN TB_LAWYER l ON m.MEMBER_ID =
 		l.MEMBER_ID
@@ -105,14 +143,18 @@
 		WHERE m.MEMBER_ID = #{memberId}
 	</select>
 
-	<select id="findPendingLawyers"
-		resultType="com.edu.springboot.domain.lawyer.vo.LawyerVO">
-		SELECT m.NAME as name, l.* FROM TB_MEMBER m
-		JOIN TB_LAWYER l
-		ON m.MEMBER_ID = l.MEMBER_ID
+	<select id="findPendingLawyers" resultMap="pendingLawyerMap">
+		SELECT
+		m.NAME,
+		m.LOGIN_ID,
+		l.*,
+		a.SAVE_PATH
+		FROM TB_MEMBER m
+		JOIN TB_LAWYER l ON m.MEMBER_ID = l.MEMBER_ID
+		LEFT JOIN
+		TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID AND a.REF_TYPE = 'LAWYER'
 		WHERE l.APPROVE_STATUS = 'PENDING'
-		ORDER BY
-		l.CREATED_AT ASC
+		ORDER BY l.CREATED_AT ASC
 	</select>
 
 	<update id="updateApproveStatus"
@@ -132,15 +174,19 @@
 		INSERT INTO TB_LAWYER (
 		LAWYER_ID, MEMBER_ID, LICENSE_NO, SPECIALTY,
 		OFFICE_NAME, OFFICE_ADDR, OFFICE_DETAIL_ADDR,
-		APPROVE_STATUS, CREATED_AT, UPDATED_AT
+		APPROVE_STATUS,
+		CREATED_AT, UPDATED_AT
 		) VALUES (
 		#{lawyerId},
 		#{memberId},
-		#{licenseNo, jdbcType=VARCHAR},
+		#{licenseNo,
+		jdbcType=VARCHAR},
 		#{specialty, jdbcType=VARCHAR},
-		#{officeName, jdbcType=VARCHAR},
+		#{officeName,
+		jdbcType=VARCHAR},
 		#{officeAddr, jdbcType=VARCHAR},
-		#{officeDetailAddr, jdbcType=VARCHAR},
+		#{officeDetailAddr,
+		jdbcType=VARCHAR},
 		#{approveStatus, jdbcType=VARCHAR},
 		SYSDATE,
 		SYSDATE
@@ -154,11 +200,14 @@
 		jdbcType=VARCHAR},
 		OFFICE_ADDR = #{officeAddr, jdbcType=VARCHAR},
 		SPECIALTY = #{specialty, jdbcType=VARCHAR},
-		INTRO = #{intro, jdbcType=VARCHAR},
+		INTRO = #{intro,
+		jdbcType=VARCHAR},
 		CAREER = #{career, jdbcType=VARCHAR},
-		CONSULT_FEE = #{consultFee, jdbcType=NUMERIC},
+		CONSULT_FEE =
+		#{consultFee, jdbcType=NUMERIC},
 		UPDATED_AT = SYSDATE
-		WHERE LAWYER_ID = #{lawyerId}
+		WHERE LAWYER_ID =
+		#{lawyerId}
 	</update>
 
 </mapper>

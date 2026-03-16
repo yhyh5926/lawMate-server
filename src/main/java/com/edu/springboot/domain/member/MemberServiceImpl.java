@@ -88,8 +88,8 @@ public class MemberServiceImpl implements MemberService {
 			if (dto.getFiles() != null && !dto.getFiles().isEmpty()) {
 				for (MultipartFile file : dto.getFiles()) {
 					try {
-//						증빙서류는 "lawyer" 폴더에 분리 저장
-						String savePath = fileUtil.saveFile(file, "lawyer");
+//						💡 [수정됨] 증빙서류는 무조건 "member" 폴더에 저장
+						String savePath = fileUtil.saveFile(file, "member");
 						if (savePath != null) {
 							AttachmentVO attach = new AttachmentVO();
 							attach.setRefType("LAWYER");
