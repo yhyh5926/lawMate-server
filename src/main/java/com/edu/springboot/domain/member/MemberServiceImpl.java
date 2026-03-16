@@ -265,9 +265,13 @@ public class MemberServiceImpl implements MemberService {
 		return memberMapper.withdrawMember(memberId) > 0;
 	}
 
-//	내가 쓴 글 목록 조회
+//	💡 [해결] 탭별 데이터 필터링 로직 (파라미터 Map 구성)
 	@Override
 	public List<Map<String, Object>> findMyPosts(Long memberId, String type) {
-		return memberMapper.findMyPosts(memberId, type);
+		Map<String, Object> params = new HashMap<>();
+		params.put("memberId", memberId);
+		params.put("type", type);
+
+		return memberMapper.findMyPosts(params);
 	}
 }

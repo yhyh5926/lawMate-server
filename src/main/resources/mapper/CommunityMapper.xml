@@ -1,377 +1,382 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.edu.springboot.domain.community.CommunityMapper">
+<mapper
+	namespace="com.edu.springboot.domain.community.CommunityMapper">
 
 	<select id="list"
-    resultType="com.edu.springboot.domain.community.vo.PostVo">
-    SELECT *
-    FROM (
-        SELECT inner_query.*, ROWNUM row_num
-        FROM (
-            SELECT
-                p.post_id,
-                p.member_id,
-                p.case_type,
-                p.title,
-                p.content,
-                p.view_cnt,
-                p.comment_cnt,
-                p.like_cnt,
-                p.status,
-                p.created_at,
-                p.updated_at,
-                m.name
-            FROM tb_post p
-            JOIN tb_member m ON p.member_id = m.member_id
-            WHERE p.status = 'ACTIVE'
-            AND p.case_type != 'POLL'
-            <choose>
-                <when test="sortType == 'views'">
-                    ORDER BY p.view_cnt DESC, p.post_id DESC
-                </when>
-                <when test="sortType == 'comments'">
-                    ORDER BY p.comment_cnt DESC, p.post_id DESC
-                </when>
-                <otherwise>
-                    ORDER BY p.post_id DESC
-                </otherwise>
-            </choose>
-        ) inner_query
-        WHERE ROWNUM &lt;= #{endRow}
-    )
-    WHERE row_num &gt;= #{startRow}
-</select>
-	
+		resultType="com.edu.springboot.domain.community.vo.PostVo">
+		SELECT *
+		FROM (
+		SELECT inner_query.*, ROWNUM row_num
+		FROM (
+		SELECT
+		p.post_id as "postId",
+		p.member_id as "memberId",
+		p.case_type as "caseType",
+		p.title,
+		p.content,
+		p.view_cnt as "viewCnt",
+		p.comment_cnt as "commentCnt",
+		p.like_cnt as "likeCnt",
+		p.status,
+		p.created_at as "createdAt",
+		p.updated_at as "updatedAt",
+		m.name
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.status = 'ACTIVE'
+		AND p.case_type != 'POLL'
+		<choose>
+			<when test="sortType == 'views'">
+				ORDER BY p.view_cnt DESC, p.post_id DESC
+			</when>
+			<when test="sortType == 'comments'">
+				ORDER BY p.comment_cnt DESC, p.post_id DESC
+			</when>
+			<otherwise>
+				ORDER BY p.post_id DESC
+			</otherwise>
+		</choose>
+		) inner_query
+		WHERE ROWNUM &lt;= #{endRow}
+		)
+		WHERE row_num &gt;= #{startRow}
+	</select>
+
 	<select id="getPostCount" resultType="int">
-	    SELECT COUNT(*)
-	    FROM tb_post
-	    WHERE status = 'ACTIVE'
-	    AND case_type != 'POLL'
+		SELECT COUNT(*)
+		FROM tb_post
+		WHERE status = 'ACTIVE'
+		AND case_type != 'POLL'
 	</select>
 
 	<select id="detail"
-    resultType="com.edu.springboot.domain.community.vo.PostVo"
-    parameterType="int">
-	    SELECT
-	        p.post_id,
-	        p.member_id,
-	        p.case_type,
-	        p.title,
-	        p.content,
-	        p.view_cnt,
-	        p.comment_cnt,
-	        p.like_cnt,
-	        p.status,
-	        p.created_at,
-	        p.updated_at,
-	        m.name
-	    FROM tb_post p
-	    JOIN tb_member m ON p.member_id = m.member_id
-	    WHERE p.post_id = #{postId}
-	      AND p.status = 'ACTIVE'
+		resultType="com.edu.springboot.domain.community.vo.PostVo"
+		parameterType="int">
+		SELECT
+		p.post_id as "postId",
+		p.member_id as "memberId",
+		p.case_type as "caseType",
+		p.title,
+		p.content,
+		p.view_cnt as "viewCnt",
+		p.comment_cnt as "commentCnt",
+		p.like_cnt as "likeCnt",
+		p.status,
+		p.created_at as "createdAt",
+		p.updated_at as "updatedAt",
+		m.name
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.post_id = #{postId}
+		AND p.status = 'ACTIVE'
 	</select>
-    
-    <insert id="insertPost"
-    parameterType="com.edu.springboot.domain.community.vo.PostVo">
 
-	    <selectKey keyProperty="postId" resultType="int" order="BEFORE">
-	        SELECT SEQ_POST.NEXTVAL FROM DUAL
-	    </selectKey>
-	
-	    INSERT INTO tb_post
-	    (
-	        post_id,
-	        member_id,
-	        case_type,
-	        title,
-	        content,
-	        view_cnt,
-	        comment_cnt,
-	        status,
-	        created_at
-	    )
-	    VALUES
-	    (
-	        #{postId},
-	        #{memberId},
-	        #{caseType},
-	        #{title},
-	        #{content},
-	        0,
-	        0,
-	        'ACTIVE',
-	        SYSDATE
-	    )
+	<insert id="insertPost"
+		parameterType="com.edu.springboot.domain.community.vo.PostVo">
+
+		<selectKey keyProperty="postId" resultType="int"
+			order="BEFORE">
+			SELECT SEQ_POST.NEXTVAL FROM DUAL
+		</selectKey>
+
+		INSERT INTO tb_post
+		(
+		post_id,
+		member_id,
+		case_type,
+		title,
+		content,
+		view_cnt,
+		comment_cnt,
+		status,
+		created_at
+		)
+		VALUES
+		(
+		#{postId},
+		#{memberId},
+		#{caseType},
+		#{title},
+		#{content},
+		0,
+		0,
+		'ACTIVE',
+		SYSDATE
+		)
 	</insert>
-	
+
 	<update id="increaseViewCnt">
-	    UPDATE tb_post
-	    SET view_cnt = view_cnt + 1
-	    WHERE post_id = #{postId}
-	      AND status = 'ACTIVE'
+		UPDATE tb_post
+		SET view_cnt = view_cnt + 1
+		WHERE post_id = #{postId}
+		AND status = 'ACTIVE'
 	</update>
-	
+
 	<update id="updatePost"
-    parameterType="com.edu.springboot.domain.community.vo.PostVo">
-	    UPDATE tb_post
-	    SET case_type = #{caseType},
-	        title = #{title},
-	        content = #{content},
-	        updated_at = SYSDATE
-	    WHERE post_id = #{postId}
-	      AND status = 'ACTIVE'
+		parameterType="com.edu.springboot.domain.community.vo.PostVo">
+		UPDATE tb_post
+		SET case_type = #{caseType},
+		title = #{title},
+		content = #{content},
+		updated_at = SYSDATE
+		WHERE post_id = #{postId}
+		AND status = 'ACTIVE'
 	</update>
 
-    
 
-    <update id="updatePostStatus">
-        UPDATE tb_post
-        SET status = #{status}, updated_at = SYSDATE
-        WHERE post_id = #{postId}
-    </update>
-	
+
+	<update id="updatePostStatus">
+		UPDATE tb_post
+		SET status = #{status}, updated_at = SYSDATE
+		WHERE post_id = #{postId}
+	</update>
+
 	<select id="topLikedPosts"
-    resultType="com.edu.springboot.domain.community.vo.PostVo">
-    SELECT *
-	    FROM (
-	        SELECT
-	            p.post_id,
-	            p.member_id,
-	            p.case_type,
-	            p.title,
-	            p.content,
-	            p.view_cnt,
-	            p.comment_cnt,
-	            p.like_cnt,
-	            p.status,
-	            p.created_at,
-	            p.updated_at,
-	            m.name
-	        FROM tb_post p
-	        JOIN tb_member m ON p.member_id = m.member_id
-	        WHERE p.status = 'ACTIVE'
-	        ORDER BY p.like_cnt DESC, p.post_id DESC
-	    )
-	    WHERE ROWNUM &lt;= 3
+		resultType="com.edu.springboot.domain.community.vo.PostVo">
+		SELECT *
+		FROM (
+		SELECT
+		p.post_id as "postId",
+		p.member_id as "memberId",
+		p.case_type as "caseType",
+		p.title,
+		p.content,
+		p.view_cnt as "viewCnt",
+		p.comment_cnt as "commentCnt",
+		p.like_cnt as "likeCnt",
+		p.status,
+		p.created_at as "createdAt",
+		p.updated_at as "updatedAt",
+		m.name
+		FROM tb_post p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.status = 'ACTIVE'
+		ORDER BY p.like_cnt DESC, p.post_id DESC
+		)
+		WHERE ROWNUM &lt;= 3
 	</select>
-	
-	<!-- 댓글 관련 -->
+
 	<select id="commentList"
-    resultType="com.edu.springboot.domain.community.vo.CommentVo">
-	    SELECT
-	        c.comment_id,
-	        c.post_id,
-	        c.member_id,
-	        c.parent_id,
-	        c.content,
-	        c.board_type,
-	        c.status,
-	        c.created_at,
-	        c.updated_at,
-	        m.name
-	    FROM tb_comment c
-	    JOIN tb_member m ON c.member_id = m.member_id
-	    WHERE c.post_id = #{postId}
-	      AND c.board_type = #{boardType}
-	      AND c.status IN ('ACTIVE', 'DELETED')
-	    ORDER BY NVL(c.parent_id, c.comment_id), c.parent_id NULLS FIRST, c.comment_id ASC
+		resultType="com.edu.springboot.domain.community.vo.CommentVo">
+		SELECT
+		c.comment_id as "commentId",
+		c.post_id as "postId",
+		c.member_id as "memberId",
+		c.parent_id as "parentId",
+		c.content,
+		c.board_type as "boardType",
+		c.status,
+		c.created_at as "createdAt",
+		c.updated_at as "updatedAt",
+		m.name
+		FROM tb_comment c
+		JOIN tb_member m ON c.member_id = m.member_id
+		WHERE c.post_id = #{postId}
+		AND c.board_type = #{boardType}
+		AND c.status IN ('ACTIVE', 'DELETED')
+		ORDER BY NVL(c.parent_id, c.comment_id), c.parent_id NULLS FIRST,
+		c.comment_id ASC
 	</select>
-    
-    <insert id="insertComment"
-    parameterType="com.edu.springboot.domain.community.vo.CommentVo">
-	    <selectKey keyProperty="commentId" resultType="int" order="BEFORE">
-	        SELECT seq_comment.NEXTVAL FROM dual
-	    </selectKey>
-	
-	    INSERT INTO tb_comment (
-	        comment_id,
-	        post_id,
-	        member_id,
-	        parent_id,
-	        content,
-	        board_type,
-	        status,
-	        created_at
-	    ) VALUES (
-	        #{commentId},
-	        #{postId},
-	        #{memberId},
-	        #{parentId, jdbcType=NUMERIC},
-	        #{content},
-	        #{boardType},
-	        'ACTIVE',
-	        SYSDATE
-	    )
+
+	<insert id="insertComment"
+		parameterType="com.edu.springboot.domain.community.vo.CommentVo">
+		<selectKey keyProperty="commentId" resultType="int"
+			order="BEFORE">
+			SELECT seq_comment.NEXTVAL FROM dual
+		</selectKey>
+
+		INSERT INTO tb_comment (
+		comment_id,
+		post_id,
+		member_id,
+		parent_id,
+		content,
+		board_type,
+		status,
+		created_at
+		) VALUES (
+		#{commentId},
+		#{postId},
+		#{memberId},
+		#{parentId, jdbcType=NUMERIC},
+		#{content},
+		#{boardType},
+		'ACTIVE',
+		SYSDATE
+		)
 	</insert>
-	
+
 	<update id="increaseCommentCnt">
-	    UPDATE tb_post
-	    SET comment_cnt = comment_cnt + 1
-	    WHERE post_id = #{postId}
+		UPDATE tb_post
+		SET comment_cnt = comment_cnt + 1
+		WHERE post_id = #{postId}
 	</update>
-	
-	<select id="getCommentById"
-    parameterType="int"
-    resultType="com.edu.springboot.domain.community.vo.CommentVo">
-	    SELECT
-	        comment_id,
-	        post_id,
-	        member_id,
-	        parent_id,
-	        content,
-	        status,
-	        created_at,
-	        updated_at
-	    FROM tb_comment
-	    WHERE comment_id = #{commentId}
+
+	<select id="getCommentById" parameterType="int"
+		resultType="com.edu.springboot.domain.community.vo.CommentVo">
+		SELECT
+		comment_id as "commentId",
+		post_id as "postId",
+		member_id as "memberId",
+		parent_id as "parentId",
+		content,
+		status,
+		created_at as "createdAt",
+		updated_at as "updatedAt"
+		FROM tb_comment
+		WHERE comment_id = #{commentId}
 	</select>
-	
+
 	<update id="deleteComment">
-	    UPDATE tb_comment
-	    SET status = 'DELETED',
-	        updated_at = SYSDATE
-	    WHERE comment_id = #{commentId}
+		UPDATE tb_comment
+		SET status = 'DELETED',
+		updated_at = SYSDATE
+		WHERE comment_id = #{commentId}
 	</update>
-	
+
 	<update id="decreaseCommentCnt">
-	    UPDATE tb_post
-	    SET comment_cnt = comment_cnt - 1
-	    WHERE post_id = #{postId}
-	      AND comment_cnt &gt; 0
+		UPDATE tb_post
+		SET comment_cnt = comment_cnt - 1
+		WHERE post_id = #{postId}
+		AND comment_cnt &gt; 0
 	</update>
-    
-    <!-- 게시물 좋아요 관련 -->
+
 	<select id="checkPostLike" resultType="int">
-	    SELECT COUNT(*)
-	    FROM tb_post_like
-	    WHERE post_id = #{postId}
-	      AND member_id = #{memberId}
+		SELECT COUNT(*)
+		FROM tb_post_like
+		WHERE post_id = #{postId}
+		AND member_id = #{memberId}
 	</select>
-	
+
 	<insert id="insertPostLike">
-	    INSERT INTO tb_post_like (
-	        like_id,
-	        post_id,
-	        member_id,
-	        created_at
-	    ) VALUES (
-	        seq_tb_post_like.NEXTVAL,
-	        #{postId},
-	        #{memberId},
-	        SYSDATE
-	    )
+		INSERT INTO tb_post_like (
+		like_id,
+		post_id,
+		member_id,
+		created_at
+		) VALUES (
+		seq_tb_post_like.NEXTVAL,
+		#{postId},
+		#{memberId},
+		SYSDATE
+		)
 	</insert>
-	
+
 	<delete id="deletePostLike">
-	    DELETE FROM tb_post_like
-	    WHERE post_id = #{postId}
-	      AND member_id = #{memberId}
+		DELETE FROM tb_post_like
+		WHERE post_id = #{postId}
+		AND member_id = #{memberId}
 	</delete>
-	
+
 	<update id="increaseLikeCnt">
-	    UPDATE tb_post
-	    SET like_cnt = like_cnt + 1
-	    WHERE post_id = #{postId}
+		UPDATE tb_post
+		SET like_cnt = like_cnt + 1
+		WHERE post_id = #{postId}
 	</update>
-	
+
 	<update id="decreaseLikeCnt">
-	    UPDATE tb_post
-	    SET like_cnt = like_cnt - 1
-	    WHERE post_id = #{postId}
-	      AND like_cnt > 0
+		UPDATE tb_post
+		SET like_cnt = like_cnt - 1
+		WHERE post_id = #{postId}
+		AND like_cnt > 0
 	</update>
-	
-	
-	<!-- 투표 게시물 관련 -->
-    <select id="pollList"
-    resultType="com.edu.springboot.domain.poll.vo.PollVo">
-	    SELECT *
-	    FROM (
-	        SELECT inner_query.*, ROWNUM row_num
-	        FROM (
-	            SELECT
-	                p.poll_id,
-	                p.post_id,
-	                p.member_id,
-	                p.title,
-	                p.description,
-	                p.disclaimer,
-	                p.end_date,
-	                p.status,
-	                p.created_at,
-	                m.name
-	            FROM tb_poll p
-	            JOIN tb_member m ON p.member_id = m.member_id
-	            WHERE p.status != 'DELETED'
-	            <choose>
-	                <when test="sortType == 'endDate'">
-	                    ORDER BY p.end_date ASC, p.poll_id DESC
-	                </when>
-	                <when test="sortType == 'status'">
-	                    ORDER BY
-	                        CASE WHEN p.status = 'OPEN' THEN 0 ELSE 1 END,
-	                        p.poll_id DESC
-	                </when>
-	                <otherwise>
-	                    ORDER BY p.poll_id DESC
-	                </otherwise>
-	            </choose>
-	        ) inner_query
-	        WHERE ROWNUM &lt;= #{endRow}
-	    )
-	    WHERE row_num &gt;= #{startRow}
-	</select>
-    
-    <select id="getPollCount" resultType="int">
-	    SELECT COUNT(*)
-	    FROM tb_poll
-	    WHERE status != 'DELETED'
+
+
+	<select id="pollList"
+		resultType="com.edu.springboot.domain.poll.vo.PollVo">
+		SELECT *
+		FROM (
+		SELECT inner_query.*, ROWNUM row_num
+		FROM (
+		SELECT
+		p.poll_id as "pollId",
+		p.post_id as "postId",
+		p.member_id as "memberId",
+		p.title,
+		p.description,
+		p.disclaimer,
+		p.end_date as "endDate",
+		p.status,
+		p.created_at as "createdAt",
+		m.name
+		FROM tb_poll p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.status != 'DELETED'
+		<choose>
+			<when test="sortType == 'endDate'">
+				ORDER BY p.end_date ASC, p.poll_id DESC
+			</when>
+			<when test="sortType == 'status'">
+				ORDER BY
+				CASE WHEN p.status = 'OPEN' THEN 0 ELSE 1 END,
+				p.poll_id DESC
+			</when>
+			<otherwise>
+				ORDER BY p.poll_id DESC
+			</otherwise>
+		</choose>
+		) inner_query
+		WHERE ROWNUM &lt;= #{endRow}
+		)
+		WHERE row_num &gt;= #{startRow}
 	</select>
 
-    <select id="pollDetail" resultType="com.edu.springboot.domain.poll.vo.PollVo" parameterType="int">
-        SELECT
-            p.poll_id,
-            p.post_id,
-            p.member_id,
-            p.title,
-            p.description,
-            p.disclaimer,
-            p.end_date,
-            p.status,
-            p.created_at,
-            m.name
-        FROM tb_poll p
-        JOIN tb_member m ON p.member_id = m.member_id
-        WHERE p.poll_id = #{pollId}
-    </select>
+	<select id="getPollCount" resultType="int">
+		SELECT COUNT(*)
+		FROM tb_poll
+		WHERE status != 'DELETED'
+	</select>
 
-    <select id="optionList" resultType="com.edu.springboot.domain.poll.vo.PollOptionVo">
-        SELECT
-            option_id,
-            poll_id,
-            option_text,
-            vote_cnt
-        FROM tb_poll_option
-        WHERE poll_id = #{pollId}
-        ORDER BY option_id ASC
-    </select>
+	<select id="pollDetail"
+		resultType="com.edu.springboot.domain.poll.vo.PollVo"
+		parameterType="int">
+		SELECT
+		p.poll_id as "pollId",
+		p.post_id as "postId",
+		p.member_id as "memberId",
+		p.title,
+		p.description,
+		p.disclaimer,
+		p.end_date as "endDate",
+		p.status,
+		p.created_at as "createdAt",
+		m.name
+		FROM tb_poll p
+		JOIN tb_member m ON p.member_id = m.member_id
+		WHERE p.poll_id = #{pollId}
+	</select>
 
-    <select id="checkAlreadyVoted" resultType="int">
-        SELECT COUNT(*)
-        FROM tb_poll_vote
-        WHERE poll_id = #{pollId}
-        AND member_id = #{memberId}
-    </select>
+	<select id="optionList"
+		resultType="com.edu.springboot.domain.poll.vo.PollOptionVo">
+		SELECT
+		option_id as "optionId",
+		poll_id as "pollId",
+		option_text as "optionText",
+		vote_cnt as "voteCnt"
+		FROM tb_poll_option
+		WHERE poll_id = #{pollId}
+		ORDER BY option_id ASC
+	</select>
 
-    <insert id="insertVote" parameterType="com.edu.springboot.domain.poll.vo.VoteVo">
-        <selectKey keyProperty="voteId" resultType="int" order="BEFORE">
-            SELECT SEQ_POLL_VOTE.NEXTVAL FROM DUAL
-        </selectKey>
-        INSERT INTO tb_poll_vote
-        (vote_id, poll_id, option_id, member_id, voted_at)
-        VALUES
-        (#{voteId}, #{pollId}, #{optionId}, #{memberId}, SYSDATE)
-    </insert>
+	<select id="checkAlreadyVoted" resultType="int">
+		SELECT COUNT(*)
+		FROM tb_poll_vote
+		WHERE poll_id = #{pollId}
+		AND member_id = #{memberId}
+	</select>
+
+	<insert id="insertVote"
+		parameterType="com.edu.springboot.domain.poll.vo.VoteVo">
+		<selectKey keyProperty="voteId" resultType="int"
+			order="BEFORE">
+			SELECT SEQ_POLL_VOTE.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO tb_poll_vote
+		(vote_id, poll_id, option_id, member_id, voted_at)
+		VALUES
+		(#{voteId}, #{pollId}, #{optionId}, #{memberId}, SYSDATE)
+	</insert>
 
 	<update id="increaseVoteCnt">
 		UPDATE tb_poll_option
@@ -379,109 +384,112 @@
 		WHERE poll_id = #{pollId}
 		AND option_id = #{optionId}
 	</update>
-	
+
 	<update id="updatePollStatus">
-	    UPDATE tb_poll
-	    SET status = #{status}
-	    WHERE poll_id = #{pollId}
+		UPDATE tb_poll
+		SET status = #{status}
+		WHERE poll_id = #{pollId}
 	</update>
-	
+
 	<insert id="insertPollPost"
-    parameterType="com.edu.springboot.domain.poll.vo.PollVo">
+		parameterType="com.edu.springboot.domain.poll.vo.PollVo">
 
-	    <selectKey keyProperty="postId" resultType="int" order="BEFORE">
-	        SELECT SEQ_POST.NEXTVAL FROM dual
-	    </selectKey>
-	
-	    INSERT INTO tb_post (
-	        post_id,
-	        member_id,
-	        case_type,
-	        title,
-	        content,
-	        view_cnt,
-	        comment_cnt,
-	        like_cnt,
-	        status,
-	        created_at
-	    ) VALUES (
-	        #{postId},
-	        #{memberId},
-	        'POLL',
-	        #{title},
-	        #{description},
-	        0,
-	        0,
-	        0,
-	        'ACTIVE',
-	        SYSDATE
-	    )
+		<selectKey keyProperty="postId" resultType="int"
+			order="BEFORE">
+			SELECT SEQ_POST.NEXTVAL FROM dual
+		</selectKey>
+
+		INSERT INTO tb_post (
+		post_id,
+		member_id,
+		case_type,
+		title,
+		content,
+		view_cnt,
+		comment_cnt,
+		like_cnt,
+		status,
+		created_at
+		) VALUES (
+		#{postId},
+		#{memberId},
+		'POLL',
+		#{title},
+		#{description},
+		0,
+		0,
+		0,
+		'ACTIVE',
+		SYSDATE
+		)
 	</insert>
-	
+
 	<insert id="insertPoll"
-    parameterType="com.edu.springboot.domain.poll.vo.PollVo">
+		parameterType="com.edu.springboot.domain.poll.vo.PollVo">
 
-	    <selectKey keyProperty="pollId" resultType="int" order="BEFORE">
-	        SELECT SEQ_POLL.NEXTVAL FROM dual
-	    </selectKey>
-	
-	    INSERT INTO tb_poll (
-	        poll_id,
-	        post_id,
-	        member_id,
-	        title,
-	        description,
-	        disclaimer,
-	        end_date,
-	        status,
-	        created_at
-	    ) VALUES (
-	        #{pollId},
-	        #{postId, jdbcType=NUMERIC},
-	        #{memberId},
-	        #{title},
-	        #{description},
-	        #{disclaimer, jdbcType=VARCHAR},
-	        TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1,
-	        'OPEN',
-	        SYSDATE
-	    )
+		<selectKey keyProperty="pollId" resultType="int"
+			order="BEFORE">
+			SELECT SEQ_POLL.NEXTVAL FROM dual
+		</selectKey>
+
+		INSERT INTO tb_poll (
+		poll_id,
+		post_id,
+		member_id,
+		title,
+		description,
+		disclaimer,
+		end_date,
+		status,
+		created_at
+		) VALUES (
+		#{pollId},
+		#{postId, jdbcType=NUMERIC},
+		#{memberId},
+		#{title},
+		#{description},
+		#{disclaimer, jdbcType=VARCHAR},
+		TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1,
+		'OPEN',
+		SYSDATE
+		)
 	</insert>
-		
+
 	<insert id="insertPollOption">
-	    INSERT INTO tb_poll_option (
-	        option_id,
-	        poll_id,
-	        option_text,
-	        vote_cnt
-	    ) VALUES (
-	        SEQ_POLL_OPTION.NEXTVAL,
-	        #{pollId},
-	        #{optionText},
-	        0
-	    )
+		INSERT INTO tb_poll_option (
+		option_id,
+		poll_id,
+		option_text,
+		vote_cnt
+		) VALUES (
+		SEQ_POLL_OPTION.NEXTVAL,
+		#{pollId},
+		#{optionText},
+		0
+		)
 	</insert>
-	
+
 	<select id="getPollPostId" resultType="int">
-	    SELECT post_id
-	    FROM tb_poll
-	    WHERE poll_id = #{pollId}
+		SELECT post_id
+		FROM tb_poll
+		WHERE poll_id = #{pollId}
 	</select>
-	<update id="updatePoll" parameterType="com.edu.springboot.domain.poll.vo.PollVo">
-    UPDATE tb_poll
-	    SET
-	        title = #{title},
-	        description = #{description},
-	        disclaimer = #{disclaimer, jdbcType=VARCHAR},
-	        end_date = TO_DATE(#{endDate}, 'YYYY-MM-DD')
-	    WHERE poll_id = #{pollId}
+	<update id="updatePoll"
+		parameterType="com.edu.springboot.domain.poll.vo.PollVo">
+		UPDATE tb_poll
+		SET
+		title = #{title},
+		description = #{description},
+		disclaimer = #{disclaimer, jdbcType=VARCHAR},
+		end_date = TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		WHERE poll_id = #{pollId}
 	</update>
-	
+
 	<update id="closeExpiredPolls">
-	    UPDATE tb_poll
-	    SET status = 'CLOSED'
-	    WHERE status = 'OPEN'
-	      AND end_date &lt; SYSDATE
+		UPDATE tb_poll
+		SET status = 'CLOSED'
+		WHERE status = 'OPEN'
+		AND end_date &lt; SYSDATE
 	</update>
 
 </mapper>
