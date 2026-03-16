@@ -138,7 +138,7 @@
 
 	<!-- 즉시 삭제 -->
 	<delete id="deleteConsult">
-		DELETE FROM TB_CONSULT WHERE CONSULT_ID = #{consultId}
+	    DELETE FROM TB_CONSULT WHERE CONSULT_ID = #{consultId}
 	</delete>
 
 	<!-- 7일 지난 취소 건 자동 삭제 (스케줄러용) -->
@@ -151,5 +151,27 @@
 	<select id="selectLawyerIdByMemberId" resultType="long">
 		SELECT LAWYER_ID FROM TB_LAWYER WHERE MEMBER_ID = #{memberId}
 	</select>
-
+	
+	<update id="updatePastConfirmedToDone">
+	    UPDATE TB_CONSULT
+	    SET STATUS = 'DONE',
+	        UPDATED_AT = SYSDATE
+	    WHERE STATUS = 'CONFIRMED'
+	    AND CONSULT_DATE &lt; SYSDATE
+	</update>
+	
+	<delete id="deleteReviewByConsultId">
+	    DELETE FROM TB_REVIEW WHERE CONSULT_ID = #{consultId}
+	</delete>
+	
+	<delete id="deletePaymentByConsultId">
+	    DELETE FROM TB_PAYMENT WHERE CONSULT_ID = #{consultId}
+	</delete>
+	
+	<delete id="deleteSettlementByPaymentConsultId">
+	    DELETE FROM TB_SETTLEMENT
+	    WHERE PAYMENT_ID IN (
+	        SELECT PAYMENT_ID FROM TB_PAYMENT WHERE CONSULT_ID = #{consultId}
+	    )
+	</delete>
 </mapper>

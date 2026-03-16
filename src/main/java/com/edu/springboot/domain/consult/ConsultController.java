@@ -196,4 +196,26 @@ public class ConsultController {
         consultMapper.updateReject(consultId, reason);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+    
+    @DeleteMapping("/{consultId}/done-delete")
+    public ResponseEntity<ApiResponse<Void>> doneDelete(
+            @PathVariable("consultId") Long consultId,
+            @RequestHeader("Authorization") String bearer) {
+        Long memberId = getMemberId(bearer);
+        ConsultVO vo = consultMapper.selectConsultByNo(consultId);
+        if (vo == null) return ResponseEntity.notFound().build();
+        
+        // 일반회원 또는 변호사 둘 다 삭제 가능
+        Long lawyerId = consultMapper.selectLawyerIdByMemberId(memberId);
+        boolean isMember = vo.getMemberId().equals(memberId);
+        boolean isLawyer = lawyerId != null && vo.getLawyerId().equals(lawyerId);
+        if (!isMember && !isLawyer)
+            return ResponseEntity.status(403).body(ApiResponse.fail("권한이 없습니다."));
+        
+        consultMapper.deleteSettlementByPaymentConsultId(consultId);
+        consultMapper.deleteReviewByConsultId(consultId);
+        consultMapper.deletePaymentByConsultId(consultId);
+        consultMapper.deleteConsult(consultId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

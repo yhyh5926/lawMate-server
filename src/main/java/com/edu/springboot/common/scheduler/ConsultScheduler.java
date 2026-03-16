@@ -16,4 +16,12 @@ public class ConsultScheduler {
     public void deleteOldCancelledConsults() {
         consultMapper.deleteOldCancelledConsults();
     }
+    
+    @Scheduled(fixedDelay = 600000) // 매 10분마다
+    public void autoCompletePastConsults() {
+        int count = consultMapper.updatePastConfirmedToDone();
+        if (count > 0) {
+            System.out.println("[ConsultScheduler] CONFIRMED → DONE 자동 전환: " + count + "건");
+        }
+    }
 }

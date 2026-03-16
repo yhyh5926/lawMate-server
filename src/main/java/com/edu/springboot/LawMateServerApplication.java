@@ -1,17 +1,19 @@
 package com.edu.springboot;
 
-
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.edu.springboot.domain.precedent.PrecedentMapper;
 import com.edu.springboot.domain.lawyer.LawyerMapper;
 import com.edu.springboot.domain.lawyer.vo.LawyerVO;
+import com.edu.springboot.domain.precedent.PrecedentMapper;
+
 
 @MapperScan("com.edu.springboot.domain")
+@EnableScheduling
 @SpringBootApplication(excludeName = {
 		"org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration",
 		"org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration" })
