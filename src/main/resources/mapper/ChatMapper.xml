@@ -99,7 +99,7 @@
         INSERT INTO TB_CHAT_MSG
             (MSG_ID, ROOM_ID, SENDER_ID, MSG_TYPE, CONTENT, FILE_URL, READ_YN, DELETED_YN, EDITED_YN, CREATED_AT)
         VALUES
-            (SEQ_CHAT_MSG.NEXTVAL,
+            (#{msgNo},
              #{roomNo, jdbcType=NUMERIC},
              #{senderNo, jdbcType=NUMERIC},
              #{msgType, jdbcType=VARCHAR},

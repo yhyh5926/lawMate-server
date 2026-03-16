@@ -1,5 +1,4 @@
 package com.edu.springboot.domain.attachment;
-
 import com.edu.springboot.common.jwt.JwtUtil;
 import com.edu.springboot.common.response.ApiResponse;
 import com.edu.springboot.domain.attachment.vo.AttachmentVO;
@@ -8,9 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,7 +17,6 @@ import java.util.UUID;
 @RequestMapping("/api/attachment")
 @RequiredArgsConstructor
 public class AttachmentController {
-
     private final AttachmentMapper attachmentMapper;
     private final JwtUtil jwtUtil;
 
@@ -29,24 +27,22 @@ public class AttachmentController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> upload(
             @RequestHeader("Authorization") String bearer,
             @RequestPart("file") MultipartFile file,
-            @RequestParam("roomNo") Long roomNo) throws IOException {
+            @RequestParam(value = "roomNo", required = false) Long roomNo,
+            @RequestParam(value = "consultId", required = false) Long consultId) throws IOException {
 
         Long uploaderId = jwtUtil.getMemberNo(bearer.replace("Bearer ", ""));
-
         String projectRoot = System.getProperty("user.dir");
         File dir = new File(projectRoot, uploadDir);
         if (!dir.exists()) dir.mkdirs();
-
         String origName = file.getOriginalFilename();
         String saveName = UUID.randomUUID() + "_" + origName;
         File destFile = new File(dir, saveName);
         file.transferTo(destFile);
-
         String savePath = "/uploads/chat/" + saveName;
 
         AttachmentVO vo = new AttachmentVO();
-        vo.setRefType("CHAT");
-        vo.setRefId(roomNo);  // ← roomNo를 refId로 사용
+        vo.setRefType(consultId != null ? "CONSULT" : "CHAT");
+        vo.setRefId(consultId != null ? consultId : roomNo);
         vo.setUploaderId(uploaderId);
         vo.setOrigName(origName);
         vo.setSavePath(savePath);
@@ -55,10 +51,17 @@ public class AttachmentController {
         attachmentMapper.insertAttachment(vo);
 
         String fileUrl = "http://localhost:8080" + savePath;
-
         return ResponseEntity.ok(ApiResponse.success(Map.of(
                 "fileUrl", fileUrl,
                 "originalName", origName
         )));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<List<AttachmentVO>>> list(
+    		@RequestParam("refType") String refType,
+            @RequestParam("refId") Long refId) {
+        List<AttachmentVO> list = attachmentMapper.findAttachmentsByRef(refType, refId);
+        return ResponseEntity.ok(ApiResponse.success(list));
     }
 }
