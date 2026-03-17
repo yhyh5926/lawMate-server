@@ -6,7 +6,7 @@ import oracledb
 DB_CONFIG = {
     "user": "lawMate",
     "password": "1234",
-    "dsn": "192.168.0.32:1521/xe"  # IP:포트/서비스네임
+    "dsn": "localhost:1521/xe"  # IP:포트/서비스네임
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -44,15 +44,15 @@ public class MainController {
 		var recentPosts = mainMapper.selectRecentPosts(5);
 		res.setRecentPosts(recentPosts);
 
-		// 8.  today / weekly
-		int todayCaseCount = mainMapper.countTodayCases();
+		// 8. today / weekly
+		int todayConsultCount = mainMapper.countTodayConsults();
 		int weeklyConsultCount = mainMapper.countWeeklyConsults();
-		res.setTodayCaseCount(todayCaseCount);
+		res.setTodayConsultCount(todayConsultCount);
 		res.setWeeklyConsultCount(weeklyConsultCount);
 
 		// 9. stats 객체 구성 (프론트 차트용)
 		MainStatsDTO stats = new MainStatsDTO();
-		stats.setTodayCount(todayCaseCount);
+		stats.setTodayCount(todayConsultCount);
 		stats.setWeeklyCount(weeklyConsultCount);
 
 		// 최근 7일 사건 수 차트 로직 (기존 유지)

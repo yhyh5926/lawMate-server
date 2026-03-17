@@ -79,10 +79,9 @@
 		&lt;= 5
 	</select>
 
-	<select id="countTodayCases" resultType="int">
+	<select id="countTodayConsults" resultType="int">
 		SELECT COUNT(*)
-		FROM
-		TB_CASE
+		FROM TB_CONSULT
 		WHERE TRUNC(CREATED_AT) = TRUNC(SYSDATE)
 	</select>
 
@@ -93,7 +92,7 @@
 		WHERE TRUNC(CREATED_AT) BETWEEN TRUNC(SYSDATE) - 6 AND
 		TRUNC(SYSDATE)
 	</select>
-	
+
 	<select id="selectRecentPosts"
 		resultType="com.edu.springboot.domain.main.vo.MainRecentPostVO">
 		SELECT *
@@ -103,9 +102,11 @@
 		p.title AS title,
 		m.name AS name,
 		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
-		FROM tb_post p
+		FROM
+		tb_post p
 		JOIN tb_member m ON p.member_id = m.member_id
-		WHERE p.status = 'ACTIVE' AND p.case_type != 'POLL' 
+		WHERE p.status =
+		'ACTIVE' AND p.case_type != 'POLL'
 		ORDER BY p.post_id DESC
 		)
 		WHERE ROWNUM &lt;= #{limit}

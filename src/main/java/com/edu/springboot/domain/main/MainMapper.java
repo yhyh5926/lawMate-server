@@ -26,7 +26,7 @@ public interface MainMapper {
 	List<MainQuestionVO> selectRecentQuestions();
 
 	/** 오늘 접수 사건 수 */
-	int countTodayCases();
+	int countTodayConsults();
 
 	/** 주간 누적 상담 건수 (최근 7일, 오늘 포함) */
 	int countWeeklyConsults();

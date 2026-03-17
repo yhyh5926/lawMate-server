@@ -4,7 +4,7 @@ import os
 import time
 
 # [설정]
-OC = "yh9035926"
+OC = "본인의 API키"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 RAW_FILE = os.path.join(DATA_DIR, "raw_cases.json")

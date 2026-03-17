@@ -23,6 +23,6 @@ public class MainResponseDTO {
 
 	// ---- Backward compatibility ----
 	private List<MainNoticeVO> notices;
-	private Integer todayCaseCount;
+	private Integer todayConsultCount;
 	private Integer weeklyConsultCount;
 }
