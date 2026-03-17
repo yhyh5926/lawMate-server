@@ -19,7 +19,9 @@
 		JOIN tb_member m ON
 		p.member_id = m.member_id
 		WHERE p.case_type IN ('NOTICE', '공지', '공지사항')
-		ORDER BY p.post_id DESC
+		AND p.status = 'ACTIVE' /* 💡 공지사항도 삭제/블라인드된 것은 제외 */
+		ORDER BY
+		p.post_id DESC
 		)
 		WHERE ROWNUM &lt;= #{limit}
 	</select>
@@ -54,11 +56,10 @@
 		JOIN TB_MEMBER m ON l.MEMBER_ID =
 		m.MEMBER_ID
 		LEFT OUTER JOIN TB_ATTACHMENT a ON l.LAWYER_ID = a.REF_ID
-		AND a.REF_TYPE =
-		'LAWYER'
-		WHERE l.APPROVE_STATUS = 'APPROVED'
-		ORDER BY
-		l.CREATED_AT DESC
+		AND a.REF_TYPE = 'LAWYER'
+		WHERE l.APPROVE_STATUS = 'APPROVED' /* 💡 승인된
+		변호사만 추출 */
+		ORDER BY l.CREATED_AT DESC
 		) WHERE ROWNUM &lt;= 5
 	</select>
 
@@ -92,7 +93,7 @@
 		WHERE TRUNC(CREATED_AT) BETWEEN TRUNC(SYSDATE) - 6 AND
 		TRUNC(SYSDATE)
 	</select>
-
+	
 	<select id="selectRecentPosts"
 		resultType="com.edu.springboot.domain.main.vo.MainRecentPostVO">
 		SELECT *
@@ -102,11 +103,10 @@
 		p.title AS title,
 		m.name AS name,
 		TO_CHAR(p.created_at, 'YYYY-MM-DD') AS createdAt
-		FROM
-		tb_post p
+		FROM tb_post p
 		JOIN tb_member m ON p.member_id = m.member_id
-		ORDER BY
-		p.post_id DESC
+		WHERE p.status = 'ACTIVE' AND p.case_type != 'POLL' 
+		ORDER BY p.post_id DESC
 		)
 		WHERE ROWNUM &lt;= #{limit}
 	</select>
@@ -130,16 +130,20 @@
 		SELECT * FROM (
 		SELECT
 		q.QUESTION_ID as questionId,
-		q.TITLE as title,
+		q.TITLE as
+		title,
 		q.CASE_TYPE as caseType,
 		q.STATUS as status,
 		m.NAME as memberName,
 		TO_CHAR(q.CREATED_AT, 'YYYY-MM-DD') as createdAt,
-		(SELECT COUNT(*) FROM TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
+		(SELECT COUNT(*) FROM
+		TB_ANSWER WHERE QUESTION_ID = q.QUESTION_ID) as
 		answerCount
-		FROM TB_QUESTION q
+		FROM
+		TB_QUESTION q
 		LEFT JOIN TB_MEMBER m ON q.MEMBER_ID = m.MEMBER_ID
-		ORDER BY q.CREATED_AT DESC
+		ORDER
+		BY q.CREATED_AT DESC
 		) WHERE ROWNUM &lt;= 5
 	</select>
 
