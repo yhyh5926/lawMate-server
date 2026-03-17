@@ -1,6 +1,4 @@
-// IntelliJ / Eclipse
-// 파일위치: src/main/java/com/edu/springboot/domain/admin/AdminController.java
-
+// src/main/java/com/edu/springboot/domain/admin/AdminController.java
 package com.edu.springboot.domain.admin;
 
 import java.util.Map;
@@ -20,11 +18,12 @@ import com.edu.springboot.domain.community.CommunityMapper;
 import com.edu.springboot.domain.community.vo.PostVo;
 import com.edu.springboot.domain.question.QuestionMapper;
 import com.edu.springboot.domain.question.vo.QuestionVO;
-import com.edu.springboot.domain.poll.vo.PollVo; // 💡 의견조사(Poll) VO 임포트
+import com.edu.springboot.domain.poll.vo.PollVo;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
+// 관리자 기능을 처리하기 위한 전용 REST 컨트롤러
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -38,11 +37,13 @@ public class AdminController {
 	private final QuestionMapper questionMapper;
 	private final AdminMapper adminMapper;
 
+//	서버가 실행될 때 관리자 컨트롤러가 정상적으로 매핑되었는지 확인하기 위한 초기화 메서드
 	@PostConstruct
 	public void init() {
-		System.out.println("✅ [domain/admin] 관리자 컨트롤러가 가동되었습니다.");
+		System.out.println("[domain/admin] 관리자 컨트롤러가 가동되었습니다.");
 	}
 
+//	관리자 대시보드 메인 화면에 보여줄 전체 KPI 수치와 날짜별 차트 데이터를 한 번에 묶어서 반환하는 메서드
 	@GetMapping("/stats")
 	public ResponseEntity<?> getDashboardStats() {
 		int totalPersonal = adminMapper.countTotalPersonalMembers();
@@ -57,11 +58,13 @@ public class AdminController {
 				dailyUsers, "cases", dailyCases));
 	}
 
+//	서비스에 가입된 전체 회원 목록을 불러오는 메서드
 	@GetMapping("/member/list")
 	public ResponseEntity<?> getMemberList() {
 		return ResponseEntity.ok(Map.of("data", memberMapper.selectAllMembers()));
 	}
 
+//	문제가 있는 회원의 계정을 관리자 권한으로 강제 정지 처리하는 메서드
 	@PostMapping("/member/delete")
 	public ResponseEntity<?> suspendMember(@RequestBody Map<String, Long> payload) {
 		try {
@@ -73,35 +76,38 @@ public class AdminController {
 		}
 	}
 
+//	변호사로 가입 후 승인을 기다리고 있는 대기 상태의 회원 목록을 불러오는 메서드
 	@GetMapping("/lawyer/approve")
 	public ResponseEntity<?> getPendingLawyers() {
 		return ResponseEntity.ok(Map.of("data", lawyerMapper.findPendingLawyers()));
 	}
 
+//	관리자가 대기 중인 변호사 회원을 확인하고 최종 가입 승인을 해주는 메서드
 	@PostMapping("/lawyer/approve")
 	public ResponseEntity<?> approveLawyer(@RequestBody LawyerVO lawyerVO) {
 		lawyerMapper.updateApproveStatus(lawyerVO);
 		return ResponseEntity.ok(Map.of("message", "전문회원 승인 상태가 업데이트 되었습니다."));
 	}
 
+//	접수된 전체 사건 리스트를 관리자용으로 전부 불러오는 메서드
 	@GetMapping("/case/list")
 	public ResponseEntity<?> getAllCases() {
 		return ResponseEntity.ok(Map.of("data", caseService.getAllCasesForAdmin()));
 	}
 
+//	게시물 관리를 위해 자유, 질문, 의견조사 게시판의 데이터를 불러오는 메서드
+//	관리자 페이지 특성상 페이징 처리 없이 각 게시판별로 넉넉하게 500개씩 한 번에 가져와서 프론트로 전달한다
 	@GetMapping("/board/list")
 	public ResponseEntity<?> getBoardList() {
-		// 관리자 페이지이므로 데이터를 넉넉하게 500개씩 가져오도록 수정
 		List<PostVo> posts = communityMapper.list("", 1, 500);
 		List<QuestionVO> questions = questionMapper.selectAllQuestions();
-		
-		// 💡 [추가] 커뮤니티 매퍼를 통해 모의판결(의견조사) 목록도 가져옵니다.
 		List<PollVo> polls = communityMapper.pollList("latest", 1, 500);
 
-		// 💡 [추가] 프론트엔드로 posts, questions와 함께 polls도 묶어서 보냅니다.
 		return ResponseEntity.ok(Map.of("data", Map.of("posts", posts, "questions", questions, "polls", polls)));
 	}
 
+//	관리자가 부적절한 게시물을 확인하고 삭제 상태로 변경하는 메서드
+//	프론트에서 넘어온 게시글 종류에 맞춰 각각 다른 매퍼를 호출해서 삭제 처리한다
 	@PostMapping("/board/delete")
 	public ResponseEntity<?> deleteBoardItem(@RequestBody Map<String, Object> payload) {
 		try {
@@ -112,9 +118,8 @@ public class AdminController {
 				communityMapper.updatePostStatus(id.intValue(), "DELETED");
 			} else if ("QUESTION".equals(type)) {
 				questionMapper.updateQuestionStatus(id, "CLOSED", null);
-			} else if ("POLL".equals(type)) { 
-				// 💡 [추가] 관리자가 모의판결 글도 삭제할 수 있도록 연동
-				communityMapper.updatePollStatus(id.intValue(), "DELETED"); 
+			} else if ("POLL".equals(type)) {
+				communityMapper.updatePollStatus(id.intValue(), "DELETED");
 			}
 			return ResponseEntity.ok(Map.of("success", true, "message", "삭제 완료"));
 		} catch (Exception e) {
@@ -122,16 +127,20 @@ public class AdminController {
 		}
 	}
 
+//	유저들이 접수한 전체 신고 내역을 불러오는 메서드
 	@GetMapping("/report/list")
 	public ResponseEntity<?> getReportList() {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllReports()));
 	}
 
+//	관리자가 확인하려는 특정 신고 건의 상세 내용을 조회하는 메서드
 	@GetMapping("/report/detail")
 	public ResponseEntity<?> getReportDetail(@RequestParam("reportId") Long reportId) {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectReportDetail(reportId)));
 	}
 
+//	관리자가 신고 내용을 확인한 뒤 제재를 가하거나 처리 완료하는 메서드
+//	처리 결과와 함께 제재 내용이 있다면 SanctionVO에 담아서 같이 데이터베이스에 적용한다
 	@PostMapping("/report/process")
 	public ResponseEntity<?> processSanction(@RequestBody Map<String, Object> payload) {
 		try {
@@ -158,11 +167,13 @@ public class AdminController {
 		}
 	}
 
+//	전체 결제 내역을 불러오는 메서드
 	@GetMapping("/payment/list")
 	public ResponseEntity<?> getPaymentList() {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllPayments()));
 	}
 
+//	변호사들에게 수익을 정산해준 전체 내역을 불러오는 메서드
 	@GetMapping("/settlement/list")
 	public ResponseEntity<?> getSettlementList() {
 		return ResponseEntity.ok(Map.of("data", adminMapper.selectAllSettlements()));

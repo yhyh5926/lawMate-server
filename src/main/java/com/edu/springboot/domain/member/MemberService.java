@@ -7,40 +7,41 @@ import com.edu.springboot.domain.member.vo.MemberVO;
 import java.util.List;
 import java.util.Map;
 
+// 회원 관련 비즈니스 로직 껍데기
 public interface MemberService {
-	// 아이디 사용 가능 여부 확인
+//	아이디 중복 검사 로직
 	boolean isLoginIdAvailable(String loginId);
 
-	// 회원가입 처리 (TB_MEMBER + TB_LAWYER 통합 저장)
+//	회원가입 처리 로직
 	boolean join(JoinDto dto);
 
-	// 일반 로그인 처리 (정상 암호화 검증 적용)
+//	일반 로그인 및 토큰 발급 로직
 	Map<String, Object> login(LoginDto dto);
 
-	// 소셜 로그인 처리 (구글 전용)
+//	구글 소셜 로그인 로직
 	Map<String, Object> socialLogin(Map<String, String> socialData);
 
-	// 회원 정보 상세 조회
+//	회원 상세 정보 가져오는 로직
 	MemberVO getMemberInfo(String loginId);
 
-	// 프로필 수정
+//	프로필 수정 로직
 	boolean updateProfile(MemberVO vo);
 
-	// 회원 탈퇴 처리 (기존 loginId 기준)
+//	로그인 아이디로 탈퇴 처리하는 로직
 	boolean withdraw(String loginId);
 
-	// 성함과 연락처로 아이디 찾기
+//	이름과 전화번호로 아이디 찾는 로직
 	String findId(String name, String phone);
 
-	// 인증번호 발송 (테스트용)
+//	핸드폰 인증 번호 발송 로직
 	String sendAuthCode(String phone);
 
-	// 회원가입 30일 방어막 검증
+//	탈퇴 후 30일 지났는지 확인하는 방어 로직
 	void validateSignup(String loginId, String email);
 
-	// 프론트엔드 연동을 위한 회원 탈퇴 처리 (memberId 기준)
+//	고유 식별 번호로 회원 탈퇴 처리하는 로직
 	boolean withdrawMember(Long memberId);
 
-	// 💡 [수정] 컨트롤러 및 매퍼와 이름을 맞춤
+//	게시판 종류에 맞춰 내 글 찾아오는 로직
 	List<Map<String, Object>> findMyPosts(Long memberId, String type);
 }

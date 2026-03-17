@@ -7,54 +7,55 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 import java.util.Map;
 
+// DB의 회원 관련 테이블에 쿼리를 날리는 매퍼 인터페이스
 @Mapper
 public interface MemberMapper {
 
-	// 💡 로그인 시 사용되는 메서드
+//	로그인할 때 아이디로 회원 정보 찾아오는 쿼리
 	MemberVO findByLoginId(String loginId);
 
-	// 회원 가입
+//	새로운 회원 데이터를 DB에 넣는 쿼리
 	int insertMember(MemberVO member);
 
-	// 회원 정보 수정
+//	회원 정보 수정하는 쿼리
 	int updateMember(MemberVO member);
 
-	// 회원 탈퇴 처리 (ID 기준 완전 삭제)
+//	회원 데이터를 아예 삭제해버리는 쿼리
 	int deleteMember(Long memberId);
 
-	// 아이디 찾기
+//	이름이랑 핸드폰 번호로 로그인 아이디 찾는 쿼리
 	String findLoginIdByNameAndPhone(String name, String phone);
 
-	// 비밀번호 재설정
+//	비밀번호 재설정하는 쿼리
 	int updatePassword(String loginId, String newPassword);
 
-	// 유형별 조회
+//	회원 유형별로 목록 찾아오는 쿼리
 	List<MemberVO> findMembersByType(String memberType);
 
-	// 전체 회원 목록 조회 (관리자용)
+//	전체 회원 목록 가져오는 쿼리
 	List<MemberVO> selectAllMembers();
 
-	// 이메일로 회원 조회
+//	이메일 주소로 회원 정보 찾아오는 쿼리
 	MemberVO findByEmail(String email);
 
-	// 💡 회원 탈퇴 처리 (memberId 기준 STATUS 업데이트)
+//	고유 식별 번호로 계정 상태를 탈퇴로 바꾸는 쿼리
 	int withdrawMember(Long memberId);
 
-	// 30일 경과 탈퇴 회원 조회
+//	탈퇴한 지 30일 넘은 회원 목록 가져오는 쿼리
 	List<MemberVO> findWithdrawnMembersForAnonymization();
 
-	// 회원 정보 완전 비식별화 처리
+//	회원 개인정보를 알아볼 수 없게 덮어쓰는 쿼리
 	int anonymizeMember(MemberVO member);
 
-	// 💡 [복구] loginId 기반 탈퇴 메서드 (XML의 withdrawMemberByLoginId와 매핑)
+//	로그인 아이디를 기준으로 계정 상태를 탈퇴로 바꾸는 쿼리
 	int withdrawMemberByLoginId(String loginId);
 
-	// 💡 [복구] XML의 withdrawMember(String)와 매핑되는 메서드
+//	로그인 아이디로 탈퇴 처리하는 쿼리
 	int withdrawMember(String loginId);
 
-	// 휴대폰 인증 상태 업데이트
+//	핸드폰 인증 상태 업데이트하는 쿼리
 	int updatePhoneVerified(@Param("isVerified") String isVerified, @Param("memberId") Long memberId);
 
-	// 💡 [해결] Map을 파라미터로 받아 500 에러 해결
+//	파라미터를 맵으로 받아서 내가 쓴 글 목록 찾아오는 쿼리
 	List<Map<String, Object>> findMyPosts(Map<String, Object> params);
 }
