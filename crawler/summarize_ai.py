@@ -6,7 +6,7 @@ from google.genai import types
 
 # [1. 설정]
 # 이전에 확인된 유효한 API 키입니다.
-GEMINI_API_KEY = "AIzaSyARv8GiCsl48VnI8wjaaL93w_CQr_U5jd8".strip()
+GEMINI_API_KEY = "AIzaSyDZEeIJbAbf21wma_Wl1BcL2PNDa9WMFKc".strip()
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # 리스트 확인 결과 가장 최신인 'gemini-2.5-flash'를 사용합니다.
